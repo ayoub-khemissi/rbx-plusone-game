@@ -11,6 +11,17 @@ Push-Location $root
 
 $failed = @()
 
+# Un fichier de configuration absent ne fait pas echouer les outils : ils appliquent
+# silencieusement leurs valeurs par defaut et reformatent tout le depot. On verifie
+# donc leur presence explicitement.
+$required = @("stylua.toml", "selene.toml", ".luaurc", "default.project.json")
+foreach ($file in $required) {
+    if (-not (Test-Path (Join-Path $root $file))) {
+        Write-Host "Fichier de configuration manquant : $file" -ForegroundColor Red
+        $failed += $file
+    }
+}
+
 try {
     Write-Host "`n== StyLua ==" -ForegroundColor Cyan
     if ($Fix) {
