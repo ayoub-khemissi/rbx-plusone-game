@@ -3,12 +3,13 @@
 ## Mise en route
 
 ```powershell
-./scripts/setup.ps1     # installe Lune, Selene et StyLua dans .tools/
-./scripts/check.ps1     # format + lint + tests
+./scripts/setup.ps1     # installe Rojo, Lune, Selene et StyLua dans .tools/
+./scripts/check.ps1     # format + lint + build + tests
 ```
 
-`setup.ps1` télécharge les outils localement (dossier `.tools/`, ignoré par git) et
-génère la définition standard Roblox utilisée par le linter.
+`setup.ps1` télécharge les outils localement (dossier `.tools/`, ignoré par git),
+génère la définition standard Roblox utilisée par le linter et le `sourcemap.json`
+qui donne l'autocomplétion à l'éditeur.
 
 Si tu préfères gérer les versions avec [Rokit](https://github.com/rojo-rbx/rokit),
 le fichier `rokit.toml` est déjà présent : `rokit install` suffit.
@@ -19,18 +20,22 @@ le fichier `rokit.toml` est déjà présent : `rokit install` suffit.
 | --- | --- |
 | `./scripts/test.ps1` | Lance toute la suite de tests |
 | `./scripts/test.ps1 economy` | Ne lance que les specs dont le chemin contient `economy` |
-| `./scripts/check.ps1` | Vérifie le format, lint et teste (à lancer avant chaque commit) |
+| `./scripts/check.ps1` | Format + lint + build Rojo + tests (à lancer avant chaque commit) |
 | `./scripts/check.ps1 -Fix` | Formate au lieu de vérifier |
-| `.tools/rojo.exe serve` | Sert le projet vers Roblox Studio |
+| `./scripts/serve.ps1` | Sert le projet vers Roblox Studio |
 
 Les tests s'exécutent **sans Roblox Studio**, en moins de 50 ms.
 
 ## Ouvrir le jeu dans Studio
 
-1. Installer le plugin **Rojo** dans Studio.
-2. Lancer `rojo serve` à la racine du projet (`rokit install` fournit le binaire).
-3. Dans Studio : *Rojo → Connect*.
-4. Créer un lieu vide, puis lancer une session serveur+client.
+1. Installer le plugin **Rojo** dans Studio (onglet Plugins → Manage Plugins).
+2. Créer un lieu vide et le sauvegarder.
+3. Lancer `./scripts/serve.ps1` à la racine du projet.
+4. Dans Studio : *Rojo → Connect*.
+5. Lancer une session **serveur + client** (bouton Play, ou Test → Start avec 1 joueur).
+
+`check.ps1` valide `default.project.json` en construisant le lieu hors Studio :
+une erreur d'arborescence est donc détectée avant même d'ouvrir Roblox.
 
 La carte est **générée au démarrage du serveur** : il n'y a rien à construire à la main.
 En Studio sans accès aux API, la sauvegarde bascule automatiquement en mémoire.

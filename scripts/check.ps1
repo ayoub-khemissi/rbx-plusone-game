@@ -24,6 +24,11 @@ try {
     & (Join-Path $tools "selene.exe") src
     if ($LASTEXITCODE -ne 0) { $failed += "selene" }
 
+    Write-Host "`n== Build Rojo ==" -ForegroundColor Cyan
+    # Valide default.project.json et l'arborescence sans ouvrir Studio.
+    & (Join-Path $tools "rojo.exe") build default.project.json --output "$env:TEMP\singe-check.rbxl"
+    if ($LASTEXITCODE -ne 0) { $failed += "rojo build" }
+
     Write-Host "`n== Tests ==" -ForegroundColor Cyan
     & (Join-Path $tools "lune.exe") run tests/run
     if ($LASTEXITCODE -ne 0) { $failed += "tests" }
