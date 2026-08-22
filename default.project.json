@@ -1,0 +1,71 @@
+{
+  "name": "plus-one-evasion-du-singe-rapide",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": {
+        "$path": "src/Shared"
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Server": {
+        "$path": "src/Server"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/Client"
+        }
+      },
+      "StarterCharacterScripts": {
+        "$className": "StarterCharacterScripts"
+      }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "FilteringEnabled": true,
+        "StreamingEnabled": false,
+        "Gravity": 145
+      }
+    },
+
+    "Lighting": {
+      "$className": "Lighting",
+      "$properties": {
+        "Ambient": [80, 80, 90],
+        "OutdoorAmbient": [120, 120, 130],
+        "Brightness": 2.5,
+        "ClockTime": 15,
+        "GeographicLatitude": 12,
+        "ExposureCompensation": 0.15,
+        "GlobalShadows": true,
+        "Technology": "ShadowMap"
+      }
+    },
+
+    "SoundService": {
+      "$className": "SoundService",
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    },
+
+    "Players": {
+      "$className": "Players",
+      "$properties": {
+        "CharacterAutoLoads": true,
+        "RespawnTime": 2
+      }
+    }
+  }
+}

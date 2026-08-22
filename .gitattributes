@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.luau text
+*.json text
+*.md text
+*.ps1 text eol=crlf

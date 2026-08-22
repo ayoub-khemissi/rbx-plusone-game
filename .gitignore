@@ -1,0 +1,21 @@
+# Rojo / build
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+*.rbxl.lock
+*.rbxlx.lock
+sourcemap.json
+
+# Outils
+.rokit/
+~/
+
+# OS / editeur
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Outils locaux telecharges (rokit gere les versions)
+.tools/
+roblox.yml
