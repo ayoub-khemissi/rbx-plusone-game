@@ -42,12 +42,12 @@
     "Lighting": {
       "$className": "Lighting",
       "$properties": {
-        "Ambient": [80, 80, 90],
-        "OutdoorAmbient": [120, 120, 130],
-        "Brightness": 2.5,
+        "Ambient": [0.16, 0.16, 0.18],
+        "OutdoorAmbient": [0.42, 0.44, 0.48],
+        "Brightness": 2,
         "ClockTime": 15,
         "GeographicLatitude": 12,
-        "ExposureCompensation": 0.15,
+        "ExposureCompensation": 0,
         "GlobalShadows": true,
         "Technology": "ShadowMap"
       }
