@@ -141,6 +141,10 @@ describe("Progression", function()
 		expect(outcome.speedGained).toBeLessThan(1)
 	end)
 
+	it("mesure la distance au sol entre deux echantillons", function()
+		expect(progression:distanceBetween({ x = 0, y = 40, z = 0 }, { x = 6, y = 0, z = 8 })).toBe(10)
+	end)
+
 	it("met a jour la plus haute zone atteinte", function()
 		progression:noteZone(profile, 4)
 		expect(profile.highestZone).toBe(4)

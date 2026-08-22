@@ -112,6 +112,20 @@ function Fakes.passGateway(owned: { [string]: boolean }?)
 	return fake
 end
 
+function Fakes.snapshots()
+	return {
+		build = function(_self, session)
+			return {
+				speed = session.profile.speed,
+				bananas = session.profile.bananas,
+				rebirths = session.profile.rebirths,
+				zoneId = session.zoneId,
+				upgrades = table.clone(session.profile.upgrades),
+			}
+		end,
+	}
+end
+
 function Fakes.player(userId: number, name: string?)
 	return { UserId = userId, Name = name or `Joueur{userId}` }
 end

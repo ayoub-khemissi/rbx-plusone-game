@@ -53,9 +53,9 @@ for _, specPath in specs do
 	globals.Shared = shared
 	globals.Tree = dataModel
 	globals.Domain = shared:FindFirstChild("Domain")
-	globals.Application = shared:FindFirstChild("Application")
 	globals.Config = shared:FindFirstChild("Config")
 	globals.Server = dataModel:GetService("ServerScriptService"):FindFirstChild("Server")
+	globals.Application = globals.Server and globals.Server:FindFirstChild("Application")
 	globals.Fakes = fakes
 
 	local ok, loadErr = pcall(function()

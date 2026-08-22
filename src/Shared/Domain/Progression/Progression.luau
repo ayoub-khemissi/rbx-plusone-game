@@ -57,7 +57,12 @@ export type Dependencies = {
 export type Progression = typeof(setmetatable({} :: Dependencies, Progression))
 
 function Progression.new(dependencies: Dependencies): Progression
-	return setmetatable(dependencies, Progression)
+	return setmetatable(table.clone(dependencies), Progression)
+end
+
+--[[ Distance au sol entre deux points echantillonnes. ]]
+function Progression.distanceBetween(self: Progression, from: any, to: any): number
+	return self.accounting:horizontalDistance(from, to)
 end
 
 --[[ Etat de mouvement a appliquer au personnage pour le profil courant. ]]
