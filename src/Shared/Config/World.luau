@@ -9,6 +9,13 @@ return table.freeze({
 		spawnHeight = 6,
 	}),
 
+	-- Passerelle reliant le hub a la premiere zone : sans elle, la piste est
+	-- litteralement hors de portee d'un saut.
+	approach = table.freeze({
+		width = 44,
+		railHeight = 3,
+	}),
+
 	track = table.freeze({
 		thickness = 6,
 		wallHeight = 42, -- murs lateraux : support du wall-run

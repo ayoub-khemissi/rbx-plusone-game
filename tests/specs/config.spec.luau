@@ -105,9 +105,23 @@ describe("Config.Balance", function()
 
 	it("place la piste au-dela du hub", function()
 		local layout = TrackLayout.new(Config.Balance.layout, Config.Zones)
-		expect(Config.Balance.layout.trackStartX).toBeGreaterThan(Config.World.hub.size / 2)
+		expect(Config.Balance.layout.trackStartX).toBeGreaterThanOrEqual(Config.World.hub.size / 2)
 		expect(layout:totalLength()).toBeGreaterThan(1000)
 		expect(layout:zoneAt(0)).toBeNil()
 		expect(layout:zoneAt(Config.Balance.layout.trackStartX)).toBe(1)
+	end)
+
+	it("relie le hub a la piste par une passerelle marchable", function()
+		-- Regression : le hub s'arretait a 130 et la piste demarrait a 200, soit
+		-- 70 studs de vide qu'aucun saut ne franchit. Le generateur pose desormais
+		-- une passerelle, mais elle doit rester d'une largeur credible.
+		local gap = Config.Balance.layout.trackStartX - Config.World.hub.size / 2
+		expect(gap).toBeGreaterThanOrEqual(0)
+		expect(Config.World.approach.width).toBeGreaterThan(20)
+		expect(Config.World.approach.width).toBeLessThanOrEqual(Config.Balance.layout.trackWidth)
+	end)
+
+	it("garde une piste plus large que la passerelle qui y mene", function()
+		expect(Config.Balance.layout.trackWidth).toBeGreaterThanOrEqual(Config.World.approach.width)
 	end)
 end)

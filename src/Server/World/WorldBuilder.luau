@@ -99,6 +99,48 @@ function WorldBuilder._hub(self, parent: Instance)
 	return { folder = folder, ground = ground, spawn = spawn, afkPad = afkPad }
 end
 
+--[[ Relie le bord du hub a l'entree de la premiere zone. ]]
+function WorldBuilder._approach(self, parent: Instance)
+	local hub = self.config.World.hub
+	local approach = self.config.World.approach
+	local track = self.config.World.track
+
+	local firstZone = self.ladder:all()[1]
+	local startX = hub.size / 2
+	local endX = self.layout:boundsOf(firstZone.id).startX
+	local length = endX - startX
+	if length <= 0 then
+		return nil -- le hub touche deja la piste
+	end
+
+	local folder = Instance.new("Folder")
+	folder.Name = "Passerelle"
+	folder.Parent = parent
+
+	Palette.block({
+		name = "Sol",
+		size = Vector3.new(length, track.thickness, approach.width),
+		position = Vector3.new((startX + endX) / 2, -track.thickness / 2, 0),
+		color = Palette.color({ 132, 108, 78 }),
+		material = Enum.Material.WoodPlanks,
+		parent = folder,
+	})
+
+	-- Garde-corps : guide le regard vers la piste et evite les chutes bêtes.
+	for _, side in { -1, 1 } do
+		Palette.block({
+			name = "GardeCorps",
+			size = Vector3.new(length, approach.railHeight, 2),
+			position = Vector3.new((startX + endX) / 2, approach.railHeight / 2, side * (approach.width / 2)),
+			color = Palette.color({ 96, 74, 52 }),
+			material = Enum.Material.Wood,
+			parent = folder,
+		})
+	end
+
+	return folder
+end
+
 function WorldBuilder._gate(self, zone, bounds, parent: Instance)
 	local gateConfig = self.config.World.gate
 
@@ -295,6 +337,7 @@ function WorldBuilder.build(self): Folder
 	world.Name = "Monde"
 
 	self:_hub(world)
+	self:_approach(world)
 
 	local zones = Instance.new("Folder")
 	zones.Name = "Zones"

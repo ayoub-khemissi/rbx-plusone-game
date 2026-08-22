@@ -11,10 +11,14 @@ local ZonesPanel = require(script.Parent.ZonesPanel)
 local RewardsPanel = require(script.Parent.RewardsPanel)
 local StorePanel = require(script.Parent.StorePanel)
 local OfferPopup = require(script.Parent.OfferPopup)
+local ChatLayout = require(script.Parent.ChatLayout)
 
 local Root = {}
 
 function Root.mount(player: Player, state, remotes)
+	-- Liberer le coin haut-gauche avant de poser le HUD qui l'occupe.
+	ChatLayout.apply()
+
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "SingeRapide"
 	screen.ResetOnSpawn = false
