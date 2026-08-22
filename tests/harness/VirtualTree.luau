@@ -47,7 +47,9 @@ function Instance_:IsA(className: string): boolean
 		return true
 	end
 	if className == "LuaSourceContainer" then
-		return self.ClassName == "ModuleScript" or self.ClassName == "Script" or self.ClassName == "LocalScript"
+		return self.ClassName == "ModuleScript"
+			or self.ClassName == "Script"
+			or self.ClassName == "LocalScript"
 	end
 	return false
 end

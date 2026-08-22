@@ -65,7 +65,10 @@ for _, specPath in specs do
 
 	if not ok then
 		failed += 1
-		table.insert(failures, { name = "<chargement du fichier>", message = tostring(loadErr), file = specPath })
+		table.insert(
+			failures,
+			{ name = "<chargement du fichier>", message = tostring(loadErr), file = specPath }
+		)
 		continue
 	end
 

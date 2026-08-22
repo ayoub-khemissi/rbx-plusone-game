@@ -34,7 +34,10 @@ local function stringify(value): string
 	end
 	local parts = {}
 	for key, inner in value do
-		table.insert(parts, `{tostring(key)} = {if typeof(inner) == "table" then "{...}" else tostring(inner)}`)
+		table.insert(
+			parts,
+			`{tostring(key)} = {if typeof(inner) == "table" then "{...}" else tostring(inner)}`
+		)
 	end
 	table.sort(parts)
 	return "{ " .. table.concat(parts, ", ") .. " }"
@@ -47,7 +50,8 @@ function MATCHERS.toBe(value, expected)
 end
 
 function MATCHERS.toEqual(value, expected)
-	return deepEqual(value, expected), `attendu (egalite profonde) {stringify(expected)}, recu {stringify(value)}`
+	return deepEqual(value, expected),
+		`attendu (egalite profonde) {stringify(expected)}, recu {stringify(value)}`
 end
 
 function MATCHERS.toBeCloseTo(value, expected, tolerance)
