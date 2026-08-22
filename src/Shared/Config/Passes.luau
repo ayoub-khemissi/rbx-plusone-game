@@ -13,11 +13,14 @@ export type Pass = {
 	name: string,
 	icon: string,
 	description: string,
+	-- Effets chiffres, agreges par Domain.Progression.Multipliers.
 	effect: {
 		speed: number?,
 		bananas: number?,
 		flat: { [string]: number }?,
 	},
+	-- Effet de confort applique par le client (aucun impact sur l'equilibrage).
+	behaviour: string?,
 }
 
 local passes: { Pass } = {
@@ -52,6 +55,24 @@ local passes: { Pass } = {
 		icon = "👑",
 		description = "x1.5 vitesse et bananes, +1 s de course sur les murs.",
 		effect = { speed = 1.5, bananas = 1.5, flat = { wallGrip = 1 } },
+	},
+	{
+		id = "autoRun",
+		assetId = 0,
+		name = "Course automatique",
+		icon = "🏃",
+		description = "Ton singe court tout seul, meme sans toucher aux touches.",
+		effect = {},
+		behaviour = "autoRun",
+	},
+	{
+		id = "bananaMagnet",
+		assetId = 0,
+		name = "Aimant a bananes",
+		icon = "🧲",
+		description = "Ramasse les bananes a distance en courant.",
+		effect = {},
+		behaviour = "magnet",
 	},
 }
 

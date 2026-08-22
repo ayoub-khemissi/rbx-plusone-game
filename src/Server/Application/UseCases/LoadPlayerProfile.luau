@@ -27,8 +27,14 @@ function LoadPlayerProfile.run(self, player)
 
 	local session = self.sessions:open(userId, Profile.migrate(if loaded then raw else nil), player)
 	session.savable = loaded
-	if self.clock then
-		session.joinedAt = self.clock.now()
+
+	local now = if self.clock then self.clock.now() else 0
+	session.joinedAt = now
+
+	-- Hooks d'ouverture de session (nettoyage des boosts expires, armement des
+	-- compteurs de coffres...). Injectes par la racine de composition.
+	for _, hook in self.sessionHooks or {} do
+		hook(session, now)
 	end
 
 	local passesLoaded, passes = pcall(function()

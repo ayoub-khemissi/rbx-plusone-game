@@ -108,3 +108,45 @@ describe("Multipliers", function()
 		expect(result.flat.wallGrip).toBeCloseTo(0.8, 1e-9)
 	end)
 end)
+
+describe("Multipliers avec boosts temporaires", function()
+	local multipliers, profile, zone
+	beforeEach(function()
+		multipliers = Multipliers.new({
+			catalog = UpgradeCatalog.new(DEFINITIONS),
+			rebirthPolicy = RebirthPolicy.new({
+				baseRequirement = 100,
+				requirementGrowth = 2,
+				multiplierPerRebirth = 0.5,
+				resetsUpgrades = true,
+			}),
+			passEffects = PASS_EFFECTS,
+		})
+		profile = Profile.create()
+		zone = { id = 1, stepMultiplier = 1, bananaMultiplier = 1 }
+	end)
+
+	it("applique les multiplicateurs de boost", function()
+		local result = multipliers:compute(profile, {
+			zone = zone,
+			passes = {},
+			boosts = { speed = 2, bananas = 3 },
+		})
+		expect(result.speed).toBe(2)
+		expect(result.bananas).toBe(3)
+	end)
+
+	it("se combine avec les autres sources", function()
+		profile.rebirths = 2 -- x2
+		local result = multipliers:compute(profile, {
+			zone = zone,
+			passes = { doubleSpeed = true },
+			boosts = { speed = 2 },
+		})
+		expect(result.speed).toBeCloseTo(2 * 2 * 2, 1e-9)
+	end)
+
+	it("reste neutre sans boost", function()
+		expect(multipliers:compute(profile, { zone = zone, passes = {} }).speed).toBe(1)
+	end)
+end)

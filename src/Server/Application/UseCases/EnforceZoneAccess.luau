@@ -37,6 +37,11 @@ function EnforceZoneAccess.run(self, player, position)
 
 		session.zoneId = fallbackZone
 		self.teleporter:sendTo(player, self.layout:spawnOf(fallbackZone))
+
+		-- Le joueur bute sur une barriere : moment ou une offre de boost a du sens.
+		if self.offers and self.clock then
+			self.offers:trigger(session.profile, "zoneBlocked", self.clock.now())
+		end
 		self.notifier:notify(
 			player,
 			`Il te faut {math.floor(required)} de vitesse pour entrer dans {zone and zone.name or "cette zone"} !`,

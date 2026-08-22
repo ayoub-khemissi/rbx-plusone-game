@@ -12,10 +12,27 @@ function Fakes.clock(startTime: number?)
 		now = function()
 			return now
 		end,
+		monotonic = function()
+			return now
+		end,
 		advance = function(seconds: number)
 			now += seconds
 		end,
 	}
+end
+
+function Fakes.marketplace()
+	local fake = { prompts = {} }
+
+	function fake:promptProduct(player, productId: number)
+		table.insert(self.prompts, { player = player, productId = productId })
+	end
+
+	function fake:promptGamePass(player, assetId: number)
+		table.insert(self.prompts, { player = player, assetId = assetId })
+	end
+
+	return fake
 end
 
 function Fakes.repository()

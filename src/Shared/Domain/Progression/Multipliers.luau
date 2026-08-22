@@ -20,6 +20,7 @@ export type PassEffect = {
 export type Context = {
 	zone: { stepMultiplier: number?, bananaMultiplier: number? }?,
 	passes: { [string]: boolean }?,
+	boosts: { speed: number?, bananas: number? }?, -- boosts temporaires deja agreges
 }
 
 export type Bonuses = {
@@ -86,10 +87,19 @@ function Multipliers.compute(self: Multipliers, profile: Profile, context: Conte
 	end
 
 	local rebirthMultiplier = self.rebirthPolicy:multiplierFor(profile.rebirths)
+	local boosts = context.boosts or {}
 
 	return {
-		speed = (1 + speedBonus) * rebirthMultiplier * (zone.stepMultiplier or 1) * passSpeed,
-		bananas = (1 + bananaBonus) * rebirthMultiplier * (zone.bananaMultiplier or 1) * passBananas,
+		speed = (1 + speedBonus)
+			* rebirthMultiplier
+			* (zone.stepMultiplier or 1)
+			* passSpeed
+			* (boosts.speed or 1),
+		bananas = (1 + bananaBonus)
+			* rebirthMultiplier
+			* (zone.bananaMultiplier or 1)
+			* passBananas
+			* (boosts.bananas or 1),
 		flat = flat,
 	}
 end

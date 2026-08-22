@@ -44,6 +44,7 @@ function AwardMovement.run(self, player, sample)
 		currentWalkSpeed = sample.walkSpeed,
 		zone = zone,
 		passes = session.passes,
+		boosts = self.boosts:multipliersFor(session.profile, self.clock.now()),
 	})
 
 	self.actuator:apply(player, outcome.movement)

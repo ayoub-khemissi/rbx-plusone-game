@@ -20,11 +20,19 @@ local MovementAccounting = require(Shared.Domain.Progression.MovementAccounting)
 local Multipliers = require(Shared.Domain.Progression.Multipliers)
 local Progression = require(Shared.Domain.Progression.Progression)
 local RebirthPolicy = require(Shared.Domain.Rebirth.RebirthPolicy)
+local BoostStack = require(Shared.Domain.Monetization.BoostStack)
+local ProductCatalog = require(Shared.Domain.Monetization.ProductCatalog)
+local RewardSchedule = require(Shared.Domain.Monetization.RewardSchedule)
+local IntervalReward = require(Shared.Domain.Monetization.IntervalReward)
+local PromoCodes = require(Shared.Domain.Monetization.PromoCodes)
+local OfferEngine = require(Shared.Domain.Monetization.OfferEngine)
 
-local SessionRegistry = require(script.Parent.Parent.Application.SessionRegistry)
-local Snapshot = require(script.Parent.Parent.Application.Snapshot)
+local Application = script.Parent.Parent.Application
+local SessionRegistry = require(Application.SessionRegistry)
+local Snapshot = require(Application.Snapshot)
+local RewardApplier = require(Application.RewardApplier)
 
-local UseCases = script.Parent.Parent.Application.UseCases
+local UseCases = Application.UseCases
 local LoadPlayerProfile = require(UseCases.LoadPlayerProfile)
 local SavePlayerProfile = require(UseCases.SavePlayerProfile)
 local ReleasePlayer = require(UseCases.ReleasePlayer)
@@ -34,10 +42,23 @@ local BuyUpgrade = require(UseCases.BuyUpgrade)
 local PerformRebirth = require(UseCases.PerformRebirth)
 local TravelToZone = require(UseCases.TravelToZone)
 local CollectBanana = require(UseCases.CollectBanana)
+local ProcessReceipt = require(UseCases.ProcessReceipt)
+local ClaimDailyReward = require(UseCases.ClaimDailyReward)
+local ClaimPlaytimeChest = require(UseCases.ClaimPlaytimeChest)
+local RedeemCode = require(UseCases.RedeemCode)
+local ListOffers = require(UseCases.ListOffers)
+local PromptPurchase = require(UseCases.PromptPurchase)
 
 local Container = {}
 
---[[ Transforme la liste de gamepasses en table d'effets indexee par identifiant. ]]
+local function indexById(entries)
+	local byId = {}
+	for _, entry in entries do
+		byId[entry.id] = entry
+	end
+	return byId
+end
+
 local function passEffectsFrom(passes)
 	local effects = {}
 	for _, pass in passes do
@@ -46,24 +67,32 @@ local function passEffectsFrom(passes)
 	return effects
 end
 
+export type Ports = {
+	repository: any,
+	publisher: any,
+	notifier: any,
+	actuator: any,
+	teleporter: any,
+	passGateway: any,
+	marketplace: any?,
+	clock: any?,
+	logger: any?,
+}
+
 export type Options = {
 	config: any?,
-	ports: {
-		repository: any,
-		publisher: any,
-		notifier: any,
-		actuator: any,
-		teleporter: any,
-		passGateway: any,
-		clock: any?,
-		logger: any?,
-	},
+	ports: Ports,
 }
 
 function Container.new(options: Options)
 	local config = options.config or require(Shared.Config)
 	local ports = options.ports
 	local balance = config.Balance
+	local monetization = config.Monetization
+
+	-- `now()` est une date absolue (epoch) : les boosts et le quotidien doivent
+	-- survivre a une deconnexion. `monotonic()` sert aux mesures de duree.
+	local clock = ports.clock or { now = os.time, monotonic = os.clock }
 
 	local catalog = UpgradeCatalog.new(config.Upgrades)
 	local ladder = ZoneLadder.new(config.Zones)
@@ -83,6 +112,13 @@ function Container.new(options: Options)
 		tuning = balance.progression,
 	})
 
+	local boosts = BoostStack.new(monetization.boosts)
+	local products = ProductCatalog.new(config.Products)
+	local daily = RewardSchedule.new(monetization.daily)
+	local chest = IntervalReward.new(monetization.playtimeChest)
+	local codes = PromoCodes.new(monetization.codes)
+	local offers = OfferEngine.new(monetization.offers)
+
 	local domain = {
 		catalog = catalog,
 		ladder = ladder,
@@ -92,6 +128,12 @@ function Container.new(options: Options)
 		multipliers = multipliers,
 		progression = progression,
 		rebirthPolicy = rebirthPolicy,
+		boosts = boosts,
+		products = products,
+		daily = daily,
+		chest = chest,
+		codes = codes,
+		offers = offers,
 	}
 
 	local sessions = SessionRegistry.new()
@@ -100,39 +142,64 @@ function Container.new(options: Options)
 		progression = progression,
 		multipliers = multipliers,
 		rebirthPolicy = rebirthPolicy,
+		boosts = boosts,
+		clock = clock,
 	})
 
 	-- Dependances communes a tous les cas d'usage : ports + domaine + etat de session.
-	local shared = {
+	local base = {
 		sessions = sessions,
 		snapshots = snapshots,
+		clock = clock,
 		repository = ports.repository,
 		publisher = ports.publisher,
 		notifier = ports.notifier,
 		actuator = ports.actuator,
 		teleporter = ports.teleporter,
 		passGateway = ports.passGateway,
-		clock = ports.clock,
+		marketplace = ports.marketplace,
 		logger = ports.logger,
 		catalog = catalog,
 		ladder = ladder,
 		layout = layout,
 		progression = progression,
 		rebirthPolicy = rebirthPolicy,
+		boosts = boosts,
+		products = products,
+		daily = daily,
+		chest = chest,
+		chestKey = monetization.playtimeChest.key,
+		codes = codes,
+		offers = offers,
+		passes = indexById(config.Passes),
 	}
 
 	local function deps(extra: { [string]: any }?)
-		local table_ = table.clone(shared)
+		local merged = table.clone(base)
 		for key, value in extra or {} do
-			table_[key] = value
+			merged[key] = value
 		end
-		return table_
+		return merged
 	end
 
 	local saveProfile = SavePlayerProfile.new(deps())
+	local rewards = RewardApplier.new(deps({ save = saveProfile }))
+
+	local withRewards = { save = saveProfile, rewards = rewards }
 
 	local useCases = {
-		loadProfile = LoadPlayerProfile.new(deps()),
+		loadProfile = LoadPlayerProfile.new(deps({
+			sessionHooks = {
+				-- Sauvegarde propre : on jette les boosts expires au chargement.
+				function(session, now)
+					boosts:prune(session.profile, now)
+				end,
+				-- Le coffre de session repart de zero a chaque connexion.
+				function(session, now)
+					chest:touch(session.profile, monetization.playtimeChest.key, now)
+				end,
+			},
+		})),
 		saveProfile = saveProfile,
 		releasePlayer = ReleasePlayer.new(deps({ save = saveProfile })),
 		awardMovement = AwardMovement.new(deps()),
@@ -141,14 +208,22 @@ function Container.new(options: Options)
 		performRebirth = PerformRebirth.new(deps({ save = saveProfile })),
 		travelToZone = TravelToZone.new(deps()),
 		collectBanana = CollectBanana.new(deps()),
+		processReceipt = ProcessReceipt.new(deps(withRewards)),
+		claimDailyReward = ClaimDailyReward.new(deps(withRewards)),
+		claimPlaytimeChest = ClaimPlaytimeChest.new(deps(withRewards)),
+		redeemCode = RedeemCode.new(deps(withRewards)),
+		listOffers = ListOffers.new(deps()),
+		promptPurchase = PromptPurchase.new(deps()),
 	}
 
 	return {
 		config = config,
 		domain = domain,
 		ports = ports,
+		clock = clock,
 		sessions = sessions,
 		snapshots = snapshots,
+		rewards = rewards,
 		useCases = useCases,
 	}
 end

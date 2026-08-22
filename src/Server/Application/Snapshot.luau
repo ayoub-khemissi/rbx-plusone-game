@@ -32,6 +32,9 @@ export type Snapshot = {
 	rebirthProgress: number,
 	zoneProgress: number,
 	nextZoneRequirement: number?,
+	boostSpeed: number,
+	boostBananas: number,
+	activeBoosts: { any },
 }
 
 local Snapshot = {}
@@ -42,6 +45,8 @@ export type Dependencies = {
 	progression: any,
 	multipliers: any,
 	rebirthPolicy: any,
+	boosts: any,
+	clock: any,
 }
 
 export type SnapshotFactory = typeof(setmetatable({} :: Dependencies, Snapshot))
@@ -53,7 +58,13 @@ end
 function Snapshot.build(self: SnapshotFactory, session: Session): Snapshot
 	local profile = session.profile
 	local zone = self.ladder:get(session.zoneId)
-	local bonuses = self.multipliers:compute(profile, { zone = zone, passes = session.passes })
+	local now = self.clock.now()
+	local boostBonuses = self.boosts:multipliersFor(profile, now)
+	local bonuses = self.multipliers:compute(profile, {
+		zone = zone,
+		passes = session.passes,
+		boosts = boostBonuses,
+	})
 	local movement = self.progression:movementFor(profile, bonuses)
 	local nextZone = self.ladder:nextOf(session.zoneId)
 
@@ -82,6 +93,10 @@ function Snapshot.build(self: SnapshotFactory, session: Session): Snapshot
 
 		zoneProgress = self.ladder:progressToNext(session.zoneId, profile.speed),
 		nextZoneRequirement = nextZone and nextZone.requiredSpeed,
+
+		boostSpeed = boostBonuses.speed,
+		boostBananas = boostBonuses.bananas,
+		activeBoosts = self.boosts:activeFor(profile, now),
 	}
 end
 

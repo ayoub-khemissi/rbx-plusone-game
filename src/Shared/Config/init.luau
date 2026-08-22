@@ -13,4 +13,6 @@ return table.freeze({
 	Zones = require(script.Zones),
 	Passes = require(script.Passes),
 	World = require(script.World),
+	Products = require(script.Products),
+	Monetization = require(script.Monetization),
 })

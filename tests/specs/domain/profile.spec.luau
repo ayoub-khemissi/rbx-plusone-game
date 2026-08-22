@@ -57,3 +57,53 @@ describe("Profile", function()
 		expect(second.upgrades.speedGain).toBeNil()
 	end)
 end)
+
+describe("Profile (schema v2 : monetisation)", function()
+	it("initialise les structures de monetisation", function()
+		local profile = Profile.create()
+		expect(profile.version).toBe(2)
+		expect(profile.boosts).toEqual({})
+		expect(profile.codes).toEqual({})
+		expect(profile.timers).toEqual({})
+		expect(profile.purchases.count).toBe(0)
+		expect(profile.purchases.spentRobux).toBe(0)
+		expect(profile.daily.streak).toBe(0)
+		expect(profile.offers.seen).toEqual({})
+	end)
+
+	it("complete un profil v1 sans perdre la progression", function()
+		local profile = Profile.migrate({
+			version = 1,
+			speed = 8000,
+			bananas = 250,
+			upgrades = { speedGain = 7 },
+		})
+		expect(profile.version).toBe(2)
+		expect(profile.speed).toBe(8000)
+		expect(profile.upgrades.speedGain).toBe(7)
+		expect(profile.purchases.order).toEqual({})
+		expect(profile.daily.lastClaimAt).toBe(0)
+	end)
+
+	it("restaure les boosts, achats et codes deja obtenus", function()
+		local profile = Profile.migrate({
+			boosts = { speedRush = 1750, invalide = "oui" },
+			codes = { SINGE2026 = true, faux = false },
+			purchases = { count = 3, spentRobux = 597, order = { "r-1", "r-2", 42 } },
+			daily = { streak = 4, lastClaimAt = 990 },
+			timers = { playtimeChest = 120 },
+			offers = { seen = { starterPack = 60 }, purchased = { starterPack = true } },
+		})
+
+		expect(profile.boosts.speedRush).toBe(1750)
+		expect(profile.boosts.invalide).toBeNil()
+		expect(profile.codes.SINGE2026).toBe(true)
+		expect(profile.codes.faux).toBeNil()
+		expect(profile.purchases.order).toEqual({ "r-1", "r-2" })
+		expect(profile.purchases.ids["r-2"]).toBe(true)
+		expect(profile.purchases.spentRobux).toBe(597)
+		expect(profile.daily.streak).toBe(4)
+		expect(profile.timers.playtimeChest).toBe(120)
+		expect(profile.offers.purchased.starterPack).toBe(true)
+	end)
+end)
