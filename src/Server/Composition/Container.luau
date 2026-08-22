@@ -26,6 +26,7 @@ local RewardSchedule = require(Shared.Domain.Monetization.RewardSchedule)
 local IntervalReward = require(Shared.Domain.Monetization.IntervalReward)
 local PromoCodes = require(Shared.Domain.Monetization.PromoCodes)
 local OfferEngine = require(Shared.Domain.Monetization.OfferEngine)
+local IdleAccrual = require(Shared.Domain.Progression.IdleAccrual)
 
 local Application = script.Parent.Parent.Application
 local SessionRegistry = require(Application.SessionRegistry)
@@ -48,6 +49,7 @@ local ClaimPlaytimeChest = require(UseCases.ClaimPlaytimeChest)
 local RedeemCode = require(UseCases.RedeemCode)
 local ListOffers = require(UseCases.ListOffers)
 local PromptPurchase = require(UseCases.PromptPurchase)
+local AccrueAfkReward = require(UseCases.AccrueAfkReward)
 
 local Container = {}
 
@@ -118,6 +120,7 @@ function Container.new(options: Options)
 	local chest = IntervalReward.new(monetization.playtimeChest)
 	local codes = PromoCodes.new(monetization.codes)
 	local offers = OfferEngine.new(monetization.offers)
+	local idle = IdleAccrual.new(monetization.afk)
 
 	local domain = {
 		catalog = catalog,
@@ -134,6 +137,7 @@ function Container.new(options: Options)
 		chest = chest,
 		codes = codes,
 		offers = offers,
+		idle = idle,
 	}
 
 	local sessions = SessionRegistry.new()
@@ -144,6 +148,7 @@ function Container.new(options: Options)
 		rebirthPolicy = rebirthPolicy,
 		boosts = boosts,
 		clock = clock,
+		afkCapSeconds = monetization.afk.sessionCapSeconds,
 	})
 
 	-- Dependances communes a tous les cas d'usage : ports + domaine + etat de session.
@@ -171,6 +176,7 @@ function Container.new(options: Options)
 		chestKey = monetization.playtimeChest.key,
 		codes = codes,
 		offers = offers,
+		idle = idle,
 		passes = indexById(config.Passes),
 	}
 
@@ -212,6 +218,7 @@ function Container.new(options: Options)
 		claimDailyReward = ClaimDailyReward.new(deps(withRewards)),
 		claimPlaytimeChest = ClaimPlaytimeChest.new(deps(withRewards)),
 		redeemCode = RedeemCode.new(deps(withRewards)),
+		accrueAfkReward = AccrueAfkReward.new(deps(withRewards)),
 		listOffers = ListOffers.new(deps()),
 		promptPurchase = PromptPurchase.new(deps()),
 	}

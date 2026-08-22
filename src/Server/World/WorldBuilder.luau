@@ -23,6 +23,7 @@ export type Tags = {
 	obstacle: string,
 	gate: string,
 	rebirthPad: string,
+	afkPad: string,
 	spinner: string,
 }
 
@@ -31,6 +32,7 @@ WorldBuilder.TAGS = {
 	obstacle = "Obstacle",
 	gate = "BarriereZone",
 	rebirthPad = "PadRenaissance",
+	afkPad = "ZoneAfk",
 	spinner = "Rotatif",
 } :: Tags
 
@@ -78,7 +80,23 @@ function WorldBuilder._hub(self, parent: Instance)
 	Palette.label(pad, "🔥 RENAISSANCE", Color3.new(1, 1, 1), Enum.NormalId.Top)
 	CollectionService:AddTag(pad, WorldBuilder.TAGS.rebirthPad)
 
-	return { folder = folder, ground = ground, spawn = spawn }
+	-- Zone AFK : sa geometrie vient de la configuration, comme la regle metier.
+	local afk = self.config.Monetization.afk.station
+	local afkPad = Palette.block({
+		name = "ZoneAfk",
+		size = Vector3.new(afk.radius * 2, 1, afk.radius * 2),
+		position = Vector3.new(afk.x, 0.5, afk.z),
+		color = Palette.color({ 108, 148, 208 }),
+		material = Enum.Material.Neon,
+		shape = Enum.PartType.Cylinder,
+		parent = folder,
+	})
+	-- Un cylindre Roblox est couche : on le redresse pour en faire un disque.
+	afkPad.Orientation = Vector3.new(0, 0, 90)
+	Palette.label(afkPad, "💤 ZONE AFK", Color3.new(1, 1, 1), Enum.NormalId.Right)
+	CollectionService:AddTag(afkPad, WorldBuilder.TAGS.afkPad)
+
+	return { folder = folder, ground = ground, spawn = spawn, afkPad = afkPad }
 end
 
 function WorldBuilder._gate(self, zone, bounds, parent: Instance)

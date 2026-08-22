@@ -34,6 +34,11 @@ local SCALARS = {
 	ZoneProgress = "zoneProgress",
 	BoostSpeed = "boostSpeed",
 	BoostBananas = "boostBananas",
+	AfkRemaining = "afkRemaining",
+}
+
+local FLAGS = {
+	AfkActive = "afkActive",
 }
 
 function AttributeStatsPublisher.new()
@@ -72,6 +77,10 @@ function AttributeStatsPublisher.publish(_self, player: Player, snapshot: any)
 		if typeof(value) == "number" then
 			setIfChanged(player, attribute, value)
 		end
+	end
+
+	for attribute, field in FLAGS do
+		setIfChanged(player, attribute, snapshot[field] == true)
 	end
 
 	for upgradeId, level in snapshot.upgrades do

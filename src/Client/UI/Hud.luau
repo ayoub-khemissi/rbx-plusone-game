@@ -89,6 +89,24 @@ function Hud.new(parent: ScreenGui, state)
 		align = Enum.TextXAlignment.Center,
 	})
 
+	-- Pastille AFK, sous le bandeau des boosts.
+	self.afkChip = Widgets.card(parent, {
+		name = "Afk",
+		size = UDim2.fromOffset(210, 30),
+		position = UDim2.new(1, -14, 0, 54),
+		anchorPoint = Vector2.new(1, 0),
+		color = Theme.color.info,
+		transparency = 0.25,
+		visible = false,
+	})
+	Widgets.padding(self.afkChip, 6)
+	self.afkLabel = Widgets.label(self.afkChip, {
+		name = "AfkTexte",
+		font = Theme.font.number,
+		align = Enum.TextXAlignment.Center,
+		text = "💤 Zone AFK",
+	})
+
 	state.changed:connect(function()
 		self:render()
 	end)
@@ -111,6 +129,13 @@ function Hud.render(self)
 		then `{zoneName(zoneId)} → {nextZone.name} ({Format.abbreviate(nextZone.requiredSpeed)})`
 		else `{zoneName(zoneId)} — zone finale`
 	self.zoneBar.set(state:get("ZoneProgress"))
+
+	local afkActive = state:flag("AfkActive")
+	self.afkChip.Visible = afkActive
+	if afkActive then
+		local remaining = math.max(state:get("AfkRemaining"), 0)
+		self.afkLabel.Text = `💤 AFK — {Format.duration(remaining)} restantes`
+	end
 
 	local boosts = state.boosts
 	if #boosts > 0 then

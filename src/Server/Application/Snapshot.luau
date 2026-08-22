@@ -35,6 +35,8 @@ export type Snapshot = {
 	boostSpeed: number,
 	boostBananas: number,
 	activeBoosts: { any },
+	afkActive: boolean,
+	afkRemaining: number,
 }
 
 local Snapshot = {}
@@ -47,6 +49,7 @@ export type Dependencies = {
 	rebirthPolicy: any,
 	boosts: any,
 	clock: any,
+	afkCapSeconds: number,
 }
 
 export type SnapshotFactory = typeof(setmetatable({} :: Dependencies, Snapshot))
@@ -97,6 +100,9 @@ function Snapshot.build(self: SnapshotFactory, session: Session): Snapshot
 		boostSpeed = boostBonuses.speed,
 		boostBananas = boostBonuses.bananas,
 		activeBoosts = self.boosts:activeFor(profile, now),
+
+		afkActive = session.afkActive == true,
+		afkRemaining = math.max(self.afkCapSeconds - session.idle.creditedSeconds, 0),
 	}
 end
 

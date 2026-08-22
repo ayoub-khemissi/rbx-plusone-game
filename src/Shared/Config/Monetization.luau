@@ -54,6 +54,15 @@ return table.freeze({
 		}),
 	}),
 
+	-- Zone AFK : revenu passif volontairement faible et NON multiplie, plafonne
+	-- par session. Elle sert la retention, pas la progression.
+	afk = table.freeze({
+		bananasPerMinute = 300,
+		payoutInterval = 60,
+		sessionCapSeconds = 4 * HOUR,
+		station = table.freeze({ x = -65, z = 65, radius = 26 }),
+	}),
+
 	playtimeChest = table.freeze({
 		key = "playtimeChest",
 		interval = 300,

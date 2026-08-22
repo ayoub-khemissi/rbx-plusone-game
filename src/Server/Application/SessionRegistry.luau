@@ -22,6 +22,8 @@ export type Session = {
 	lastSampleAt: number?,
 	savable: boolean,
 	joinedAt: number?,
+	idle: { pendingSeconds: number, creditedSeconds: number },
+	afkActive: boolean,
 }
 
 local SessionRegistry = {}
@@ -52,6 +54,9 @@ function SessionRegistry.open(
 		lastSampleAt = nil,
 		savable = true,
 		joinedAt = nil,
+		-- Compteur AFK : volontairement hors sauvegarde (voir Domain.IdleAccrual).
+		idle = { pendingSeconds = 0, creditedSeconds = 0 },
+		afkActive = false,
 	}
 
 	if self._sessions[userId] == nil then

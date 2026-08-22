@@ -47,6 +47,7 @@ local function startSampling(container)
 					at = now,
 				})
 				container.useCases.enforceZoneAccess:run(player, reading.position)
+				container.useCases.accrueAfkReward:run(player, reading.position, interval)
 			end
 		end
 	end)

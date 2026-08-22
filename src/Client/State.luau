@@ -35,12 +35,18 @@ local NUMBERS = {
 	"ZoneProgress",
 	"BoostSpeed",
 	"BoostBananas",
+	"AfkRemaining",
+}
+
+local FLAGS = {
+	"AfkActive",
 }
 
 function State.new(player: Player)
 	local self = setmetatable({
 		player = player,
 		values = {},
+		flags = {},
 		upgrades = {},
 		passes = {},
 		boosts = {},
@@ -58,6 +64,10 @@ end
 function State._refresh(self)
 	for _, name in NUMBERS do
 		self.values[name] = self.player:GetAttribute(name) or 0
+	end
+
+	for _, name in FLAGS do
+		self.flags[name] = self.player:GetAttribute(name) == true
 	end
 
 	self.upgrades = {}
@@ -84,6 +94,10 @@ end
 
 function State.get(self, name: string): number
 	return self.values[name] or 0
+end
+
+function State.flag(self, name: string): boolean
+	return self.flags[name] == true
 end
 
 function State.levelOf(self, upgradeId: string): number
