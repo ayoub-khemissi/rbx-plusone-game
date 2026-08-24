@@ -8,6 +8,13 @@
 
 	The toast is coloured by what it means, so a refusal and a reward do not have to
 	be read to be told apart.
+
+	THE STACK IS A PERSPECTIVE, NOT A LIST. The newest message sits on top at full
+	size; the ones under it shrink and fade with depth, and only three are ever
+	visible. Coins, checkpoints and boosts can all fire within a second of each
+	other, and an unbounded stack would walk down the screen and bury the game. The
+	depth ranking also answers "which of these just happened" without reading any of
+	them.
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -30,10 +37,29 @@ local LIFETIME = 3.5
 -- clears it comfortably at every scale the interface allows.
 local TOP_BAR_CLEARANCE = 64
 
+--[[
+	One entry per visible depth. Anything pushed past the last one is dropped, so
+	adding a fourth row here is all it takes to show four.
+]]
+local DEPTHS = {
+	{ height = 52, width = 1, textSize = Theme.text.body, faded = 0 },
+	{ height = 46, width = 0.9, textSize = Theme.text.small, faded = 0.3 },
+	{ height = 40, width = 0.8, textSize = Theme.text.small, faded = 0.55 },
+}
+
+local SETTLE = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local DISMISS = TweenInfo.new(0.3)
+
+local function tween(instance: Instance?, goal: { [string]: any })
+	if instance then
+		TweenService:Create(instance :: any, SETTLE, goal):Play()
+	end
+end
+
 function Notifications.new(parent: Instance)
 	local container = Instance.new("Frame")
 	container.Name = "Notifications"
-	container.Size = UDim2.fromOffset(500, 260)
+	container.Size = UDim2.fromOffset(500, 200)
 	container.Position = UDim2.new(0.5, 0, 0, TOP_BAR_CLEARANCE)
 	container.AnchorPoint = Vector2.new(0.5, 0)
 	container.BackgroundTransparency = 1
@@ -41,20 +67,67 @@ function Notifications.new(parent: Instance)
 
 	Widgets.list(container, { padding = 8, horizontalAlignment = Enum.HorizontalAlignment.Center })
 
-	return setmetatable({ container = container, order = 0 }, Notifications)
+	return setmetatable({ container = container, stack = {} }, Notifications)
+end
+
+--[[ Sends every toast to the look of its current depth. ]]
+function Notifications.restack(self)
+	for index, entry in self.stack do
+		local depth = DEPTHS[index]
+		if depth then
+			-- The layout sorts ascending, so the newest message owns the top slot.
+			entry.card.LayoutOrder = index
+			tween(entry.card, {
+				Size = UDim2.new(depth.width, 0, 0, depth.height),
+				BackgroundTransparency = depth.faded,
+			})
+			tween(entry.cardStroke, { Transparency = depth.faded })
+			tween(entry.label, { TextSize = depth.textSize, TextTransparency = depth.faded })
+			tween(entry.labelStroke, { Transparency = depth.faded })
+		end
+	end
+end
+
+function Notifications.dismiss(self, entry)
+	if not entry.alive then
+		return
+	end
+	entry.alive = false
+
+	for index, candidate in self.stack do
+		if candidate == entry then
+			table.remove(self.stack, index)
+			break
+		end
+	end
+
+	local card = entry.card
+	TweenService:Create(card, DISMISS, { BackgroundTransparency = 1 }):Play()
+	TweenService:Create(entry.label, DISMISS, { TextTransparency = 1 }):Play()
+	if entry.cardStroke then
+		TweenService:Create(entry.cardStroke, DISMISS, { Transparency = 1 }):Play()
+	end
+	if entry.labelStroke then
+		TweenService:Create(entry.labelStroke, DISMISS, { Transparency = 1 }):Play()
+	end
+
+	task.delay(DISMISS.Time, function()
+		card:Destroy()
+	end)
+
+	self:restack()
 end
 
 function Notifications.push(self, message: string, kind: string?)
-	self.order += 1
-
 	local toast = Widgets.card(self.container, {
 		name = "Message",
-		size = UDim2.new(1, 0, 0, 52),
+		size = UDim2.new(1, 0, 0, DEPTHS[1].height),
 		color = COLORS[kind or "info"] or Theme.color.info,
 		radius = Theme.radius.chip,
+		-- No grain on something this small, and one less layer to fade out.
+		pattern = false,
 	})
 	toast.ZIndex = 20
-	toast.LayoutOrder = self.order
 	Widgets.padding(toast, 10)
 	Widgets.gradient(toast)
 
@@ -62,21 +135,35 @@ function Notifications.push(self, message: string, kind: string?)
 		text = message,
 		align = Enum.TextXAlignment.Center,
 		font = Theme.font.number,
-		textSize = Theme.text.body,
+		textSize = DEPTHS[1].textSize,
 		color = Theme.color.textOnColor,
 		outline = true,
 		wrapped = true,
 	})
 	text.ZIndex = 21
 
+	local entry = {
+		card = toast,
+		label = text,
+		-- The strokes are built inside the widgets; fading a toast without them
+		-- would leave two crisp outlines floating over the world.
+		cardStroke = toast:FindFirstChildOfClass("UIStroke"),
+		labelStroke = text:FindFirstChildOfClass("UIStroke"),
+		alive = true,
+	}
+
+	table.insert(self.stack, 1, entry)
+
+	-- Anything past the last depth has nowhere to be drawn: it goes now rather than
+	-- waiting out a lifetime nobody can see.
+	while #self.stack > #DEPTHS do
+		self:dismiss(self.stack[#self.stack])
+	end
+
+	self:restack()
+
 	task.delay(LIFETIME, function()
-		if not toast.Parent then
-			return
-		end
-		local fade = TweenService:Create(toast, TweenInfo.new(0.35), { BackgroundTransparency = 1 })
-		fade:Play()
-		fade.Completed:Wait()
-		toast:Destroy()
+		self:dismiss(entry)
 	end)
 end
 
