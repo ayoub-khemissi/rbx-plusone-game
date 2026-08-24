@@ -54,7 +54,7 @@ local theme: Theme = {
 			image = "rbxassetid://79810123991740", -- icon:prestige
 		},
 		-- Speed read as a rank: what the progress bar announces.
-		level = { name = "Level", plural = "Levels", icon = "⭐" },
+		level = { name = "Level", plural = "Levels", icon = "⚡", image = "rbxassetid://112003667186542" }, -- icon:speed
 		-- A segment of the course, delimited by checkpoints in the map.
 		stage = { name = "Stage", plural = "Stages", icon = "🚩", image = "rbxassetid://122962606025816" }, -- icon:stage
 		checkpoint = {

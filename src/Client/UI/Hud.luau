@@ -140,9 +140,9 @@ function Hud.new(parent: Instance, state)
 	self.stageValue.ZIndex = 3
 
 	local speedIcon = Widgets.icon(progress, {
-		name = "SpeedIcon",
-		image = LABELS.speed.image,
-		fallback = LABELS.speed.icon,
+		name = "LevelIcon",
+		image = LABELS.level.image,
+		fallback = LABELS.level.icon,
 		size = UDim2.fromOffset(26, 26),
 		layoutOrder = 2,
 	})

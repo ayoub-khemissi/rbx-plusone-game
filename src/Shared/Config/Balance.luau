@@ -11,15 +11,19 @@
 ]]
 
 return table.freeze({
-	-- Accumulated speed -> actual walk speed
+	-- Level -> actual walk speed
 	speedCurve = table.freeze({
 		baseWalkSpeed = 16, -- Roblox default, and the speed the first jump was designed around
 		-- Ceiling at 60 studs/s. The physics tolerates far more, but an obstacle
 		-- course does not: past that the character overshoots every platform and the
-		-- level design stops mattering. Speed is meant to be a growing NUMBER, not a
-		-- growing problem.
+		-- level design stops mattering. Progress is meant to be a growing NUMBER,
+		-- not a growing problem.
 		maxBonusWalkSpeed = 44,
-		softness = 6000,
+		-- In LEVELS, not in speed. Calibrated on the pace that was play-tested and
+		-- kept: around 19.5 studs/s by level 6, which is the first few minutes, and
+		-- roughly 40 by the Prestige threshold — fast, but you still place your
+		-- jumps. Lower it and the early levels bite harder.
+		softness = 60,
 		baseJumpPower = 50,
 		jumpPowerPerLevel = 2.5,
 		maxJumpPower = 140,

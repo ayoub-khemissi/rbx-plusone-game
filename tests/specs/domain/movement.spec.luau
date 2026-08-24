@@ -1,5 +1,6 @@
 --!nocheck
 local SpeedCurve = require(Domain.Movement.SpeedCurve)
+local LevelCurve = require(Domain.Run.LevelCurve)
 local MovementAccounting = require(Domain.Movement.MovementAccounting)
 local JumpBudget = require(Domain.Movement.JumpBudget)
 local DashPolicy = require(Domain.Movement.DashPolicy)
@@ -12,7 +13,7 @@ local Profile = require(Domain.Profile.Profile)
 local CURVE_TUNING = {
 	baseWalkSpeed = 16,
 	maxBonusWalkSpeed = 234,
-	softness = 1200,
+	softness = 40,
 	baseJumpPower = 50,
 	jumpPowerPerLevel = 3,
 	maxJumpPower = 140,
@@ -31,27 +32,29 @@ describe("SpeedCurve", function()
 		curve = SpeedCurve.new(CURVE_TUNING)
 	end)
 
-	it("starts at the base walk speed", function()
-		expect(curve:walkSpeedFor(0)).toBe(16)
+	it("starts at the base walk speed on level 1", function()
+		expect(curve:walkSpeedFor(1)).toBe(16)
 	end)
 
-	it("rises monotonically", function()
-		local previous = curve:walkSpeedFor(0)
-		for speed = 50, 5000, 50 do
-			local current = curve:walkSpeedFor(speed)
+	-- Every level has to be worth something, or the reward stops landing.
+	it("makes every single level faster than the one before", function()
+		local previous = curve:walkSpeedFor(1)
+		for level = 2, 400 do
+			local current = curve:walkSpeedFor(level)
 			expect(current).toBeGreaterThan(previous)
 			previous = current
 		end
 	end)
 
-	-- Au-dela, le personnage traverse le sol et rate les plateformes.
+	-- Past the ceiling the character falls through floors and misses platforms.
 	it("saturates under the physics ceiling", function()
 		local ceiling = CURVE_TUNING.baseWalkSpeed + CURVE_TUNING.maxBonusWalkSpeed
 		expect(curve:walkSpeedFor(1e12)).toBeLessThanOrEqual(ceiling)
 		expect(curve:walkSpeedFor(1e12)).toBeGreaterThan(ceiling - 0.001)
 	end)
 
-	it("treats invalid speeds as zero", function()
+	it("treats anything below level 1 as level 1", function()
+		expect(curve:walkSpeedFor(0)).toBe(16)
 		expect(curve:walkSpeedFor(-500)).toBe(16)
 		expect(curve:walkSpeedFor(0 / 0)).toBe(16)
 	end)
@@ -317,6 +320,7 @@ describe("Progression", function()
 	beforeEach(function()
 		progression = Progression.new({
 			curve = SpeedCurve.new(CURVE_TUNING),
+			levels = LevelCurve.new({ base = 20, exponent = 1.7 }),
 			accounting = MovementAccounting.new(ACCOUNTING_TUNING),
 			multipliers = buildMultipliers(),
 			jumpBudget = JumpBudget.new({ maxJumpLevel = 3 }),
@@ -347,15 +351,42 @@ describe("Progression", function()
 		expect(outcome.speedGained).toBeCloseTo(10 * 1.5 * 1.5 * 1.5, 1e-9)
 	end)
 
+	--[[
+		Walk speed comes from the LEVEL, never from the raw count. Asserting it
+		against the two curves composed is what catches a regression to reading
+		`profile.speed` directly — which would still rise, just silently and without
+		anything on screen accounting for it.
+	]]
 	it("returns the movement state to apply to the character", function()
+		local curve = SpeedCurve.new(CURVE_TUNING)
+		local levels = LevelCurve.new({ base = 20, exponent = 1.7 })
+
 		profile.speed = 1200
 		profile.upgrades.jumpPower = 5
 		local outcome = progression:advance(profile, context({ distance = 0 }))
 
-		expect(outcome.movement.walkSpeed).toBeCloseTo(16 + 234 * (1 - math.exp(-1)), 0.01)
+		expect(outcome.movement.walkSpeed).toBeCloseTo(curve:walkSpeedFor(levels:levelFor(1200)), 0.01)
+		expect(outcome.movement.walkSpeed).toBeGreaterThan(CURVE_TUNING.baseWalkSpeed)
 		expect(outcome.movement.jumpPower).toBe(65)
 		expect(outcome.movement.jumpLevel).toBe(1)
 		expect(outcome.movement.dashLevel).toBe(0)
+	end)
+
+	--[[
+		Acceleration is STEPPED, and that is the point: it arrives with a level, so
+		the player can see what caused it. A few strides inside level 1 change
+		nothing, which is what makes the level-up felt when it lands.
+	]]
+	it("holds the walk speed until a level is actually gained", function()
+		local levels = LevelCurve.new({ base = 20, exponent = 1.7 })
+
+		profile.speed = levels:requirementFor(2) - 1
+		local before = progression:advance(profile, context({ distance = 0 })).movement.walkSpeed
+		expect(before).toBe(CURVE_TUNING.baseWalkSpeed)
+
+		profile.speed = levels:requirementFor(2)
+		local after = progression:advance(profile, context({ distance = 0 })).movement.walkSpeed
+		expect(after).toBeGreaterThan(before)
 	end)
 
 	it("gains nothing from an impossible jump", function()

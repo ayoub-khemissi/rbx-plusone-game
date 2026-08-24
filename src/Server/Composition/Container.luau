@@ -139,6 +139,7 @@ function Container.new(options: Options)
 	})
 	local progression = Progression.new({
 		curve = curve,
+		levels = levels,
 		accounting = accounting,
 		multipliers = multipliers,
 		jumpBudget = jumpBudget,

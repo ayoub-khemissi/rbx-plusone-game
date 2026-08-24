@@ -95,20 +95,27 @@ describe("Config.Upgrades", function()
 end)
 
 describe("Config.Balance", function()
-	-- Regression : a 500 de Speed le personnage courait a 82 studs/s, soit cinq fois
-	-- la vitesse par defaut. Un parcours a trous devient injouable bien avant.
-	it("keeps the character controllable at every point of the curve", function()
+	--[[
+		Regression, and the reason these three points are pinned: the character once
+		ran at 82 studs/s a few minutes in, five times the default. A course with
+		gaps in it becomes unplayable long before that, and the problem was only
+		noticed by playing. A spec fixing the pace turns the next retune into a
+		failing test rather than a feeling.
+	]]
+	it("keeps the character controllable at every level", function()
 		local curve = SpeedCurve.new(Config.Balance.speedCurve)
+		local levels = LevelCurve.new(Config.Balance.level)
 
-		-- Les premieres minutes doivent se sentir, sans devenir incontrolables.
-		expect(curve:walkSpeedFor(500)).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
-		expect(curve:walkSpeedFor(500)).toBeLessThan(24)
+		-- The first few minutes must be felt without becoming uncontrollable.
+		local early = levels:levelFor(500)
+		expect(curve:walkSpeedFor(early)).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
+		expect(curve:walkSpeedFor(early)).toBeLessThan(24)
 
-		-- Au seuil de Prestige, on est rapide mais on pose encore ses sauts.
+		-- At the Prestige threshold: fast, but you still place your jumps.
 		local prestige = PrestigePolicy.new(Config.Balance.prestige):requirementFor(0)
-		expect(curve:walkSpeedFor(prestige)).toBeLessThan(60)
+		expect(curve:walkSpeedFor(levels:levelFor(prestige))).toBeLessThan(50)
 
-		-- Et le plafond reste franchement sous la limite physique de Roblox.
+		-- And the ceiling stays well under what the physics stops tolerating.
 		expect(curve:walkSpeedFor(1e12)).toBeLessThanOrEqual(60)
 	end)
 

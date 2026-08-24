@@ -55,6 +55,7 @@ Progression.__index = Progression
 
 export type Dependencies = {
 	curve: any,
+	levels: any,
 	accounting: any,
 	multipliers: any,
 	jumpBudget: any,
@@ -83,15 +84,16 @@ end
 --[[ Movement state to apply to the character for the current profile. ]]
 function Progression.movementFor(self: Progression, profile: Profile, bonuses: any): MovementState
 	local dashLevel = self.dashPolicy:levelFor(bonuses)
+	local level = self.levels:levelFor(profile.speed)
 
 	return {
-		walkSpeed = self.curve:walkSpeedFor(profile.speed),
+		walkSpeed = self.curve:walkSpeedFor(level),
 		jumpPower = self.curve:jumpPowerFor(bonuses.flat.jumpPower or 0),
 		jumpLevel = self.jumpBudget:levelFor(bonuses),
 		dashLevel = dashLevel,
 		dashPower = self.dashPolicy:powerFor(dashLevel),
 		magnet = bonuses.flat.magnet or 0,
-		saturation = self.curve:saturationFor(profile.speed),
+		saturation = self.curve:saturationFor(level),
 	}
 end
 

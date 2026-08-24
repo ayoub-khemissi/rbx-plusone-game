@@ -6,6 +6,7 @@
 
 local Container = require(Server.Composition.Container)
 local Config = require(Config)
+local LevelCurve = require(Domain.Run.LevelCurve)
 
 local function build(options)
 	local ports = {
@@ -66,9 +67,19 @@ describe("SampleMovement", function()
 
 	it("applies the movement state to the character", function()
 		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
-		expect(ports.actuator.last.walkSpeed).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
+		expect(ports.actuator.last.walkSpeed).toBe(Config.Balance.speedCurve.baseWalkSpeed)
 		expect(ports.actuator.last.jumpLevel).toBe(1)
 		expect(ports.actuator.last.dashLevel).toBe(0)
+	end)
+
+	-- The character speeds up when a LEVEL lands, not on every stride: eight studs
+	-- is still level 1, and the acceleration has to be attributable to something
+	-- the player saw happen.
+	it("speeds the character up once a level is gained", function()
+		session.profile.speed = LevelCurve.new(Config.Balance.level):requirementFor(6)
+		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
+
+		expect(ports.actuator.last.walkSpeed).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
 	end)
 
 	-- Jumping on the spot is not running.
