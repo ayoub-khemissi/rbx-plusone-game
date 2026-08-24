@@ -2,12 +2,13 @@
 --[[
 	Hud — what stays on screen.
 
-	Laid out the way a simulator player already reads a screen: the counters float
-	top left with no panel behind them, the run progress sits centre bottom, and the
-	abilities sit just above it, where the eyes already are mid jump.
+	NOTHING IS DRAWN IN THE TOP LEFT. That corner belongs to Roblox: the menu, the
+	chat and the voice controls live there, and anything of ours put behind them is
+	either hidden or in the way. Everything gathers at the bottom instead, in one
+	cluster the eye finds once and never has to search for again.
 
-	Nothing here draws a box around a number. A panel would eat the world; a thick
-	black stroke on the glyphs keeps the number readable over anything the map puts
+	No counter sits in a panel of its own. A panel would eat the world; a thick
+	black stroke on the glyphs keeps a number readable over anything the map puts
 	behind it, and costs no screen space at all.
 
 	Every word and every icon comes from the theme: this file hardcodes no noun and
@@ -28,99 +29,73 @@ Hud.__index = Hud
 local LABELS = Config.Theme.labels
 local ICONS = Config.Theme.icons
 
+local BAR_INSET = 20
+
 local function stageName(stageId: number): string
 	local stage = Config.Stages[stageId]
 	return if stage then stage.name else LABELS.hub.name
 end
 
 --[[
-	One ability readout: a rounded chip with its icon and its state.
+	One readout: a rounded chip carrying an icon and a value.
 
-	It carries no position of its own — the row lays it out. A chip hidden because
-	the ability is still locked leaves the layout entirely, so a lone chip sits in
-	the middle of the screen instead of off to one side.
+	It has no position and no width of its own. The row lays it out, and it grows
+	to fit its content, so a six figure Coin count does not overflow a box sized
+	for three. A chip hidden because the thing it reports does not exist yet leaves
+	the layout entirely and the row recentres itself.
 ]]
-local function abilityChip(parent: Instance, options)
-	local chip = Widgets.card(parent, {
+local function chip(parent: Instance, options)
+	local frame = Widgets.card(parent, {
 		name = options.name,
-		size = UDim2.fromOffset(124, 46),
+		size = UDim2.fromOffset(0, 46),
 		color = Theme.color.panel,
 		transparency = 0.12,
 		radius = Theme.radius.chip,
+		pattern = false,
 		visible = false,
 	})
-	chip.LayoutOrder = options.layoutOrder or 0
+	frame.AutomaticSize = Enum.AutomaticSize.X
+	frame.LayoutOrder = options.layoutOrder or 0
 
-	Widgets.icon(chip, {
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 12)
+	padding.PaddingRight = UDim.new(0, 16)
+	padding.Parent = frame
+
+	Widgets.list(frame, {
+		direction = Enum.FillDirection.Horizontal,
+		padding = 8,
+		verticalAlignment = Enum.VerticalAlignment.Center,
+	})
+
+	Widgets.icon(frame, {
 		image = options.image,
 		fallback = options.fallback,
-		size = UDim2.fromOffset(30, 30),
-		position = UDim2.fromOffset(10, 23),
-		anchorPoint = Vector2.new(0, 0.5),
+		size = UDim2.fromOffset(28, 28),
+		layoutOrder = 1,
 	})
 
-	local value = Widgets.label(chip, {
+	local value = Widgets.label(frame, {
 		name = "Value",
-		size = UDim2.new(1, -50, 1, 0),
-		position = UDim2.fromOffset(46, 0),
+		size = UDim2.fromOffset(0, 30),
 		font = Theme.font.number,
 		textSize = Theme.text.big,
-		align = Enum.TextXAlignment.Center,
+		align = Enum.TextXAlignment.Left,
 		color = Theme.color.text,
+		layoutOrder = 2,
 	})
+	value.AutomaticSize = Enum.AutomaticSize.X
 
-	return { chip = chip, value = value }
+	return { frame = frame, value = value }
 end
 
 function Hud.new(parent: Instance, state)
 	local self = setmetatable({ state = state }, Hud)
 
-	-- The counters, stacked top left, biggest first.
-	local counters = Instance.new("Frame")
-	counters.Name = "Counters"
-	counters.Size = UDim2.fromOffset(320, 130)
-	counters.Position = UDim2.fromOffset(18, 18)
-	counters.BackgroundTransparency = 1
-	counters.Parent = parent
-	Widgets.list(counters, { padding = 4 })
-
-	self.speedRow = Widgets.statRow(counters, {
-		name = "Speed",
-		image = LABELS.speed.image,
-		fallback = LABELS.speed.icon,
-		size = UDim2.new(1, 0, 0, 48),
-		iconSize = 44,
-		font = Theme.font.title,
-		textSize = Theme.text.hero,
-		color = Theme.color.accent,
-		layoutOrder = 1,
-	})
-
-	self.coinRow = Widgets.statRow(counters, {
-		name = "Coins",
-		image = LABELS.coins.image,
-		fallback = LABELS.coins.icon,
-		size = UDim2.new(1, 0, 0, 40),
-		iconSize = 36,
-		font = Theme.font.title,
-		textSize = Theme.text.title,
-		layoutOrder = 2,
-	})
-
-	self.prestigeRow = Widgets.statRow(counters, {
-		name = "Prestige",
-		image = LABELS.prestige.image,
-		fallback = LABELS.prestige.icon,
-		size = UDim2.new(1, 0, 0, 30),
-		iconSize = 26,
-		textSize = Theme.text.body,
-		layoutOrder = 3,
-	})
-
 	-- The run, centre bottom: the bar the player watches fill.
 	self.stageBar = Widgets.bar(parent, {
 		name = "StageProgress",
-		size = UDim2.fromOffset(460, 38),
+		size = UDim2.fromOffset(480, 40),
 		position = UDim2.new(0.5, 0, 1, -18),
 		anchorPoint = Vector2.new(0.5, 1),
 		color = Theme.color.info,
@@ -128,9 +103,10 @@ function Hud.new(parent: Instance, state)
 
 	self.stageLabel = Widgets.label(self.stageBar.instance, {
 		name = "Stage",
-		-- Clear of the rounded cap: the track clips its children now.
-		size = UDim2.new(0.6, -20, 1, 0),
-		position = UDim2.fromOffset(20, 0),
+		-- Clear of the rounded cap: the glyphs must stay in the middle band, where
+		-- the shape is at full width.
+		size = UDim2.new(0.5, -BAR_INSET, 1, 0),
+		position = UDim2.fromOffset(BAR_INSET, 0),
 		font = Theme.font.number,
 		textSize = Theme.text.body,
 		color = Theme.color.textOnColor,
@@ -138,60 +114,94 @@ function Hud.new(parent: Instance, state)
 	})
 	self.stageLabel.ZIndex = 3
 
-	self.stageValue = Widgets.label(self.stageBar.instance, {
-		name = "Progress",
-		size = UDim2.new(0.4, -20, 1, 0),
-		position = UDim2.fromScale(0.6, 0),
+	-- Progress reads "331/1K" followed by the speed icon: the unit is shown, never
+	-- spelled. The pair hangs from a right anchor and grows leftwards, so a long
+	-- number reaches into the bar instead of off the end of it.
+	local progress = Instance.new("Frame")
+	progress.Name = "Progress"
+	progress.Size = UDim2.fromOffset(0, 30)
+	progress.AutomaticSize = Enum.AutomaticSize.X
+	progress.Position = UDim2.new(1, -BAR_INSET, 0.5, 0)
+	progress.AnchorPoint = Vector2.new(1, 0.5)
+	progress.BackgroundTransparency = 1
+	progress.ZIndex = 3
+	progress.Parent = self.stageBar.instance
+	Widgets.list(progress, {
+		direction = Enum.FillDirection.Horizontal,
+		padding = 6,
+		verticalAlignment = Enum.VerticalAlignment.Center,
+	})
+
+	self.stageValue = Widgets.label(progress, {
+		name = "Value",
+		size = UDim2.fromOffset(0, 30),
 		font = Theme.font.number,
 		textSize = Theme.text.body,
-		align = Enum.TextXAlignment.Right,
 		color = Theme.color.textOnColor,
 		outline = true,
+		layoutOrder = 1,
 	})
+	self.stageValue.AutomaticSize = Enum.AutomaticSize.X
 	self.stageValue.ZIndex = 3
 
-	-- The abilities, just above the bar: what the hands are doing.
-	local abilities = Instance.new("Frame")
-	abilities.Name = "Abilities"
-	abilities.Size = UDim2.fromOffset(300, 46)
-	abilities.Position = UDim2.new(0.5, 0, 1, -66)
-	abilities.AnchorPoint = Vector2.new(0.5, 1)
-	abilities.BackgroundTransparency = 1
-	abilities.Parent = parent
-	Widgets.list(abilities, {
+	local speedIcon = Widgets.icon(progress, {
+		name = "SpeedIcon",
+		image = LABELS.speed.image,
+		fallback = LABELS.speed.icon,
+		size = UDim2.fromOffset(26, 26),
+		layoutOrder = 2,
+	})
+	speedIcon.ZIndex = 3
+
+	-- Everything else, in one centred row just above the bar.
+	local row = Instance.new("Frame")
+	row.Name = "Status"
+	row.Size = UDim2.fromOffset(0, 46)
+	row.AutomaticSize = Enum.AutomaticSize.X
+	row.Position = UDim2.new(0.5, 0, 1, -68)
+	row.AnchorPoint = Vector2.new(0.5, 1)
+	row.BackgroundTransparency = 1
+	row.Parent = parent
+	Widgets.list(row, {
 		direction = Enum.FillDirection.Horizontal,
 		padding = 8,
 		horizontalAlignment = Enum.HorizontalAlignment.Center,
 		verticalAlignment = Enum.VerticalAlignment.Center,
 	})
 
-	self.jump = abilityChip(abilities, {
-		name = "Jump",
-		image = ICONS.jump,
-		fallback = "^",
+	self.coins = chip(row, {
+		name = "Coins",
+		image = LABELS.coins.image,
+		fallback = LABELS.coins.icon,
 		layoutOrder = 1,
 	})
 
-	self.dash = abilityChip(abilities, {
-		name = "Dash",
-		image = ICONS.dash,
-		fallback = ">>",
+	self.prestige = chip(row, {
+		name = "Prestige",
+		image = LABELS.prestige.image,
+		fallback = LABELS.prestige.icon,
 		layoutOrder = 2,
 	})
 
-	self.statusCard = Widgets.card(parent, {
-		name = "Status",
-		size = UDim2.fromOffset(220, 40),
-		position = UDim2.new(1, -18, 0, 18),
-		anchorPoint = Vector2.new(1, 0),
-		radius = Theme.radius.chip,
-		visible = false,
+	self.jump = chip(row, {
+		name = "Jump",
+		image = ICONS.jump,
+		fallback = "^",
+		layoutOrder = 3,
 	})
-	self.statusLabel = Widgets.label(self.statusCard, {
-		font = Theme.font.number,
-		textSize = Theme.text.body,
-		color = Theme.color.text,
-		align = Enum.TextXAlignment.Center,
+
+	self.dash = chip(row, {
+		name = "Dash",
+		image = ICONS.dash,
+		fallback = ">>",
+		layoutOrder = 4,
+	})
+
+	self.boosts = chip(row, {
+		name = "Boosts",
+		image = ICONS.boost,
+		fallback = "*",
+		layoutOrder = 5,
 	})
 
 	state.changed:connect(function()
@@ -205,32 +215,37 @@ end
 function Hud.render(self)
 	local state = self.state
 
-	self.speedRow.value.Text = Format.abbreviate(state:get("Speed"))
-	self.coinRow.value.Text = Format.abbreviate(state:get("Coins"))
-	self.prestigeRow.value.Text =
-		`{state:get("Prestiges")} — {Format.multiplier(state:get("SpeedMultiplier"))}`
-
 	local reached = math.max(state:get("ReachedStage"), 1)
 	local nextRequirement = state:get("NextStageRequirement")
 	self.stageLabel.Text = stageName(reached)
 	self.stageValue.Text = if nextRequirement > 0
-		then `{Format.abbreviate(state:get("Speed"))} / {Format.abbreviate(nextRequirement)}`
-		else `last {LABELS.stage.name}`
+		then `{Format.abbreviate(state:get("Speed"))}/{Format.abbreviate(nextRequirement)}`
+		else Format.abbreviate(state:get("Speed"))
 	self.stageBar.set(state:get("StageProgress"))
 
-	-- An ability the player does not own yet has nothing to say. Level 1 means one
-	-- jump, the one everybody has, so there is no air jump to count either.
+	self.coins.frame.Visible = true
+	self.coins.value.Text = Format.abbreviate(state:get("Coins"))
+
+	-- A player who has never prestiged has nothing to read here, and a "0" only
+	-- raises the question of what it is for.
+	local prestiges = state:get("Prestiges")
+	self.prestige.frame.Visible = prestiges > 0
+	if self.prestige.frame.Visible then
+		self.prestige.value.Text = `{prestiges}  {Format.multiplier(state:get("SpeedMultiplier"))}`
+	end
+
+	-- Level 1 is the jump everybody already has: there is no air jump to count.
 	local jumpLevel = math.max(state:get("JumpLevel"), 1)
-	self.jump.chip.Visible = jumpLevel > 1
-	if self.jump.chip.Visible then
+	self.jump.frame.Visible = jumpLevel > 1
+	if self.jump.frame.Visible then
 		self.jump.value.Text = `{state:get("JumpsLeft")}/{jumpLevel - 1}`
 		self.jump.value.TextColor3 = Theme.color.text
 	end
 
 	local dashLevel = state:get("DashLevel")
 	local cooldown = state:get("DashCooldown")
-	self.dash.chip.Visible = dashLevel > 0
-	if self.dash.chip.Visible then
+	self.dash.frame.Visible = dashLevel > 0
+	if self.dash.frame.Visible then
 		if cooldown > 0 then
 			self.dash.value.Text = string.format("%.1fs", cooldown)
 			self.dash.value.TextColor3 = Theme.color.locked
@@ -242,14 +257,14 @@ function Hud.render(self)
 
 	local parts = {}
 	for _, boost in state:list("ActiveBoosts") do
-		table.insert(parts, `{boost.icon or "⏱"} {math.ceil((boost.remaining or 0) / 60)}m`)
+		table.insert(parts, `{math.ceil((boost.remaining or 0) / 60)}m`)
 	end
 	if state:flag("IdleActive") then
-		table.insert(parts, "💤")
+		table.insert(parts, "AFK")
 	end
 
-	self.statusLabel.Text = table.concat(parts, "  ")
-	self.statusCard.Visible = #parts > 0
+	self.boosts.frame.Visible = #parts > 0
+	self.boosts.value.Text = table.concat(parts, " ")
 end
 
 return Hud

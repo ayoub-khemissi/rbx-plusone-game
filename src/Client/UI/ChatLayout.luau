@@ -2,8 +2,9 @@
 --[[
 	ChatLayout — moves the Roblox chat window out of the way.
 
-	By default the chat sits in the TOP LEFT corner, exactly where the stats card
-	lives. It is pushed to the bottom left, the only area the interface leaves free.
+	By default the chat window opens in the top left, underneath the platform's own
+	menu, chat and voice buttons. It is pushed to the bottom left, which leaves that
+	corner to Roblox and the centre to the game.
 
 	Guarded: on an engine version that would not expose these properties, the game
 	keeps running with the default chat.
