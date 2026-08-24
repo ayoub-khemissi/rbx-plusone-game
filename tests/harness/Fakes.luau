@@ -98,12 +98,25 @@ end
 function Fakes.actuator()
 	local fake = { applied = {}, last = nil }
 
-	function fake:apply(playerRef, movement)
-		table.insert(self.applied, movement)
-		self.last = movement
+	function fake:apply(playerRef, flight)
+		table.insert(self.applied, flight)
+		self.last = flight
 	end
 
 	return fake
+end
+
+--[[ Generateur deterministe : parcourt la liste fournie, puis boucle. ]]
+function Fakes.random(values: { number }?)
+	local sequence = values or { 0.5 }
+	local cursor = 0
+
+	return {
+		nextNumber = function()
+			cursor += 1
+			return sequence[((cursor - 1) % #sequence) + 1]
+		end,
+	}
 end
 
 function Fakes.teleporter()

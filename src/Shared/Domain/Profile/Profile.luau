@@ -46,6 +46,9 @@ export type Profile = {
 	deepestTier: number,
 	upgrades: { [string]: number },
 
+	-- Paid safety net: flights that still refund half the pouch on a wall.
+	insuredFlights: number,
+
 	-- Collection
 	eggs: { [string]: number }, -- stock waiting for a hatchery slot, keyed by rarity
 	hatchery: { Egg }, -- eggs currently incubating
@@ -109,6 +112,8 @@ function Profile.create(): Profile
 		deepestTier = 0,
 		upgrades = {},
 
+		insuredFlights = 0,
+
 		eggs = {},
 		hatchery = {},
 		dragons = {},
@@ -160,6 +165,7 @@ function Profile.migrate(raw: any): Profile
 	profile.gold = positiveNumber(raw.gold, 0)
 	profile.molts = positiveInteger(raw.molts, 0, 0)
 	profile.deepestTier = positiveInteger(raw.deepestTier, 0, 0)
+	profile.insuredFlights = positiveInteger(raw.insuredFlights, 0, 0)
 
 	copyNumberMap(raw.upgrades, profile.upgrades, true)
 	copyNumberMap(raw.eggs, profile.eggs, true)
