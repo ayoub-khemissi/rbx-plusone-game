@@ -22,3 +22,8 @@ roblox.yml
 
 # Screenshots and visual references, kept out of the repository
 img/
+
+# Purchased asset packs and the icons staged out of them: large, not project
+# source, and reproducible with ./tools/stage-icons.ps1
+Free Icon Pack*/
+icons/*.png

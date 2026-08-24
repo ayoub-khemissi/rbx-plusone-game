@@ -24,6 +24,7 @@ local products: { Definition } = {
 		name = "Handful of Coins",
 		description = "2 500 coins, right now.",
 		icon = "🪙",
+		image = nil, -- icon:productCoinsSmall
 		robux = 99,
 		grant = { coins = 2500 },
 	},
@@ -33,6 +34,7 @@ local products: { Definition } = {
 		name = "Bag of Coins",
 		description = "8 000 coins to clear the next barrier.",
 		icon = "💰",
+		image = nil, -- icon:productCoinsMedium
 		robux = 199,
 		badge = "popular",
 		grant = { coins = 8000 },
@@ -43,6 +45,7 @@ local products: { Definition } = {
 		name = "Chest of Coins",
 		description = "30 000 coins.",
 		icon = "🏆",
+		image = nil, -- icon:productCoinsLarge
 		robux = 499,
 		grant = { coins = 30000 },
 	},
@@ -52,6 +55,7 @@ local products: { Definition } = {
 		name = "Vault of Coins",
 		description = "100 000 coins — the best value.",
 		icon = "👑",
+		image = nil, -- icon:productCoinsHuge
 		robux = 999,
 		badge = "best value",
 		grant = { coins = 100000 },
@@ -62,6 +66,7 @@ local products: { Definition } = {
 		name = "Speed Rush",
 		description = "x2 speed for 20 minutes.",
 		icon = "⚡",
+		image = nil, -- icon:productSpeedRush
 		robux = 149,
 		grant = { boost = { id = "speedRush", duration = 1200 } },
 	},
@@ -71,6 +76,7 @@ local products: { Definition } = {
 		name = "Coin Rush",
 		description = "x3 coins for 20 minutes.",
 		icon = "🔥",
+		image = nil, -- icon:productCoinRush
 		robux = 149,
 		grant = { boost = { id = "coinRush", duration = 1200 } },
 	},
@@ -80,6 +86,7 @@ local products: { Definition } = {
 		name = "Party Time",
 		description = "x1.5 speed and coins for EVERY player on the server, 10 minutes.",
 		icon = "🎉",
+		image = nil, -- icon:productPartyTime
 		robux = 299,
 		badge = "whole server",
 		grant = { serverBoost = { id = "partyTime", duration = 600 } },
@@ -90,6 +97,7 @@ local products: { Definition } = {
 		name = "Instant Chest",
 		description = "Opens your session chest right now.",
 		icon = "🎁",
+		image = nil, -- icon:productInstantChest
 		robux = 149,
 		grant = { instantChest = true },
 	},
@@ -99,6 +107,7 @@ local products: { Definition } = {
 		name = "Instant Prestige",
 		description = "Prestige now, and keep your upgrades.",
 		icon = "🔁",
+		image = nil, -- icon:productInstantPrestige
 		robux = 399,
 		grant = { prestiges = 1 },
 	},
@@ -108,6 +117,7 @@ local products: { Definition } = {
 		name = "Starter Pack",
 		description = "5 000 Coins and 30 minutes of x2 speed.",
 		icon = "🎁",
+		image = nil, -- icon:productStarterPack
 		robux = 199,
 		badge = "welcome offer",
 		grant = {

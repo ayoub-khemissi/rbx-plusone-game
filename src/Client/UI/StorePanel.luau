@@ -31,6 +31,7 @@ function StorePanel.new(parent: Instance, state, remotes)
 			order += 1
 			self.passRows[pass.id] = self:_row(list, {
 				icon = pass.icon,
+				image = pass.image,
 				name = pass.name,
 				description = pass.description,
 				action = "BUY",
@@ -47,6 +48,7 @@ function StorePanel.new(parent: Instance, state, remotes)
 			order += 1
 			self:_row(list, {
 				icon = product.icon,
+				image = product.image,
 				name = product.name,
 				description = product.description,
 				badge = product.badge,
@@ -88,16 +90,24 @@ function StorePanel._row(_self, parent: Instance, options)
 	row.LayoutOrder = options.order
 	Widgets.padding(row, 12)
 
-	Widgets.label(row, {
-		size = UDim2.new(0.62, 0, 0, 26),
-		font = Theme.font.number,
-		textSize = Theme.text.big,
-		text = `{options.icon or "💠"} {options.name}`,
+	Widgets.icon(row, {
+		image = options.image,
+		fallback = options.icon or "💠",
+		size = UDim2.fromOffset(48, 48),
+		position = UDim2.fromScale(0, 0),
 	})
 
 	Widgets.label(row, {
-		size = UDim2.new(0.62, 0, 0, 38),
-		position = UDim2.fromOffset(0, 28),
+		size = UDim2.new(0.62, -58, 0, 26),
+		position = UDim2.fromOffset(58, 0),
+		font = Theme.font.number,
+		textSize = Theme.text.big,
+		text = options.name,
+	})
+
+	Widgets.label(row, {
+		size = UDim2.new(0.62, -58, 0, 38),
+		position = UDim2.fromOffset(58, 28),
 		font = Theme.font.body,
 		textSize = Theme.text.small,
 		color = Theme.color.textMuted,

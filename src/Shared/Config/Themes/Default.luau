@@ -42,49 +42,49 @@ local theme: Theme = {
 
 	labels = {
 		-- The gauge that never resets except on prestige.
-		speed = { name = "Speed", icon = "⚡", image = "rbxassetid://17368052918" },
+		speed = { name = "Speed", icon = "⚡", image = "rbxassetid://17368052918" }, -- icon:speed
 		-- The soft currency, spent on upgrades.
-		coins = { name = "Coin", plural = "Coins", icon = "🪙", image = "rbxassetid://17368060122" },
+		coins = { name = "Coin", plural = "Coins", icon = "🪙", image = "rbxassetid://17368060122" }, -- icon:coins
 		-- The reset that multiplies everything.
 		prestige = {
 			name = "Prestige",
 			plural = "Prestiges",
 			verb = "PRESTIGE",
 			icon = "🔁",
-			image = "rbxassetid://17368214873",
+			image = "rbxassetid://17368214873", -- icon:prestige
 		},
 		-- A segment of the course, delimited by checkpoints in the map.
-		stage = { name = "Stage", plural = "Stages", icon = "🚩", image = "rbxassetid://17368097932" },
+		stage = { name = "Stage", plural = "Stages", icon = "🚩", image = "rbxassetid://17368097932" }, -- icon:stage
 		checkpoint = {
 			name = "Checkpoint",
 			plural = "Checkpoints",
 			icon = "🏁",
-			image = "rbxassetid://15402908284",
+			image = "rbxassetid://15402908284", -- icon:checkpoint
 		},
 		-- The safe area with the shop, the prestige pad and the idle zone.
-		hub = { name = "Hub", icon = "🏠", image = "rbxassetid://15403180857" },
+		hub = { name = "Hub", icon = "🏠", image = "rbxassetid://15403180857" }, -- icon:hub
 		-- The passive collection, kept in the vocabulary for a later milestone.
-		charm = { name = "Charm", plural = "Charms", icon = "🔮", image = "rbxassetid://15402964203" },
+		charm = { name = "Charm", plural = "Charms", icon = "🔮", image = "rbxassetid://15402964203" }, -- icon:charm
 	},
 
 	-- Icons that name no concept: menus, abilities, states.
 	icons = {
-		shop = "rbxassetid://17368188494",
-		gifts = "rbxassetid://17368068524",
-		store = "rbxassetid://15403000023",
-		codes = "rbxassetid://17368032566",
-		settings = "rbxassetid://17368089841",
+		shop = "rbxassetid://17368188494", -- icon:shop
+		gifts = "rbxassetid://17368068524", -- icon:gifts
+		store = "rbxassetid://15403000023", -- icon:store
+		codes = "rbxassetid://17368032566", -- icon:codes
+		settings = "rbxassetid://17368089841", -- icon:settings
 
-		jump = "rbxassetid://14569017448",
-		dash = "rbxassetid://16670799841",
-		upgrade = "rbxassetid://17368045028",
-		magnet = "rbxassetid://17368210998",
+		jump = "rbxassetid://14569017448", -- icon:jump
+		dash = "rbxassetid://16670799841", -- icon:dash
+		upgrade = "rbxassetid://17368045028", -- icon:upgrade
+		magnet = "rbxassetid://17368210998", -- icon:magnet
 
-		locked = "rbxassetid://17368080973",
-		unlocked = "rbxassetid://17368081924",
-		playtime = "rbxassetid://15937828418",
-		boost = "rbxassetid://15403265114",
-		luck = "rbxassetid://17368084270",
+		locked = "rbxassetid://17368080973", -- icon:locked
+		unlocked = "rbxassetid://17368081924", -- icon:unlocked
+		playtime = "rbxassetid://15937828418", -- icon:playtime
+		boost = "rbxassetid://15403265114", -- icon:boost
+		luck = "rbxassetid://17368084270", -- icon:luck
 	},
 
 	palette = {

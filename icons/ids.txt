@@ -1,0 +1,7 @@
+# One line per icon:  slot=1234567
+#
+# Fill this in after uploading everything in icons/ through the Studio Asset
+# Manager, then run ./tools/apply-icon-ids.ps1
+#
+# Roblox lists the uploads under the file names, so the slot on the left is
+# already the name you will see there.

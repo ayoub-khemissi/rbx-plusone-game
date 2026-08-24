@@ -15,6 +15,7 @@ export type Pass = {
 	assetId: number,
 	name: string,
 	icon: string,
+	image: string?,
 	description: string,
 	-- Numeric effects, aggregated by Domain.Movement.Multipliers.
 	effect: {
@@ -32,6 +33,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "x2 Coins",
 		icon = "🪙",
+		image = nil, -- icon:passDoubleCoins
 		description = "Doubles every Coin you earn.",
 		effect = { coins = 2 },
 	},
@@ -40,6 +42,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "x2 Speed",
 		icon = "⚡",
+		image = nil, -- icon:passDoubleSpeed
 		description = "Doubles the speed gained on every step.",
 		effect = { speed = 2 },
 	},
@@ -48,6 +51,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Swift Boots",
 		icon = "👟",
+		image = nil, -- icon:passSwiftBoots
 		description = "x1.5 speed and a permanently higher jump.",
 		effect = { speed = 1.5, flat = { jumpPower = 8 } },
 	},
@@ -56,6 +60,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Extra Jump",
 		icon = "🪽",
+		image = nil, -- icon:passExtraJump
 		description = "One more air jump than your upgrades allow.",
 		effect = { flat = { jumps = 1 } },
 	},
@@ -64,6 +69,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Coin Magnet",
 		icon = "🧲",
+		image = nil, -- icon:passCoinMagnet
 		description = "Collect Coins from much further away.",
 		effect = { flat = { magnet = 25 } },
 	},
@@ -72,6 +78,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Auto Run",
 		icon = "🏃",
+		image = nil, -- icon:passAutoRun
 		description = "Your character keeps running on its own.",
 		effect = {},
 		behaviour = "autoRun",

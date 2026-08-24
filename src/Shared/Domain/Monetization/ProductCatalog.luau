@@ -13,6 +13,7 @@ export type Definition = {
 	name: string,
 	description: string?,
 	icon: string?,
+	image: string?,
 	robux: number?,
 	badge: string?, -- "popular", "best value"...
 	grant: { [string]: any },

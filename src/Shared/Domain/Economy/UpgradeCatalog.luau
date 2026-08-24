@@ -11,6 +11,7 @@ export type Definition = {
 	id: string,
 	name: string?,
 	icon: string?,
+	image: string?,
 	description: string?,
 	maxLevel: number, -- 0 means unlimited
 	baseCost: number,
