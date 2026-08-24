@@ -1,120 +1,119 @@
-# Modèle économique
+# Business model
 
-Quatre piliers qui se renforcent. Le principe : **on ne vend rien tant que le joueur
-ne joue pas**, et c'est le temps de jeu qui alimente à la fois le classement Roblox et
-les occasions d'achat.
+Four pillars that feed each other. The principle: **nothing sells while the player
+is not playing**, and it is play time that drives both the Roblox ranking and the
+occasions to buy.
 
 ```
-   RÉTENTION            →  temps de jeu  →  visibilité Roblox  →  nouveaux joueurs
-   (quotidien, coffres,                          │
-    zone AFK, codes)                             ▼
-                                          OCCASIONS D'ACHAT
-                                  (barrière de Speed, seuil de Prestige)
-                                                 │
-                        ┌────────────────────────┴────────────────────────┐
-                        ▼                                                 ▼
-              PERMANENT (gamepasses)                        RÉPÉTABLE (produits)
-              achat unique, valeur perçue                   revenu principal
+   RETENTION            →  play time  →  Roblox visibility  →  new players
+   (daily, chests,                          │
+    AFK area, codes)                        ▼
+                                     OCCASIONS TO BUY
+                                (a Speed gate, a Prestige threshold)
+                                            │
+                        ┌───────────────────┴───────────────────┐
+                        ▼                                       ▼
+              PERMANENT (gamepasses)                 REPEATABLE (products)
+              one purchase, high perceived value     the main revenue
 ```
 
-## 1. Rétention — gratuit
+## 1. Retention — free
 
-| Mécanique | Rythme | Effet recherché |
+| Mechanic | Rhythm | Intent |
 | --- | --- | --- |
-| Récompense quotidienne | 1 / jour, série de 7 | Faire revenir demain |
-| Coffre de session | toutes les 5 min | Faire rester maintenant |
-| Zone AFK | pendant la session | Maintenir le serveur peuplé |
-| Codes promo | ponctuel | Acquisition via les réseaux |
-| Checkpoints | continu | Rendre l'échec bon marché |
+| Daily reward | 1 / day, streak of 7 | Bring them back tomorrow |
+| Session chest | every 5 min | Keep them here now |
+| AFK area | during the session | Keep servers populated |
+| Promo codes | occasional | Acquisition through social media |
+| Checkpoints | continuous | Make failure cheap |
 
-**Sur la zone AFK.** C'est le système d'attente du jeu, et il est volontairement
-médiocre : le revenu est lent et **plafonné par session**. Il sert à garder les serveurs
-peuplés — ce qui compte pour les recommandations Roblox — sans jamais devenir une
-stratégie meilleure que jouer. Le jour où rester planté rapporte plus que courir, le jeu
-est mort.
+**On the AFK area.** It is the waiting system of the game, and it is deliberately
+mediocre: the income is slow and **capped per session**. Its job is to keep servers
+populated — which matters for Roblox recommendations — without ever becoming a better
+strategy than playing. The day standing still pays more than running, the game is
+dead.
 
-**Sur les checkpoints.** Une chute ne coûte ni Speed ni Coins, seulement du temps. C'est
-un choix économique autant que ludique : un joueur qui perd sa progression ferme le jeu,
-un joueur qui perd trente secondes recommence.
+**On checkpoints.** A fall costs neither Speed nor Coins, only time. That is an
+economic choice as much as a design one: a player who loses their progress closes the
+game, a player who loses thirty seconds starts again.
 
 ## 2. Permanent — gamepasses
 
-Achat unique, valeur perçue élevée, aucun contenu bloqué derrière.
+One purchase, high perceived value, no content locked behind any of them.
 
-| Gamepass | Effet |
+| Gamepass | Effect |
 | --- | --- |
-| x2 Coins | Double tous les Coins gagnés |
-| x2 Speed | Double la Speed gagnée à chaque foulée |
-| Swift Boots | ×1,5 Speed et un saut définitivement plus haut |
-| Extra Jump | Un saut aérien de plus que ce que les améliorations autorisent |
-| Coin Magnet | Ramasse les Coins de bien plus loin |
-| Auto Run | Le personnage court tout seul |
+| x2 Coins | Doubles every Coin earned |
+| x2 Speed | Doubles the Speed gained on every stretch |
+| Swift Boots | ×1.5 Speed and a permanently higher jump |
+| Extra Jump | One more air jump than the upgrades allow |
+| Coin Magnet | Collects Coins from much further away |
+| Auto Run | The character keeps running on its own |
 
-Aucun ne débloque de contenu. **Extra Jump** est le plus vendeur des six, parce qu'il
-s'achète juste après avoir raté trois fois le même saut — le joueur sait exactement ce
-qu'il achète et pourquoi.
+None of them unlocks content. **Extra Jump** is the best seller of the six, because it
+is bought right after missing the same jump three times — the player knows exactly
+what they are buying and why.
 
-## 3. Répétable — produits développeur
+## 3. Repeatable — developer products
 
-La source de revenu principale : le joueur revient acheter à chaque barrière.
+The main revenue: the player comes back to buy at every hard step.
 
-| Produit | Prix indicatif | Contenu |
+| Product | Indicative price | Contents |
 | --- | --- | --- |
 | Handful / Bag / Chest / Vault of Coins | 99 / 199 / 499 / 999 R$ | 2 500 → 100 000 Coins |
 | Speed Rush | 149 R$ | ×2 Speed, 20 min |
 | Coin Rush | 149 R$ | ×3 Coins, 20 min |
-| Party Time | 299 R$ | Bonus pour **tous** les joueurs du serveur, 10 min |
-| Instant Chest | 149 R$ | Ouvre le coffre de session immédiatement |
-| Instant Prestige | 399 R$ | Prestige immédiat, **améliorations gardées** |
-| Starter Pack | 199 R$ | Offre de bienvenue : Coins + boost |
+| Party Time | 299 R$ | A bonus for **every** player on the server, 10 min |
+| Instant Chest | 149 R$ | Opens the session chest right now |
+| Instant Prestige | 399 R$ | Prestige immediately, **keeping the upgrades** |
+| Starter Pack | 199 R$ | Welcome offer: Coins plus a boost |
 
-La grille 99 / 199 / 499 / 999 est celle à laquelle les joueurs Roblox sont habitués,
-avec une offre *best value* mise en avant pour tirer le panier moyen.
+The 99 / 199 / 499 / 999 ladder is the one Roblox players are used to, with a *best
+value* tier highlighted to lift the average basket.
 
-**Instant Prestige garde les améliorations**, contrairement au Prestige gratuit qui les
-remet à zéro. C'est précisément ce qu'on vend : pas le multiplicateur, qui reste
-atteignable en jouant, mais le fait de ne pas racheter tout l'arbre.
+**Instant Prestige keeps the upgrades**, unlike the free Prestige which resets them.
+That is precisely what is being sold: not the multiplier, which stays reachable by
+playing, but not having to buy the whole tree again.
 
-## 4. Social et acquisition
+## 4. Social and acquisition
 
-- **Party Time** : l'acheteur est nommé dans une notification vue par tous. L'achat
-  devient un geste social, très visible, souvent imité.
-- **Offres à durée limitée** : une seule à la fois, jamais bloquante. Le Starter Pack
-  apparaît après quelques minutes de jeu ; une offre de Coins est proposée au moment
-  précis où le joueur vient de se faire refuser par une barrière de Speed.
-- **Codes promo** : diffusables sur TikTok, YouTube ou Discord, ils ramènent des joueurs
-  sans budget publicitaire.
+- **Party Time**: the buyer is named in a notification everyone sees. The purchase
+  becomes a social gesture, highly visible, often imitated.
+- **Limited-time offers**: one at a time, never blocking. The Starter Pack appears
+  after a few minutes of play; a Coin offer is proposed at the precise moment the
+  player has just been turned away by a Speed gate.
+- **Promo codes**: shareable on TikTok, YouTube or Discord, they bring players in
+  with no advertising budget.
 
-L'offre déclenchée par une barrière est la plus rentable des deux, et c'est logique :
-elle arrive au seul moment où le joueur a un problème précis, nommé, et une solution
-chiffrée sous les yeux.
+The gate-triggered offer is the more profitable of the two, and that follows: it
+arrives at the only moment when the player has a precise, named problem and a priced
+solution in front of them.
 
-## Fiabilité des achats
+## Purchase reliability
 
-Un achat perdu, c'est un joueur perdu. Le traitement des reçus applique trois règles :
+A lost purchase is a lost player. Receipt handling applies three rules:
 
-1. **Profil non chargé → on ne confirme pas.** Roblox rejouera le reçu, y compris à la
-   prochaine session du joueur.
-2. **Reçu déjà traité → on ne crédite pas deux fois.** Un registre d'achats conservé
-   dans la sauvegarde garantit l'idempotence, même après un redémarrage de serveur.
-3. **Sauvegarde en échec → on ne confirme pas.** Mieux vaut un rejeu qu'un achat crédité
-   en mémoire puis perdu.
+1. **Profile not loaded → do not confirm.** Roblox will replay the receipt, including
+   at the player's next session.
+2. **Receipt already handled → do not credit twice.** A purchase ledger kept in the
+   save guarantees idempotence, even across a server restart.
+3. **Save failed → do not confirm.** A replay is better than a purchase credited in
+   memory and then lost.
 
-Ces trois cas sont couverts par des tests automatisés.
+All three cases are covered by automated tests.
 
-## Mise en service
+## Going live
 
-1. Créer les gamepasses et produits sur le site Roblox.
-2. Coller les identifiants dans `src/Shared/Config/Passes.luau` et
+1. Create the gamepasses and products on the Roblox site.
+2. Paste the identifiers into `src/Shared/Config/Passes.luau` and
    `src/Shared/Config/Products.luau`.
-3. Un identifiant laissé à `0` masque l'article partout — le jeu reste jouable et la
-   boutique reste propre tant que rien n'est créé.
+3. An identifier left at `0` hides the item everywhere — the game stays playable and
+   the store stays clean until anything exists.
 
-Aucune ligne de code n'est à modifier pour activer la monétisation.
+No line of code has to change to switch the monetization on.
 
-## Réglages
+## Tuning
 
-Tout se règle dans `src/Shared/Config/Monetization.luau` : durées et cumul des boosts,
-table des récompenses quotidiennes, intervalle du coffre de session, codes promo et
-offres. Les prix des améliorations en Coins sont dans `Upgrades.luau`, et le rythme de
-la zone AFK dans `Balance.luau`.
+Everything lives in `src/Shared/Config/Monetization.luau`: boost durations and
+stacking, the daily reward table, the session chest interval, promo codes and offers.
+Upgrade prices in Coins are in `Upgrades.luau`, and the AFK rate in `Balance.luau`.

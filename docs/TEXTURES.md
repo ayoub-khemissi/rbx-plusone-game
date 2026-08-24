@@ -1,64 +1,61 @@
 # Textures
 
-Le pack que tu as importé arrive sous forme de **blocs de présentation** : 482 parts
-qui ne servent qu'à montrer les textures. Tu n'as besoin d'aucun de ces blocs pour
-construire ta map — seulement des identifiants, et ils sont tous ci-dessous.
+The pack you imported arrives as **display blocks**: 482 parts whose only job is to
+show the textures off. You need none of those blocks to build a map — only the
+identifiers, and they are all below.
 
-> **Supprime le modèle `Textures` du Workspace** une fois ce document sous la main.
-> Ce sont 3894 instances chargées chez chaque joueur, pour rien.
-
----
-
-## Poser une texture sur TES parts
-
-### La bonne méthode : un Material Variant
-
-C'est la réponse à « je veux la texture, pas le bloc ». Un Material Variant est une
-matière que tu crées une fois et que tu appliques ensuite à n'importe quelle part,
-exactement comme Brique ou Bois.
-
-1. Dans Studio, ouvre **View → Material Manager**
-2. Choisis une matière de base dans la colonne de gauche (`Plastic` convient à tout)
-3. Clique le **+** en haut du panneau : un `MaterialVariant` apparaît
-4. Renomme-le (`StoneFloor`, `LavaRock`…) — c'est ce nom que tu reverras partout
-5. Colle l'identifiant du catalogue dans le champ **ColorMap**
-6. Règle **StudsPerTile** : la taille d'un carreau en studs. 4 est un bon départ pour
-   un sol, 8 pour un mur vu de loin
-
-Pour peindre ensuite : sélectionne tes parts et clique la matière dans le Material
-Manager. La texture couvre les **six faces**, se répète toute seule quelle que soit la
-taille de la part, et te suit quand tu redimensionnes.
-
-**Pourquoi pas les objets `Texture`** — ceux que le pack utilise sur ses blocs de
-démo : un `Texture` ne couvre qu'**une seule face**. Un cube en demande six, un
-parcours de 300 parts en demande 1800, et chacun est une instance de plus à
-répliquer. Le Material Variant en demande un, pour toute la map.
-
-### Le cas particulier des matières PBR
-
-Les 10 matières `PBRTextures` ne sont pas des images plates mais des
-`SurfaceAppearance` : elles réagissent à la lumière (relief, brillance, métal). Elles
-ne s'appliquent qu'à des **MeshPart**, jamais à une part ordinaire. Pour en garder
-une, copie le `SurfaceAppearance` depuis son bloc de démo et colle-le dans ton
-MeshPart **avant** de supprimer le pack.
-
-### Ce que ça ne change pas
-
-Aucune texture ne change quoi que ce soit au jeu. Le serveur ne lit que les **tags**
-décrits dans [MAP.md](MAP.md) : une part magnifique sans tag `TrapPart` ne tue
-personne, une part grise avec le tag tue très bien. Décore quand la géométrie
-fonctionne, pas avant.
+> **Delete the `Textures` model from the Workspace** once this document is at hand.
+> It is 3894 instances loaded by every player, for nothing.
 
 ---
 
-## Le catalogue
+## Putting a texture on YOUR parts
 
-La colonne *carreau* reprend le `StudsPerTile` d'origine du pack : un point de
-départ, pas une règle.
+### The right way: a Material Variant
 
-### Sols
+This is the answer to "I want the texture, not the block". A Material Variant is a
+material you create once and then apply to any part, exactly like Brick or Wood.
 
-| Nom | ColorMap | Carreau |
+1. In Studio, open **View → Material Manager**
+2. Pick a base material in the left column (`Plastic` works for everything)
+3. Click the **+** at the top of the panel: a `MaterialVariant` appears
+4. Rename it (`StoneFloor`, `LavaRock`…) — that name is what you will see everywhere
+5. Paste an identifier from the catalogue into the **ColorMap** field
+6. Set **StudsPerTile**: the size of one tile in studs. 4 is a good start for a
+   floor, 8 for a wall seen from a distance
+
+To paint: select your parts and click the material in the Material Manager. The
+texture covers **all six faces**, repeats on its own whatever the size of the part,
+and follows you when you resize.
+
+**Why not the `Texture` objects** the pack uses on its demo blocks: a `Texture` covers
+**one face only**. A cube needs six, a 300-part course needs 1800, and each one is
+another instance to replicate. A Material Variant needs one, for the whole map.
+
+### The special case of PBR materials
+
+The 10 `PBRTextures` materials are not flat images but `SurfaceAppearance` objects:
+they react to light, with relief, gloss and metalness. They apply to **MeshPart**
+only, never to an ordinary part. To keep one, copy the `SurfaceAppearance` from its
+demo block into your MeshPart **before** deleting the pack.
+
+### What this does not change
+
+No texture changes anything about the game. The server reads only the **tags**
+described in [MAP.md](MAP.md): a beautiful part without a `TrapPart` tag kills nobody,
+and a grey part with the tag kills perfectly well. Decorate once the geometry works,
+not before.
+
+---
+
+## The catalogue
+
+The *tile* column repeats the pack's original `StudsPerTile`: a starting point, not a
+rule.
+
+### Floors
+
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | Floor A | `rbxassetid://248762273` | 1 |
 | Floor B | `rbxassetid://76344979` | 1 |
@@ -73,9 +70,9 @@ départ, pas une règle.
 | Floor K | `rbxassetid://147149558` | 1 |
 | Floor L | `rbxassetid://3222084099` | 1 |
 
-### Murs
+### Walls
 
-| Nom | ColorMap | Carreau |
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | Wall A | `rbxassetid://6768888247` | 1 |
 | Wall B | `rbxassetid://137638982` | 1 |
@@ -90,9 +87,9 @@ départ, pas une règle.
 | Wall K | `rbxassetid://6880167231` | 1 |
 | Wall L | `rbxassetid://136131018` | 1 |
 
-### Plafonds
+### Ceilings
 
-| Nom | ColorMap | Carreau |
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | Ceiling A | `rbxassetid://5120598571` | 1 |
 | Ceiling B | `rbxassetid://324269515` | 1 |
@@ -107,9 +104,9 @@ départ, pas une règle.
 | Ceiling K | `rbxassetid://276587759` | 1 |
 | Ceiling L | `rbxassetid://3059769545` | 1 |
 
-### Toits
+### Roofs
 
-| Nom | ColorMap | Carreau |
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | Roof A | `rbxassetid://4971127464` | 1 |
 | Roof B | `rbxassetid://4971114520` | 1 |
@@ -124,9 +121,9 @@ départ, pas une règle.
 | Roof K | `rbxassetid://738060692` | 1 |
 | Roof L | `rbxassetid://736594463` | 1 |
 
-### Terrains
+### Terrain
 
-| Nom | ColorMap | Carreau |
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | Terrain A | `rbxassetid://736593217` | 1 |
 | Terrain B | `rbxassetid://122076991` | 1 |
@@ -141,9 +138,9 @@ départ, pas une règle.
 | Terrain K | `rbxassetid://465111359` | 1 |
 | Terrain L | `rbxassetid://5837480614` | 1 |
 
-### Verres et surfaces translucides
+### Glass and translucent surfaces
 
-| Nom | ColorMap | Carreau |
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | Glass B | `rbxassetid://477873990` | 1 |
 | Glass C | `rbxassetid://19886465` | 1 |
@@ -157,9 +154,9 @@ départ, pas une règle.
 | Glass K | `rbxassetid://24334001` | 1 |
 | Glass L | `rbxassetid://520946063` | 1 |
 
-### Nommées — pierre, bois, métal, neige, sable
+### Named — stone, wood, metal, snow, sand
 
-| Nom | ColorMap | Carreau |
+| Name | ColorMap | Tile |
 | --- | --- | --- |
 | BlueFloor | `rbxassetid://4621421263` | 1 |
 | BrownMud | `rbxassetid://4621374467` | 1 |
@@ -189,9 +186,9 @@ départ, pas une règle.
 | plaster_grey | `rbxassetid://4621519312` | 1 |
 | white_plaster_rough | `rbxassetid://4621516946` | 1 |
 
-### Matières PBR — MeshPart uniquement
+### PBR materials — MeshPart only
 
-| Nom | ColorMap |
+| Name | ColorMap |
 | --- | --- |
 | FakePaint | `rbxassetid://8565017965` |
 | MeshPart | `rbxassetid://8440504192` |
@@ -206,18 +203,18 @@ départ, pas une règle.
 
 ### Low poly
 
-| Nom | ColorMap |
+| Name | ColorMap |
 | --- | --- |
 | LowPoly | `rbxassetid://6794063173` |
 | LowPoly2 | `rbxassetid://6904986063` |
 
 ---
 
-## Les textures dans l'interface
+## Textures in the interface
 
-Le thème pose une de ces textures en trame sur les panneaux de menus, à 8 %
-d'opacité : elle donne du grain à la surface sans jamais gêner la lecture. C'est une
-ligne dans `src/Shared/Config/Themes/Default.luau` :
+The theme lays one of these textures over the menu panels at 8% opacity: it gives the
+surface some grain without ever getting in the way of reading. It is one line in
+`src/Shared/Config/Themes/Default.luau`:
 
 ```lua
 textures = {
@@ -225,8 +222,8 @@ textures = {
 },
 ```
 
-Mets `nil` et les panneaux redeviennent lisses. Les autres candidats propres pour cet
-usage : `marble`, `white_plaster_rough`, `plaster_grey`, `large_floor_tiles`.
+Set it to `nil` and the panels go smooth again. The other clean candidates for this
+use: `marble`, `white_plaster_rough`, `plaster_grey`, `large_floor_tiles`.
 
-Une trame de menu doit être **seamless et peu contrastée**. Une texture de brique ou
-de bois marche mal ici : le motif se voit, et le texte passe dessus.
+A menu pattern must be **seamless and low contrast**. A brick or wood texture works
+badly here: the motif shows through, and the text sits on top of it.

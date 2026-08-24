@@ -1,171 +1,172 @@
-# Contrat de map
+# Map contract
 
-Tu construis les maps dans Studio, le serveur les lit. Ce document est le contrat entre
-les deux : **il n'y a rien d'autre à respecter que ce qui est écrit ici.**
+You build the maps in Studio, the server reads them. This document is the contract
+between the two: **there is nothing to respect beyond what is written here.**
 
-Tout passe par des **tags** (CollectionService) et des **attributs**. Aucune convention
-de nom, aucune hiérarchie imposée : tu ranges tes parts comme tu veux, seuls les tags
-comptent.
+Everything goes through **tags** (CollectionService) and **attributes**. No naming
+convention, no imposed hierarchy: arrange your parts however you like, only the
+tags count.
 
-> Dans Studio, les tags s'ajoutent avec le panneau **View → Tag Editor**, et les
-> attributs dans le panneau **Properties**, section *Attributes*, en bas.
+> In Studio, tags are added from **View → Tag Editor**, and attributes from the
+> **Properties** panel, *Attributes* section, at the bottom.
 
 ---
 
-## Les tags
+## The tags
 
-| Tag | À poser sur | Ce que le serveur en fait |
+| Tag | Put it on | What the server does with it |
 | --- | --- | --- |
-| `Checkpoint` | Part **ou Model** | Enregistre le point de réapparition du joueur |
-| `TrapPart` *(ou `Killzone`)* | Part ou Model | Renvoie le joueur à son dernier checkpoint |
-| `Conveyor` | Part | Tapis roulant : pousse dans le sens de la face avant |
-| `BouncePad` | Part | Trampoline : propulse le joueur vers le haut |
-| `Coin` | Part | Donne des Coins, disparaît, réapparaît |
-| `SpeedGate` | Part solide | Bloque tant que la Speed du joueur est trop basse |
-| `ShopPad` | Part | Ouvre la boutique |
-| `PrestigePad` | Part | Déclenche le Prestige |
-| `AfkPad` | Part | Zone de revenu passif |
+| `Checkpoint` | Part **or Model** | Records where the player respawns |
+| `TrapPart` *(or `Killzone`)* | Part or Model | Sends the player back to their last checkpoint |
+| `Conveyor` | Part | Conveyor belt: pushes along the front face |
+| `BouncePad` | Part | Trampoline: launches the player upwards |
+| `Coin` | Part | Grants Coins, disappears, comes back |
+| `SpeedGate` | Solid part | Blocks while the player's Speed is too low |
+| `ShopPad` | Part | Opens the shop |
+| `PrestigePad` | Part | Triggers a Prestige |
+| `AfkPad` | Part | Passive income area |
 
-**Un tag peut être posé sur un Model** : toutes ses parts sont alors câblées. C'est ce
-qui permet de taguer un checkpoint décoré une seule fois.
+**A tag can be placed on a Model**: every part inside it is then wired. That is what
+lets a decorated checkpoint be tagged once instead of six times.
 
-Seuls `Checkpoint` et un moyen de mourir sont vraiment nécessaires. Le reste s'ajoute
-quand tu en as besoin.
+Only `Checkpoint` and some way to die are genuinely needed. The rest is added when
+you want it.
 
 ---
 
-## Détail de chaque tag
+## Each tag in detail
 
 ### `Checkpoint`
 
-La colonne vertébrale du parcours : c'est ce qui découpe la map en **Stages** et ce qui
-définit où le joueur réapparaît.
+The backbone of the course: it cuts the map into **Stages** and defines where the
+player comes back.
 
-| Attribut | Type | Obligatoire | Rôle |
+| Attribute | Type | Required | Role |
 | --- | --- | --- | --- |
-| `StageId` | number | non | Le Stage auquel ce checkpoint appartient. **Sans lui, Stage 1** |
+| `StageId` | number | no | The Stage this checkpoint belongs to. **Without it, Stage 1** |
 
-Une map d'un seul Stage n'a donc rien à déclarer. Le `StageId` ne devient utile que le
-jour où tu veux une barrière de vitesse entre deux portions.
+A single-Stage map therefore declares nothing. `StageId` only becomes useful the day
+you want a speed gate between two sections.
 
-**Conseils de pose.** Fais-en une part large et fine posée en travers du parcours, en
-`CanCollide = false`, `Transparency = 1` si tu ne veux pas la voir — mets un décor
-visible à côté. Le joueur réapparaît **au-dessus du centre de la part**, alors place-la
-sur du sol plat.
+**Placement.** Make it a wide, thin part laid across the course, `CanCollide = false`,
+`Transparency = 1` if you would rather not see it — put visible scenery beside it. The
+player reappears **above the centre of the part**, so put it on flat ground.
 
-Le premier checkpoint d'un Stage sert aussi de point d'entrée du Stage.
+The first checkpoint of a Stage doubles as that Stage's entry point.
 
-### `TrapPart` *(ou `Killzone`)*
+### `TrapPart` *(or `Killzone`)*
 
-Tout ce qui tue : la lave, les piques, un obstacle mortel. Les deux noms sont acceptés.
+Anything lethal: lava, spikes, a deadly obstacle. Both names are accepted.
 
-Aucun attribut. Le joueur revient à son dernier `Checkpoint`, **garde sa Speed et ses
-Coins**, et perd seulement du temps.
+No attributes. The player returns to their last `Checkpoint`, **keeps their Speed and
+their Coins**, and loses only time.
 
-**Le vide n'a rien à taguer.** Le serveur cherche la part la plus basse de la map au
-démarrage et considère toute chute sous ce niveau comme mortelle. Pas de dalle
-invisible à poser, et rien à oublier.
+**The void needs no tag.** At start-up the server finds the lowest part of the map and
+treats any fall below that level as lethal. There is no invisible slab to lay, and
+therefore none to forget.
 
 ### `Conveyor`
 
-| Attribut | Type | Obligatoire | Rôle |
+| Attribute | Type | Required | Role |
 | --- | --- | --- | --- |
-| `Speed` | number | non | Vitesse du tapis. Défaut : 10 |
+| `Speed` | number | no | Belt speed. Default: 10 |
 
-Le tapis pousse dans le sens de sa **face avant** : tourne la part dans Studio pour
-changer la direction. Aucune logique par joueur, c'est la physique Roblox qui travaille.
+The belt pushes along its **front face**: rotate the part in Studio to change the
+direction. There is no per-player logic — the Roblox physics engine does the work.
 
 ### `BouncePad`
 
-| Attribut | Type | Obligatoire | Rôle |
+| Attribute | Type | Required | Role |
 | --- | --- | --- | --- |
-| `BounceImpulse` | number | non | Vitesse verticale donnée. Défaut : 200 |
+| `BounceImpulse` | number | no | Vertical velocity given. Default: 200 |
 
-La vitesse verticale est **remplacée**, pas ajoutée : un pad propulse pareil qu'on
-arrive en tombant ou en montant.
+The vertical velocity is **replaced**, not added: a pad launches the same whether you
+arrive falling or rising.
 
 ### `Coin`
 
-| Attribut | Type | Obligatoire | Rôle |
+| Attribute | Type | Required | Role |
 | --- | --- | --- | --- |
-| `Value` | number | non | Valeur brute. Sans attribut, la valeur par défaut de la config s'applique |
+| `Value` | number | no | Raw value. Without it, the configured default applies |
 
-Le Coin disparaît au ramassage et réapparaît après un délai réglé dans la config. Pose
-un modèle visuel si tu veux : tague **la part de détection**, pas le décor.
+A Coin disappears when collected and comes back after a delay set in the
+configuration. Add a visual model if you like: tag **the detection part**, not the
+decoration.
 
 ### `SpeedGate`
 
-La barrière qui garde l'entrée d'un Stage. Le joueur ne passe que s'il est assez rapide.
+The barrier guarding the entrance to a Stage. The player only passes if they are fast
+enough.
 
-| Attribut | Type | Obligatoire | Rôle |
+| Attribute | Type | Required | Role |
 | --- | --- | --- | --- |
-| `RequiredSpeed` | number | **oui** | Speed minimale pour traverser |
-| `StageId` | number | non | Sert à l'affichage du nom du Stage dans le message |
+| `RequiredSpeed` | number | **yes** | Minimum Speed to pass |
+| `StageId` | number | no | Only used to name the Stage in the message |
 
-Laisse-la en `CanCollide = true`. Le client la rend **traversable localement** dès que
-le joueur a la vitesse requise, et le serveur revérifie de son côté : impossible de
-passer en trichant.
+Leave it `CanCollide = true`. The client makes it **locally passable** as soon as the
+player has the required speed, and the server checks again on its side: there is no
+way through by cheating.
 
 ### `ShopPad`, `PrestigePad`, `AfkPad`
 
-Trois pads de la zone de départ. Aucun attribut.
+The three pads of the starting area. No attributes.
 
-- **`ShopPad`** — ouvre la boutique d'améliorations à l'entrée sur le pad.
-- **`PrestigePad`** — déclenche le Prestige. Le serveur refuse poliment si le seuil
-  n'est pas atteint, tu n'as rien à gérer.
-- **`AfkPad`** — tant que le joueur est dessus, il gagne des Coins à un rythme lent et
-  plafonné. Fais-en une zone confortable, avec des sièges si tu veux.
+- **`ShopPad`** — opens the upgrade shop when the player steps on it.
+- **`PrestigePad`** — triggers a Prestige. The server declines politely if the
+  threshold is not met, so there is nothing to handle on your side.
+- **`AfkPad`** — while the player stands on it, they earn Coins at a slow, capped
+  rate. Make it a comfortable area, with seats if you like.
 
 ---
 
-## Ce que la config décide, ce que la map décide
+## What the map decides, what the configuration decides
 
-C'est la séparation qui te laisse les mains libres :
+This is the split that keeps your hands free:
 
-| La **map** décide | La **config** décide |
+| The **map** decides | The **configuration** decides |
 | --- | --- |
-| Où sont les checkpoints, les trous, les Coins | Combien vaut un Coin, en combien de temps il réapparaît |
-| Où sont les barrières, et leur `RequiredSpeed` | Le multiplicateur de Coins de chaque Stage |
-| La géométrie, le décor, l'ambiance | La courbe de vitesse, les prix des améliorations |
-| Le nombre de Stages | Le seuil de Prestige |
+| Where the checkpoints, the gaps and the Coins are | What a Coin is worth, how fast it comes back |
+| Where the gates are, and their `RequiredSpeed` | The Coin multiplier of each Stage |
+| The geometry, the scenery, the mood | The speed curve, the upgrade prices |
+| How many Stages there are | The Prestige threshold |
 
-Si tu ajoutes un Stage 6 dans la map, ajoute-lui une ligne dans `Config/Stages.luau` et
-il existe. Rien d'autre.
-
----
-
-## Zone de départ : la liste minimale
-
-Pour que le jeu soit jouable, il faut au minimum :
-
-1. Un **SpawnLocation** Roblox standard (pas de tag, Roblox s'en occupe)
-2. Un premier `Checkpoint` à l'entrée du parcours
-
-C'est tout. Sans checkpoint, le joueur réapparaît simplement au spawn ; le vide est
-géré tout seul.
-
-Quand tu voudras la boucle économique complète, ajoute un `ShopPad`, un `PrestigePad`
-et un `AfkPad` dans la zone de départ.
+Add a Stage 6 to the map, add it a line in `Config/Stages.luau`, and it exists.
+Nothing else.
 
 ---
 
-## Ce que le serveur ne fera jamais
+## Starting area: the minimum list
 
-Pour que tu saches où s'arrête ma responsabilité :
+For the game to be playable you need, at a minimum:
 
-- il ne **déplace** ni ne **crée** aucune part de ta map ;
-- il ne dépend d'aucun nom d'objet ni d'aucune hiérarchie ;
-- il ignore poliment toute part taguée mais mal configurée, en écrivant un
-  avertissement dans la console plutôt qu'en plantant.
+1. A standard Roblox **SpawnLocation** (no tag, Roblox handles it)
+2. A first `Checkpoint` at the entrance to the course
 
-Un attribut manquant prend une valeur par défaut et la console te le dit. Tu ne peux
-pas casser le serveur avec une map, seulement obtenir un comportement partiel.
+That is all. Without a checkpoint the player simply respawns at the spawn point; the
+void takes care of itself.
+
+When you want the full economic loop, add a `ShopPad`, a `PrestigePad` and an
+`AfkPad` to the starting area.
 
 ---
 
-## Vérifier ta map
+## What the server will never do
 
-Au démarrage, le serveur écrit dans la console ce qu'il a trouvé :
+So you know where its responsibility stops:
+
+- it never **moves** and never **creates** a part of your map;
+- it depends on no object name and no hierarchy;
+- it politely ignores any part that is tagged but misconfigured, writing a warning to
+  the console instead of crashing.
+
+A missing attribute takes a default value and the console says so. You cannot break
+the server with a map, only get partial behaviour.
+
+---
+
+## Checking your map
+
+At start-up the server writes what it found to the console:
 
 ```
 [Runner] Map loaded: 6 checkpoints, 11 hazards, 0 coins, 4 conveyors, 1 bounce pads, 0 idle pads
@@ -173,19 +174,19 @@ Au démarrage, le serveur écrit dans la console ce qu'il a trouvé :
 [Runner] Void level set to -184 studs
 ```
 
-Si le compte ne correspond pas à ce que tu as posé, c'est un tag oublié.
+If the count does not match what you placed, a tag was forgotten.
 
-**Sans ouvrir Studio**, la même chose se lit directement dans le fichier de map :
+**Without opening Studio**, the same thing can be read straight out of the place
+file:
 
 ```
-./.tools/lune.exe run tools/probe maps/TaMap.rbxl
+./.tools/lune.exe run tools/probe maps/YourMap.rbxl
 ```
 
-Il liste chaque part taguée avec sa position et ses attributs, le SpawnLocation, le
-niveau du vide, et les scripts embarqués dans le lieu. C'est le moyen le plus rapide
-de répondre à « pourquoi cet obstacle ne réagit pas » : s'il n'apparaît pas dans la
-liste, le tag manque.
+It lists every tagged part with its position and attributes, the SpawnLocation, the
+void level, and the scripts embedded in the place. It is the fastest answer to "why
+does this obstacle do nothing": if it is not in the list, the tag is missing.
 
-> ⚠️ Si le lieu contient **tes propres scripts** de gestion (un `CheckpointManager`,
-> un `TrapManager`…), ils tournent **en même temps** que le serveur, qui lit les mêmes
-> tags. Deux téléportations, deux vélocités. Le probe les signale ; supprime-les.
+> ⚠️ If the place contains **your own manager scripts** (a `CheckpointManager`, a
+> `TrapManager`…), they run **at the same time** as the server, which reads the same
+> tags. Two teleports, two velocities. The probe reports them; delete them.

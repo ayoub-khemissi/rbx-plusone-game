@@ -1,143 +1,141 @@
-# Runner — chaque pas te rend plus rapide
+# Runner — every step makes you faster
 
-Un jeu de parcours Roblox où **courir est la seule progression**. Le personnage
-accélère au fil des mètres parcourus, débloque le double puis le triple saut, et un
-dash qui gagne en puissance — jusqu'à traverser des parcours qu'il ne pouvait
-physiquement pas franchir une heure plus tôt.
+A Roblox parkour game where **running is the only progression**. The character
+speeds up with every metre covered, unlocks a double then a triple jump, and a dash
+that grows in power — until it clears courses it was physically unable to cross an
+hour earlier.
 
-> ⚡ Chaque mètre couru augmente ta **Speed**, définitivement
-> 🪙 Ramasse des **Coins** et achète ce qui te fait aller plus loin
-> 🪽 Double saut, triple saut, dash niveau 1 à 3
-> 🚩 Franchis les barrières de vitesse qui gardent l'entrée de chaque Stage
-> 🔁 Recommence à zéro avec un **Prestige**, et va beaucoup plus vite
-
----
-
-## La boucle de jeu
-
-**Courir rapporte.** Chaque mètre parcouru augmente la Speed — définitivement — et
-rapporte des Coins. Rien de tout ça ne se perd en tombant : une chute coûte du temps,
-jamais de la progression.
-
-**Les Coins achètent la capacité d'aller plus loin.** Sauter plus haut, sauter deux
-puis trois fois, dasher plus fort, ramasser de plus loin, gagner plus vite. Ce sont
-ces achats qui ouvrent des raccourcis et des passages qui étaient hors de portée.
-
-**Les barrières découpent le parcours.** L'entrée de chaque Stage est gardée par une
-barrière qui ne laisse passer qu'au-dessus d'une certaine Speed. Elle ne se contourne
-pas : elle se mérite en courant, ou elle s'achète en avance en améliorant Stride.
-
-**Le Prestige remet tout à zéro, en plus fort.** Speed, Coins et améliorations
-disparaissent en échange d'un multiplicateur définitif sur tous les gains futurs. Le
-deuxième passage sur un parcours est une autre expérience que le premier.
+> ⚡ Every metre run raises your **Speed**, permanently
+> 🪙 Collect **Coins** and buy whatever takes you further
+> 🪽 Double jump, triple jump, dash level 1 to 3
+> 🚩 Break through the speed gates gating each Stage
+> 🔁 Start over with a **Prestige**, and go much faster
 
 ---
 
-## Se déplacer
+## The loop
 
-| Commande | Effet |
+**Running pays.** Every metre covered raises Speed — permanently — and pays Coins.
+None of it is lost by falling: a fall costs time, never progress.
+
+**Coins buy the ability to go further.** Jump higher, jump twice then three times,
+dash harder, collect from further away, gain faster. Those purchases are what open
+the shortcuts and the routes that were out of reach.
+
+**Gates cut the course into pieces.** The entrance to each Stage is guarded by a
+barrier that only opens above a certain Speed. It cannot be walked around: it is
+earned by running, or bought in advance by upgrading Stride.
+
+**Prestige resets everything, harder.** Speed, Coins and upgrades all go, in exchange
+for a permanent multiplier on every future gain. The second run through a course is a
+different experience from the first.
+
+---
+
+## Moving
+
+| Control | Effect |
 | --- | --- |
-| Directions / joystick | Courir |
-| Espace, ou le bouton de saut | Sauter — puis re-sauter en l'air une fois le double saut débloqué |
-| **Q** ou **Maj gauche**, ou le bouton dédié | Dash |
+| Directions / joystick | Run |
+| Space, or the jump button | Jump — then jump again in mid-air once the double jump is unlocked |
+| **Q** or **Left Shift**, or the dedicated button | Dash |
 
-Le saut et le dash répondent **immédiatement**, sans attendre le serveur : le pilotage
-ne doit jamais dépendre de la latence.
+Jump and dash answer **immediately**, without waiting for the server: control must
+never depend on latency.
 
-La **Speed est sa propre difficulté**. Plus tu vas vite, moins tu as de temps pour
-lire un trou ou un piège. Le jeu se durcit exactement à ton rythme, et c'est pour ça
-que le saut et le dash s'achètent séparément de la vitesse : il y a un arbitrage, pas
-un curseur à pousser à droite.
+**Speed is its own difficulty.** The faster you go, the less time you have to read a
+gap or a trap. The game hardens at exactly your pace, and that is why jump and dash
+are bought separately from speed: there is a trade-off, not a slider to push right.
 
 ---
 
-## Les Stages
+## The Stages
 
-Le parcours est découpé en cinq segments, chacun gardé par une barrière de Speed et
-plus généreux que le précédent.
+The course is cut into five segments, each guarded by a speed gate and more generous
+than the last.
 
-| # | Stage | Speed requise | Coins |
+| # | Stage | Speed required | Coins |
 | --- | --- | --- | --- |
 | 1 | Warm-up | — | ×1 |
-| 2 | Ramp | 250 | ×1,6 |
-| 3 | Climb | 1 000 | ×2,4 |
-| 4 | Gauntlet | 4 000 | ×3,5 |
+| 2 | Ramp | 250 | ×1.6 |
+| 3 | Climb | 1 000 | ×2.4 |
+| 4 | Gauntlet | 4 000 | ×3.5 |
 | 5 | Summit | 15 000 | ×5 |
 
-Des **checkpoints** jalonnent le tracé. Tomber dans le vide ou toucher un piège renvoie
-au dernier checkpoint atteint, **sans rien perdre** : ni Speed, ni Coins, ni progression
-dans le Stage.
+**Checkpoints** are laid along the route. Falling into the void or touching a trap
+sends the player back to the last checkpoint reached, **losing nothing**: not Speed,
+not Coins, not progress through the Stage.
 
 ---
 
-## Les améliorations
+## The upgrades
 
-Achetées avec des Coins, elles ne se perdent qu'au Prestige.
+Bought with Coins, and lost only to a Prestige.
 
-| Amélioration | Effet |
+| Upgrade | Effect |
 | --- | --- |
-| **Stride** | +15 % de Speed gagnée à chaque foulée |
-| **Fortune** | +20 % de Coins sur tout |
-| **Spring** | Sauter plus haut |
-| **Air Jump** | Double saut, puis triple saut |
-| **Dash** | Une ruée vers l'avant — trois niveaux de puissance |
-| **Magnet** | Ramasser les Coins de plus loin |
+| **Stride** | +15% Speed gained on every stretch |
+| **Fortune** | +20% Coins on everything |
+| **Spring** | Jump higher |
+| **Air Jump** | Double jump, then triple jump |
+| **Dash** | A burst forward — three levels of power |
+| **Magnet** | Collect Coins from further away |
 
 ---
 
-## Ce que le joueur gagne gratuitement
+## What the player gets for free
 
-- **Récompense quotidienne** — une série de sept jours, de plus en plus généreuse
-- **Coffre de session** — un coffre de Coins toutes les cinq minutes de jeu
-- **Zone AFK** — un revenu passif lent et plafonné tant qu'on y reste
-- **Codes promo** — diffusés sur les réseaux, échangeables en jeu
-- **Offres limitées** — jamais bloquantes, une seule à la fois
+- **Daily reward** — a seven-day streak, more generous each day
+- **Session chest** — a chest of Coins every five minutes of play
+- **AFK area** — slow, capped passive income while standing in it
+- **Promo codes** — shared on social media, redeemed in game
+- **Limited offers** — never blocking, one at a time
 
 ---
 
-## Ce qui est proposé à l'achat
+## What is offered for sale
 
-Rien n'est obligatoire : tout le contenu se termine sans dépenser. Les achats font
-gagner du **temps** et du **confort**, jamais de l'accès.
+Nothing is required: all the content can be finished without spending. Purchases buy
+**time** and **comfort**, never access.
 
-**Avantages permanents**
+**Permanent perks**
 x2 Coins · x2 Speed · Swift Boots · Extra Jump · Coin Magnet · Auto Run
 
-**Achats ponctuels**
-Lots de Coins (quatre tailles) · Speed Rush (×2 Speed, 20 min) · Coin Rush (×3 Coins,
-20 min) · **Party Time** (bonus offert à *tous* les joueurs présents) · Coffre immédiat ·
-Prestige immédiat · Starter Pack
+**One-off purchases**
+Coin packs (four sizes) · Speed Rush (×2 Speed, 20 min) · Coin Rush (×3 Coins,
+20 min) · **Party Time** (a bonus given to *every* player on the server) · Instant
+chest · Instant prestige · Starter Pack
 
 ---
 
-## Plusieurs thèmes, un seul jeu
+## Several themes, one game
 
-Les règles ne connaissent que des notions neutres — vitesse, monnaie, prestige, segment,
-checkpoint. Ce que le joueur lit et voit, les mots comme les icônes et les couleurs, est
-décidé séparément.
+The rules know only neutral notions — speed, currency, prestige, segment, checkpoint.
+What the player reads and sees, the words as much as the icons and the colours, is
+decided separately.
 
-Un nouveau thème rhabille donc entièrement le jeu **sans toucher à une seule règle**, et
-plusieurs peuvent coexister. L'équilibrage, lui, ne bouge jamais d'un thème à l'autre :
-deux joueurs de deux thèmes restent comparables.
-
----
-
-## Les parcours
-
-Les maps sont **construites à la main**, pas générées. Le serveur ne fait que lire ce
-que la map déclare : où sont les checkpoints, les pièges, les tapis roulants, les
-trampolines, les Coins, les barrières et les pads de la zone de départ.
-
-Le vide n'a rien à déclarer : toute chute sous le niveau le plus bas de la map est
-détectée automatiquement.
+A new theme therefore re-skins the entire game **without touching a single rule**, and
+several can ship side by side. The balancing never moves from one theme to the next:
+two players on two themes stay comparable.
 
 ---
 
-## Bon à savoir
+## The courses
 
-- La progression est **sauvegardée automatiquement**. En cas d'incident de sauvegarde,
-  la partie reste jouable et la sauvegarde existante n'est jamais écrasée.
-- La Speed est **mesurée par le serveur** à partir des déplacements réels : courir
-  vraiment est le seul moyen de progresser.
-- Les achats sont **crédités une seule fois** et ne peuvent pas être perdus, même en cas
-  de coupure au moment du paiement.
+Maps are **built by hand**, not generated. The server only reads what the map
+declares: where the checkpoints, the traps, the conveyors, the trampolines, the Coins,
+the gates and the starting-area pads are.
+
+The void declares nothing: any fall below the lowest point of the map is detected
+automatically.
+
+---
+
+## Worth knowing
+
+- Progress is **saved automatically**. If a save fails, the game stays playable and
+  the existing save is never overwritten.
+- Speed is **measured by the server** from real displacement: actually running is the
+  only way to progress.
+- Purchases are **credited exactly once** and cannot be lost, even if the connection
+  drops during payment.
