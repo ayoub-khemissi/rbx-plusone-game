@@ -16,11 +16,16 @@
 	    enough.
 ]]
 
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local Theme = require(script.Parent.Theme)
 
 local Widgets = {}
+
+-- How wide the transparency jump of a progress bar is, and how fast the bar chases
+-- a new value. Both are shared by every bar, so they move together.
+local BAR_EDGE = 0.002
+local BAR_SPEED = 12
 
 function Widgets.corner(parent: Instance, radius: UDim?)
 	local corner = Instance.new("UICorner")
@@ -232,23 +237,28 @@ end
 --[[
 	A progress bar.
 
-	THE TRACK CLIPS, THE FILL IS A RECTANGLE.
+	THE FILL IS ALWAYS THE FULL SHAPE; A TRANSPARENCY MASK DECIDES WHERE IT STOPS.
 
-	Rounding the fill itself cannot work: a UICorner radius is capped by the SMALLER
-	side of what it rounds, so a narrow fill gets a tiny radius and sits inside the
-	track's much rounder cap, leaving a dark crescent to its left. Holding the fill
-	to a minimum width hides that crescent but costs more than it buys — the bar then
-	shows the same pip at 0.5% and at 3%, so the first percents stop moving it at
-	all, which is exactly when a player is looking for movement.
+	Two obvious approaches both fail, and it is worth writing down why.
 
-	Letting the track's own rounded shape cut a plain rectangle gives the left cap
-	the right curve at every value AND keeps the width strictly proportional, down to
-	the first pixel. The right edge stays straight, which is what a filling bar
-	should look like anyway.
+	Sizing the fill to the ratio and rounding it does not work: a UICorner radius is
+	capped by the SMALLER side of what it rounds, so a narrow fill gets a tiny radius
+	and sits inside the track's much rounder cap, leaving a dark crescent to its
+	left. Holding it to a minimum width hides that crescent and costs more than it
+	buys — the bar then shows the same pip at 0.5% and at 3%, so the first percents
+	move nothing, exactly when a player is watching for movement.
 
-	Text laid over the bar goes inside the track and must stay clear of the caps: the
-	glyphs sit in the middle band, where the rounded shape is at full width, so an
-	inset of about half the height keeps them out of the curve.
+	Squaring the fill and asking the track to clip it does not work either:
+	ClipsDescendants clips to the RECTANGLE, not to the rounded corners, so the
+	square left edge simply hangs out past the cap.
+
+	So the fill never changes size. It fills the track, carries the same rounded
+	shape, and a horizontal UIGradient turns it transparent past the ratio. The cap
+	is therefore always exactly right, the edge is a straight vertical cut, and the
+	visible width is strictly proportional down to the first pixel.
+
+	The cost is that a NumberSequence cannot be tweened, so the bar animates itself
+	on Heartbeat while it is moving and disconnects the moment it settles.
 ]]
 function Widgets.bar(parent: Instance, options)
 	local track = Instance.new("Frame")
@@ -258,24 +268,77 @@ function Widgets.bar(parent: Instance, options)
 	track.AnchorPoint = options.anchorPoint or Vector2.zero
 	track.BackgroundColor3 = options.trackColor or Theme.color.background
 	track.BorderSizePixel = 0
-	track.ClipsDescendants = true
 	track.Parent = parent
 	Widgets.corner(track, Theme.radius.chip)
 	Widgets.stroke(track, Theme.color.panelEdge, Theme.stroke.button)
 
+	-- Inset so the track keeps a visible rim, and so the two rounded edges never
+	-- fight each other over the same pixel.
+	local rim = options.rim or 3
 	local fill = Instance.new("Frame")
 	fill.Name = "Fill"
-	fill.Size = UDim2.fromScale(0, 1)
+	fill.Size = UDim2.new(1, -rim * 2, 1, -rim * 2)
+	fill.Position = UDim2.fromScale(0.5, 0.5)
+	fill.AnchorPoint = Vector2.new(0.5, 0.5)
 	fill.BackgroundColor3 = options.color or Theme.color.positive
 	fill.BorderSizePixel = 0
 	fill.Parent = track
-	Widgets.gradient(fill)
+	Widgets.corner(fill, Theme.radius.chip)
+
+	local mask = Instance.new("UIGradient")
+	mask.Parent = fill
+
+	local shown, target = 0, 0
+	local stepper: RBXScriptConnection? = nil
+
+	local function paint(ratio: number)
+		if ratio <= 0 then
+			fill.Visible = false
+			return
+		end
+
+		fill.Visible = true
+		if ratio >= 1 then
+			mask.Transparency = NumberSequence.new(0)
+			return
+		end
+
+		-- A jump needs two keypoints: one last opaque, one first clear. EDGE is how
+		-- wide that jump is, and it is what keeps the cut looking like an edge.
+		local cut = math.min(ratio, 1 - BAR_EDGE * 2)
+		mask.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(cut, 0),
+			NumberSequenceKeypoint.new(cut + BAR_EDGE, 1),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+	end
+
+	local function step(deltaTime: number)
+		local remaining = target - shown
+		if math.abs(remaining) < 0.0015 then
+			shown = target
+			paint(shown)
+			if stepper then
+				stepper:Disconnect()
+				stepper = nil
+			end
+			return
+		end
+
+		shown += remaining * math.min(deltaTime * BAR_SPEED, 1)
+		paint(shown)
+	end
+
+	paint(0)
 
 	return {
 		instance = track,
 		set = function(ratio: number)
-			local clamped = math.clamp(ratio, 0, 1)
-			TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(clamped, 1) }):Play()
+			target = math.clamp(ratio, 0, 1)
+			if not stepper and shown ~= target then
+				stepper = RunService.Heartbeat:Connect(step)
+			end
 		end,
 	}
 end

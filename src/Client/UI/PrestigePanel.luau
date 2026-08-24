@@ -59,7 +59,7 @@ function PrestigePanel.new(parent: Instance, state, remotes)
 	})
 
 	self.bar = Widgets.bar(panel.content, {
-		size = UDim2.new(1, 0, 0, 16),
+		size = UDim2.new(1, 0, 0, 22),
 		position = UDim2.fromOffset(0, 166),
 		color = Theme.color.positive,
 	})
