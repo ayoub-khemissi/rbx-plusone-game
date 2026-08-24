@@ -7,7 +7,8 @@
 	platform bar and the message is never seen.
 
 	The toast is coloured by what it means, so a refusal and a reward do not have to
-	be read to be told apart.
+	be read to be told apart. It is also sized to be read WHILE RUNNING, at a glance
+	and without stopping — which is the only way any of these are ever read.
 
 	THE STACK IS A PERSPECTIVE, NOT A LIST. The newest message sits on top at full
 	size; the ones under it shrink and fade with depth, and only three are ever
@@ -42,9 +43,9 @@ local TOP_BAR_CLEARANCE = 64
 	adding a fourth row here is all it takes to show four.
 ]]
 local DEPTHS = {
-	{ height = 52, width = 1, textSize = Theme.text.body, faded = 0 },
-	{ height = 46, width = 0.9, textSize = Theme.text.small, faded = 0.3 },
-	{ height = 40, width = 0.8, textSize = Theme.text.small, faded = 0.55 },
+	{ height = 72, width = 1, textSize = Theme.text.title, faded = 0 },
+	{ height = 60, width = 0.9, textSize = Theme.text.big, faded = 0.3 },
+	{ height = 50, width = 0.8, textSize = Theme.text.body, faded = 0.55 },
 }
 
 local SETTLE = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -59,7 +60,7 @@ end
 function Notifications.new(parent: Instance)
 	local container = Instance.new("Frame")
 	container.Name = "Notifications"
-	container.Size = UDim2.fromOffset(500, 200)
+	container.Size = UDim2.fromOffset(580, 260)
 	container.Position = UDim2.new(0.5, 0, 0, TOP_BAR_CLEARANCE)
 	container.AnchorPoint = Vector2.new(0.5, 0)
 	container.BackgroundTransparency = 1
