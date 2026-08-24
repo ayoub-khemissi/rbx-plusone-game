@@ -139,14 +139,13 @@ il existe. Rien d'autre.
 Pour que le jeu soit jouable, il faut au minimum :
 
 1. Un **SpawnLocation** Roblox standard (pas de tag, Roblox s'en occupe)
-2. Un `ShopPad`
-3. Un `PrestigePad`
-4. Un `AfkPad`
-5. Un premier `Checkpoint` avec `StageId = 1`, à l'entrée du parcours
-6. Une dalle `Killzone` sous tout le niveau
+2. Un premier `Checkpoint` à l'entrée du parcours
 
-Les points 5 et 6 sont les seuls vraiment indispensables : sans checkpoint le joueur
-réapparaît au spawn, sans killzone il tombe indéfiniment.
+C'est tout. Sans checkpoint, le joueur réapparaît simplement au spawn ; le vide est
+géré tout seul.
+
+Quand tu voudras la boucle économique complète, ajoute un `ShopPad`, un `PrestigePad`
+et un `AfkPad` dans la zone de départ.
 
 ---
 
@@ -159,8 +158,8 @@ Pour que tu saches où s'arrête ma responsabilité :
 - il ignore poliment toute part taguée mais mal configurée, en écrivant un
   avertissement dans la console plutôt qu'en plantant.
 
-Si un `Checkpoint` n'a pas de `StageId`, il est ignoré et la console te le dit. Tu ne
-peux pas casser le serveur avec une map, seulement obtenir un comportement partiel.
+Un attribut manquant prend une valeur par défaut et la console te le dit. Tu ne peux
+pas casser le serveur avec une map, seulement obtenir un comportement partiel.
 
 ---
 
@@ -169,8 +168,9 @@ peux pas casser le serveur avec une map, seulement obtenir un comportement parti
 Une commande listera ce que le serveur a trouvé au démarrage :
 
 ```
-[Game] Map loaded: 4 stages, 27 checkpoints, 180 coins, 3 speed gates
-[Game] Warning: a Checkpoint has no StageId, ignored
+[Runner] Map loaded: 6 checkpoints, 11 hazards, 0 coins, 4 conveyors, 1 bounce pads, 0 idle pads
+[Runner] 6 checkpoints without a StageId, assigned to Stage 1
+[Runner] Void level set to -184 studs
 ```
 
 Si le compte ne correspond pas à ce que tu as posé, c'est un tag oublié.
