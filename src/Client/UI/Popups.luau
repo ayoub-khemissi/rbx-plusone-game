@@ -28,6 +28,11 @@ local Widgets = require(script.Parent.Widgets)
 local Popups = {}
 Popups.__index = Popups
 
+-- How far below the middle of the screen the throw starts. The camera keeps the
+-- character centred, so its feet sit a little under that: starting there makes the
+-- number look kicked up off the ground rather than out of the chest.
+local ORIGIN_Y = 80
+
 local LIFETIME = 1.15
 local SPREAD = 130 -- how far out it travels, in design pixels
 local LIFT = 90 -- how much of that is upwards, whatever direction it took
@@ -49,8 +54,8 @@ function Popups.new(parent: Instance)
 end
 
 --[[
-	Throws one number, from the middle of the screen — which is where the character
-	is, and where the eye already is.
+	Throws one number, from just under the middle of the screen — where the
+	character's feet are, and where the eye already is.
 ]]
 function Popups.spawn(self, text: string, image: string?)
 	local frame = Instance.new("Frame")
@@ -58,7 +63,7 @@ function Popups.spawn(self, text: string, image: string?)
 	frame.Size = UDim2.fromOffset(0, 40)
 	frame.AutomaticSize = Enum.AutomaticSize.X
 	frame.AnchorPoint = Vector2.new(0.5, 0.5)
-	frame.Position = UDim2.fromScale(0.5, 0.5)
+	frame.Position = UDim2.new(0.5, 0, 0.5, ORIGIN_Y)
 	frame.BackgroundTransparency = 1
 	frame.Parent = self.layer
 
@@ -137,7 +142,7 @@ function Popups._step(self, deltaTime: number)
 		local offsetX = popup.direction.X * SPREAD * arc
 		local offsetY = popup.direction.Y * SPREAD * arc - LIFT * arc
 
-		popup.frame.Position = UDim2.new(0.5, offsetX, 0.5, offsetY)
+		popup.frame.Position = UDim2.new(0.5, offsetX, 0.5, ORIGIN_Y + offsetY)
 		popup.scale.Scale = MIN_SCALE + (PEAK_SCALE - MIN_SCALE) * arc
 
 		-- Tilted by how far out to the side it has travelled, so the pair leaning
