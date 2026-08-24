@@ -44,6 +44,7 @@ local StartFlight = require(UseCases.StartFlight)
 local SampleFlight = require(UseCases.SampleFlight)
 local BankPouch = require(UseCases.BankPouch)
 local CrashFlight = require(UseCases.CrashFlight)
+local CollectRing = require(UseCases.CollectRing)
 local BuyUpgrade = require(UseCases.BuyUpgrade)
 local PerformMolt = require(UseCases.PerformMolt)
 local PlaceEgg = require(UseCases.PlaceEgg)
@@ -227,6 +228,7 @@ function Container.new(options: Options)
 		sampleFlight = SampleFlight.new(deps()),
 		bankPouch = BankPouch.new(deps({ save = saveProfile })),
 		crashFlight = CrashFlight.new(deps({ save = saveProfile })),
+		collectRing = CollectRing.new(deps()),
 
 		buyUpgrade = BuyUpgrade.new(deps()),
 		performMolt = PerformMolt.new(deps({ save = saveProfile })),

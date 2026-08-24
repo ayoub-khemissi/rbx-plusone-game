@@ -1,12 +1,11 @@
 --!strict
 --[[
-	Net — contrat reseau partage client/serveur.
+	Net — the network contract shared by client and server.
 
-	Les noms des remotes sont declares une seule fois ici : impossible pour le client
-	d'ecouter un evenement que le serveur n'expose pas (ou l'inverse) sans que ce
-	fichier ne le dise.
+	Remote names are declared once, here: the client cannot listen to an event the
+	server does not expose (or the other way round) without this file saying so.
 
-	Le serveur cree les instances, le client les attend.
+	The server creates the instances, the client waits for them.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,20 +14,22 @@ local RunService = game:GetService("RunService")
 local FOLDER_NAME = "Remotes"
 
 local EVENTS = {
-	"Notify", -- serveur -> client : message court
-	"BuyUpgrade", -- client -> serveur : achat d'amelioration
-	"Rebirth", -- client -> serveur : renaissance
-	"TravelZone", -- client -> serveur : voyage rapide
-	"RedeemCode", -- client -> serveur : code promo
-	"ClaimDaily", -- client -> serveur : recompense quotidienne
-	"ClaimChest", -- client -> serveur : coffre de session
-	"PromptPurchase", -- client -> serveur : ouvrir une fenetre d'achat
-	"CollectBanana", -- client -> serveur : ramassage a distance (aimant)
+	"Notify", -- server -> client: short message
+	"StartFlight", -- client -> server: take off from the Nest
+	"BuyUpgrade", -- client -> server: buy an upgrade
+	"Molt", -- client -> server: molt
+	"PlaceEgg", -- client -> server: put an egg in the hatchery
+	"CollectHatchling", -- client -> server: collect a hatched egg
+	"RedeemCode", -- client -> server: promo code
+	"ClaimDaily", -- client -> server: daily reward
+	"ClaimChest", -- client -> server: session chest
+	"PromptPurchase", -- client -> server: open a purchase window
+	"CollectRing", -- client -> server: ring caught by the magnet
 }
 
 local FUNCTIONS = {
-	"GetOffers", -- offres a duree limitee visibles
-	"GetRewardStatus", -- etat du quotidien et du coffre
+	"GetOffers", -- limited-time offers currently visible
+	"GetRewardStatus", -- state of the daily reward and the session chest
 }
 
 local Net = {}
@@ -45,9 +46,9 @@ local function ensureFolder(): Folder
 	return folder
 end
 
---[[ Cote serveur : cree les remotes manquantes et renvoie l'index. ]]
+--[[ Server side: creates the missing remotes and returns the index. ]]
 function Net.server()
-	assert(RunService:IsServer(), "Net.server() ne doit etre appele que sur le serveur")
+	assert(RunService:IsServer(), "Net.server() must only be called on the server")
 
 	local folder = ensureFolder()
 	local remotes = { events = {}, functions = {} }
@@ -69,7 +70,7 @@ function Net.server()
 	return remotes
 end
 
---[[ Cote client : attend les remotes creees par le serveur. ]]
+--[[ Client side: waits for the remotes created by the server. ]]
 function Net.client()
 	local folder = ReplicatedStorage:WaitForChild(FOLDER_NAME)
 	local remotes = { events = {}, functions = {} }

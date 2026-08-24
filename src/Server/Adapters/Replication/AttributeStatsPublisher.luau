@@ -1,13 +1,13 @@
 --!strict
 --[[
-	AttributeStatsPublisher — port StatsPublisher via les ATTRIBUTS du joueur.
+	AttributeStatsPublisher — port StatsPublisher, backed by player ATTRIBUTES.
 
-	Choix d'architecture : plutot qu'un flux de RemoteEvents, l'etat est pousse dans
-	des attributs repliques automatiquement par Roblox. Le client se contente
-	d'ecouter `GetAttributeChangedSignal`. Moins de reseau, aucune desynchronisation
-	possible, et l'etat reste inspectable depuis Studio.
+	Architectural choice: instead of a stream of RemoteEvents, the state is pushed
+	into attributes that Roblox replicates on its own. The client just listens on
+	`GetAttributeChangedSignal`. Less network, no possible desynchronisation, and the
+	state stays inspectable from Studio.
 
-	Les valeurs identiques ne sont pas reecrites : pas de replication inutile.
+	Identical values are not rewritten, so nothing replicates for nothing.
 ]]
 
 local HttpService = game:GetService("HttpService")
@@ -15,30 +15,45 @@ local HttpService = game:GetService("HttpService")
 local AttributeStatsPublisher = {}
 AttributeStatsPublisher.__index = AttributeStatsPublisher
 
-local SCALARS = {
+local NUMBERS = {
 	Speed = "speed",
-	Bananas = "bananas",
-	Rebirths = "rebirths",
-	ZoneId = "zoneId",
-	HighestZone = "highestZone",
-	HighestUnlockedZone = "highestUnlockedZone",
-	WalkSpeed = "walkSpeed",
-	JumpPower = "jumpPower",
-	WallGrip = "wallGrip",
-	AirDash = "airDash",
+	Gold = "gold",
+	Molts = "molts",
+	DeepestTier = "deepestTier",
+	ReachedTier = "reachedTier",
+	TierId = "tierId",
+	Feathers = "feathers",
+	InsuredFlights = "insuredFlights",
+	PouchGold = "pouchGold",
+	PouchEggs = "pouchEggs",
+	PouchTier = "pouchTier",
+	Velocity = "velocity",
+	Agility = "agility",
+	Magnet = "magnet",
+	Saturation = "saturation",
 	SpeedMultiplier = "speedMultiplier",
-	BananaMultiplier = "bananaMultiplier",
-	RebirthMultiplier = "rebirthMultiplier",
-	RebirthRequirement = "rebirthRequirement",
-	RebirthProgress = "rebirthProgress",
-	ZoneProgress = "zoneProgress",
+	GoldMultiplier = "goldMultiplier",
 	BoostSpeed = "boostSpeed",
-	BoostBananas = "boostBananas",
-	AfkRemaining = "afkRemaining",
+	BoostGold = "boostGold",
+	MoltMultiplier = "moltMultiplier",
+	MoltRequirement = "moltRequirement",
+	MoltProgress = "moltProgress",
+	TierProgress = "tierProgress",
+	NextTierRequirement = "nextTierRequirement",
 }
 
 local FLAGS = {
-	AfkActive = "afkActive",
+	Flying = "flying",
+	Insured = "insured",
+}
+
+-- Attributes cannot hold tables: these travel as JSON.
+local TABLES = {
+	Hatchery = "hatchery",
+	Eggs = "eggs",
+	Dragons = "dragons",
+	ActiveBoosts = "activeBoosts",
+	Collection = "collection",
 }
 
 function AttributeStatsPublisher.new()
@@ -51,18 +66,18 @@ local function setIfChanged(player: Player, name: string, value: any)
 	end
 end
 
---[[ Cree les leaderstats visibles dans la liste des joueurs. ]]
+--[[ Builds the leaderstats shown in the player list. ]]
 function AttributeStatsPublisher.setupPlayer(_self, player: Player)
 	local leaderstats = Instance.new("Folder")
 	leaderstats.Name = "leaderstats"
 
 	local speed = Instance.new("IntValue")
-	speed.Name = "Vitesse"
+	speed.Name = "Speed"
 	speed.Parent = leaderstats
 
-	local rebirths = Instance.new("IntValue")
-	rebirths.Name = "Renaissances"
-	rebirths.Parent = leaderstats
+	local molts = Instance.new("IntValue")
+	molts.Name = "Molts"
+	molts.Parent = leaderstats
 
 	leaderstats.Parent = player
 end
@@ -72,7 +87,7 @@ function AttributeStatsPublisher.publish(_self, player: Player, snapshot: any)
 		return
 	end
 
-	for attribute, field in SCALARS do
+	for attribute, field in NUMBERS do
 		local value = snapshot[field]
 		if typeof(value) == "number" then
 			setIfChanged(player, attribute, value)
@@ -83,6 +98,13 @@ function AttributeStatsPublisher.publish(_self, player: Player, snapshot: any)
 		setIfChanged(player, attribute, snapshot[field] == true)
 	end
 
+	for attribute, field in TABLES do
+		local ok, encoded = pcall(HttpService.JSONEncode, HttpService, snapshot[field] or {})
+		if ok then
+			setIfChanged(player, attribute, encoded)
+		end
+	end
+
 	for upgradeId, level in snapshot.upgrades do
 		setIfChanged(player, `Upg_{upgradeId}`, level)
 	end
@@ -91,21 +113,15 @@ function AttributeStatsPublisher.publish(_self, player: Player, snapshot: any)
 		setIfChanged(player, `Pass_{passId}`, owned == true)
 	end
 
-	-- Les attributs ne stockent pas de table : les boosts actifs passent en JSON.
-	local ok, encoded = pcall(HttpService.JSONEncode, HttpService, snapshot.activeBoosts or {})
-	if ok then
-		setIfChanged(player, "ActiveBoosts", encoded)
-	end
-
 	local leaderstats = player:FindFirstChild("leaderstats")
 	if leaderstats then
-		local speed = leaderstats:FindFirstChild("Vitesse")
+		local speed = leaderstats:FindFirstChild("Speed")
 		if speed then
 			(speed :: IntValue).Value = math.floor(snapshot.speed)
 		end
-		local rebirths = leaderstats:FindFirstChild("Renaissances")
-		if rebirths then
-			(rebirths :: IntValue).Value = snapshot.rebirths
+		local molts = leaderstats:FindFirstChild("Molts")
+		if molts then
+			(molts :: IntValue).Value = snapshot.molts
 		end
 	end
 end

@@ -37,7 +37,7 @@ Les tests s'exécutent **sans Roblox Studio**, en moins de 50 ms.
 `check.ps1` valide `default.project.json` en construisant le lieu hors Studio :
 une erreur d'arborescence est donc détectée avant même d'ouvrir Roblox.
 
-La carte est **générée au démarrage du serveur** : il n'y a rien à construire à la main.
+Le ciel est **généré au démarrage du serveur** : il n'y a rien à construire à la main.
 En Studio sans accès aux API, la sauvegarde bascule automatiquement en mémoire.
 
 ## Écrire du code
@@ -94,11 +94,11 @@ Format [Conventional Commits](https://www.conventionalcommits.org/) :
 ```
 
 Types utilisés : `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`.
-Portées : `domain`, `application`, `server`, `client`, `monetization`, `afk`, `world`.
+Portées : `domain`, `application`, `server`, `client`, `monetization`, `world`, `build`.
 
 ```
-feat(domain): add wall grip bonus to speed curve
-fix(application): stop crediting movement while stunned
+feat(domain): add agility bonus to the speed curve
+fix(application): stop crediting movement after a wall
 ```
 
 `./scripts/check.ps1` doit être vert avant chaque commit.

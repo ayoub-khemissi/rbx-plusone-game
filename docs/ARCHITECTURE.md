@@ -46,16 +46,15 @@ et `src/Server/Application` ne doit contenir aucune référence à une instance 
 src/
 ├─ Shared/                     → ReplicatedStorage.Shared
 │  ├─ Config/                  Équilibrage : la seule source de constantes
-│  │   Balance · Upgrades · Zones · Passes · Products · Monetization · World
+│  │   Balance · Tiers · Upgrades · Dragons · Passes · Products · Monetization · World
 │  ├─ Domain/                  RÈGLES DU JEU (Luau pur, testé)
-│  │  ├─ Progression/          SpeedCurve · MovementAccounting · Multipliers ·
-│  │  │                        Progression · IdleAccrual
+│  │  ├─ Flight/               SpeedCurve · FlightAccounting · Multipliers · Progression
+│  │  ├─ Run/                  Pouch · TierLadder · SkyLayout
+│  │  ├─ Hatchery/             Clutch · RarityTable · DragonCatalog
 │  │  ├─ Economy/              UpgradeCatalog · Purchase
-│  │  ├─ Zones/                ZoneLadder · TrackLayout
-│  │  ├─ Rebirth/              RebirthPolicy
-│  │  ├─ Monetization/         BoostStack · PurchaseLedger · ProductCatalog ·
-│  │  │                        Grants · RewardSchedule · IntervalReward ·
-│  │  │                        PromoCodes · OfferEngine
+│  │  ├─ Molt/                 MoltPolicy
+│  │  ├─ Monetization/         BoostStack · PurchaseLedger · ProductCatalog · Grants ·
+│  │  │                        RewardSchedule · IntervalReward · PromoCodes · OfferEngine
 │  │  ├─ Profile/              Entité de sauvegarde + migration de schéma
 │  │  └─ Support/              Result · Format
 │  ├─ Net.luau                 Contrat réseau partagé
@@ -63,21 +62,22 @@ src/
 │
 ├─ Server/                     → ServerScriptService.Server
 │  ├─ Application/             CAS D'USAGE (dépendent des ports uniquement)
-│  │  ├─ Ports.luau            Contrats : repository, publisher, notifier…
-│  │  ├─ SessionRegistry       État en mémoire des joueurs connectés
+│  │  ├─ Ports.luau            Contrats : repository, publisher, notifier, random…
+│  │  ├─ SessionRegistry       État volatil du vol (Pouch, feathers, insurance)
 │  │  ├─ Snapshot              Modèle de présentation envoyé au client
+│  │  ├─ EggRoller             Tirage des raretés, à la frontière du domaine
 │  │  ├─ RewardApplier         Chemin commun à toute récompense
-│  │  └─ UseCases/             16 cas d'usage, un fichier chacun
+│  │  └─ UseCases/             19 cas d'usage, un fichier chacun
 │  ├─ Adapters/                IMPLÉMENTATIONS ROBLOX
 │  │  ├─ Persistence/          DataStore · InMemory
 │  │  ├─ Replication/          Attributs + leaderstats · Notifications
-│  │  └─ Roblox/               Humanoid · téléportation · Marketplace · sondes
-│  ├─ World/                   Génération de la carte (Palette · WorldBuilder)
+│  │  └─ Roblox/               FlightActuator · téléportation · Marketplace · sondes
+│  ├─ World/                   Génération du ciel (Palette · SkyBuilder)
 │  └─ Composition/             Container · Adapters · Bootstrap · bindings
 │
 └─ Client/                     → StarterPlayerScripts.Client
    ├─ State.luau               Miroir local de l'état répliqué
-   ├─ Controllers/             Wall-run · barrières · gamepasses · effets
+   ├─ Controllers/             Vol arcade · barrières · magnet · effets
    └─ UI/                      Theme · Widgets · HUD · fenêtres
 ```
 
@@ -91,10 +91,11 @@ adaptateur Roblox en production, par un double en test.
 | `ProfileRepository` | charger / sauvegarder | `DataStoreProfileRepository` | `Fakes.repository()` |
 | `StatsPublisher` | répliquer l'état | `AttributeStatsPublisher` | `Fakes.publisher()` |
 | `Notifier` | messages joueur | `RemoteNotifier` | `Fakes.notifier()` |
-| `MovementActuator` | appliquer la vitesse | `HumanoidActuator` | `Fakes.actuator()` |
+| `FlightActuator` | appliquer vitesse et agilité | `FlightActuator` | `Fakes.actuator()` |
 | `Teleporter` | déplacer le personnage | `CharacterTeleporter` | `Fakes.teleporter()` |
 | `PassGateway` / `Marketplace` | gamepasses et achats | `MarketplaceGateway` | `Fakes.passGateway()` |
 | `Clock` | temps | `os.time` / `os.clock` | horloge contrôlée |
+| `Random` | tirages (raretés, espèces) | `Random.new()` | séquence déterministe |
 
 ## Racine de composition
 
@@ -105,7 +106,7 @@ Les tests d'intégration montent ce même conteneur avec des doubles :
 
 ```lua
 local container = Container.new({ ports = fakePorts })
-container.useCases.buyUpgrade:run(player, "speedGain")
+container.useCases.bankPouch:run(player)
 ```
 
 Le câblage de production est donc lui aussi couvert par la suite de tests.
@@ -113,22 +114,27 @@ Le câblage de production est donc lui aussi couvert par la suite de tests.
 ## Choix structurants
 
 **La vitesse est mesurée par le serveur.** Le client n'envoie jamais de gain. Une boucle
-échantillonne la position réelle du personnage et plafonne le déplacement crédité à ce
-qui est physiquement atteignable (`MovementAccounting`). Un téléport ou un multiplicateur
-client ne rapporte rien de plus qu'une course honnête.
+échantillonne la position réelle du personnage, en trois dimensions, et plafonne le
+déplacement crédité à ce qui est physiquement atteignable (`FlightAccounting`). Un
+téléport ou un multiplicateur client ne rapporte rien de plus qu'un vol honnête.
+
+**La Pouch ne quitte jamais la session.** Tout ce qui appartient à un vol — or en jeu,
+Tier atteint, plumes, assurance — vit dans `SessionRegistry`, jamais dans le profil.
+Se déconnecter en plein vol ne protège donc pas une Pouch : elle n'a jamais existé
+ailleurs qu'en mémoire.
 
 **L'état est répliqué par attributs, pas par RemoteEvents.** Le serveur écrit des
 attributs sur le joueur, Roblox les réplique, le client les écoute. Moins de réseau,
 aucune désynchronisation possible, état inspectable depuis Studio.
 
-**Le confort est client, la décision est serveur.** Le wall-run, les barrières
-traversables et les effets tournent chez le joueur pour un contrôle sans latence ;
-le serveur revalide systématiquement (`EnforceZoneAccess` renvoie un joueur entré dans
-une zone trop rapide pour lui).
+**Le confort est client, la décision est serveur.** Le pilotage, la couleur des
+barrières et les effets tournent chez le joueur pour un contrôle sans latence ; le
+serveur revalide systématiquement (`SampleFlight` renvoie un dragon entré dans un Tier
+trop rapide pour lui, et le magnet est plafonné en distance côté serveur).
 
-**La courbe de vitesse est bornée.** La physique Roblox décroche au-delà de ~250 studs/s.
-`SpeedCurve` applique une exponentielle inverse : le compteur peut exploser, la vitesse
-réelle reste jouable.
+**La courbe de vitesse est bornée.** Un corps trop rapide traverse un mur entre deux
+frames et la collision n'est jamais vue. `SpeedCurve` applique une exponentielle
+inverse : le compteur peut exploser, la vitesse réelle reste sous le plafond.
 
 **La sauvegarde ne s'écrase jamais par accident.** Si la lecture du DataStore échoue,
 la session est marquée non sauvegardable : le joueur peut jouer, mais sa progression

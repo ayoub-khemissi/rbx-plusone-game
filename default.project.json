@@ -1,5 +1,5 @@
 {
-  "name": "plus-one-evasion-du-singe-rapide",
+  "name": "plus-one-sky-dragons",
   "tree": {
     "$className": "DataModel",
 
@@ -20,7 +20,10 @@
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
-        "$className": "StarterPlayerScripts"
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/Client"
+        }
       },
       "StarterCharacterScripts": {
         "$className": "StarterCharacterScripts"

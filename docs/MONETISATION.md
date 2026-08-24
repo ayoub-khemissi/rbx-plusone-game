@@ -7,9 +7,9 @@ Roblox et les occasions d'achat.
 ```
    RÉTENTION            →  temps de jeu  →  visibilité Roblox  →  nouveaux joueurs
    (quotidien, coffres,                          │
-    AFK, codes)                                  ▼
+    couvoir, codes)                              ▼
                                           OCCASIONS D'ACHAT
-                                    (paliers difficiles, offres)
+                                    (barrières de vent, Pouch perdue)
                                                  │
                         ┌────────────────────────┴────────────────────────┐
                         ▼                                                 ▼
@@ -22,17 +22,16 @@ Roblox et les occasions d'achat.
 | Mécanique | Rythme | Effet recherché |
 | --- | --- | --- |
 | Récompense quotidienne | 1 / jour, série de 7 | Faire revenir demain |
-| Coffre de session | toutes les 5 min | Faire rester maintenant |
-| Zone AFK | par minute, plafonnée | Maintenir le serveur peuplé |
+| Sky Chest | toutes les 5 min | Faire rester maintenant |
+| Couvaison des œufs | temps réel, hors ligne | Donner une raison de revenir |
+| Perch au Nest | pendant la session | Maintenir le serveur peuplé |
 | Codes promo | ponctuel | Acquisition via les réseaux |
-| Bananes au sol | continu | Récompenser l'exploration |
+| Rings | continu | Tracer la trajectoire idéale |
 
-**Sur la zone AFK.** Trois garde-fous la maintiennent à sa place : elle ne rapporte
-**que** des bananes (jamais de vitesse), elle ignore **tous** les multiplicateurs — donc
-son intérêt fond à mesure que le joueur progresse — et elle est **plafonnée par session**.
-Le compteur vit dans la session et jamais dans la sauvegarde : se reconnecter ne
-contourne pas le plafond, laisser tourner une nuit ne crée pas de revenu illimité.
-Elle sert le nombre de joueurs simultanés, pas la progression.
+**Sur la couvaison.** C'est le système d'attente du jeu, et il est honnête : les œufs
+avancent en temps réel, y compris joueur déconnecté, donc l'absence n'est jamais punie.
+Rester au **Perch** accélère seulement la couvaison — les serveurs restent peuplés, ce
+qui compte pour les recommandations Roblox, sans payer personne à rester planté.
 
 ## 2. Permanent — gamepasses
 
@@ -40,39 +39,42 @@ Achat unique, valeur perçue élevée, aucun contenu bloqué derrière.
 
 | Gamepass | Effet |
 | --- | --- |
-| x2 Vitesse | Double la vitesse gagnée par pas |
-| x2 Bananes | Double les bananes ramassées |
-| Super Saut | +15 de puissance de saut |
-| Singe VIP | x1.5 vitesse et bananes, +1 s d'accroche murale |
-| Course automatique | Le singe avance seul |
-| Aimant à bananes | Ramasse à distance |
+| x2 Gold | Double l'or rapporté au Nest |
+| x2 Eggs | Double les œufs encaissés à un Altar |
+| Swift Wing | x1.5 Speed et un virage plus stable |
+| Phoenix Feather | Un mur pardonné par vol : la Pouch survit |
+| Ring Magnet | Attrape les Rings de bien plus loin |
+| Nest Keeper | Deux emplacements de couvoir supplémentaires |
 
-Les deux derniers ne touchent pas à l'équilibrage : ils vendent du **confort**, ce qui
-évite l'effet « pay-to-win » tout en se vendant très bien.
+Aucun ne débloque de contenu. Le Phoenix Feather est le plus vendeur des six, parce
+qu'il s'achète juste après avoir perdu une Pouch — et qu'on sait exactement ce qu'on
+vient de perdre.
 
 ## 3. Répétable — produits développeur
 
-C'est la source de revenu principale : le joueur revient acheter à chaque palier.
+C'est la source de revenu principale : le joueur revient acheter à chaque barrière.
 
 | Produit | Prix indicatif | Contenu |
 | --- | --- | --- |
-| Poignée / Régime / Cageot / Camion de bananes | 99 / 199 / 499 / 999 R$ | 2 500 → 100 000 bananes |
-| Ruée du singe | 149 R$ | x2 vitesse, 20 min |
-| Fièvre de la banane | 149 R$ | x3 bananes, 20 min |
-| Fête du serveur | 299 R$ | Bonus pour **tous** les joueurs, 10 min |
-| Renaissance immédiate | 399 R$ | Renaît sans le seuil, garde les améliorations |
-| Pack du petit singe | 199 R$ | Offre de bienvenue : bananes + boost |
+| Pouch / Chest / Hoard / Dragon's Hoard | 99 / 199 / 499 / 999 R$ | 2 500 → 100 000 or |
+| Swift Rush | 149 R$ | x2 Speed, 20 min |
+| Gold Fever | 149 R$ | x3 or, 20 min |
+| Sky Festival | 299 R$ | Bonus pour **tous** les joueurs, 10 min |
+| Instant Hatch | 149 R$ | Tous les œufs du Nest éclosent |
+| Flight Insurance | 199 R$ | Moitié de la Pouch récupérée, 3 vols |
+| Instant Molt | 399 R$ | Molt immédiate, améliorations gardées |
+| Hatchling Pack | 199 R$ | Offre de bienvenue : or + œuf rare + boost |
 
 La grille 99 / 199 / 499 / 999 est celle à laquelle les joueurs Roblox sont habitués,
 avec une offre « meilleure offre » mise en avant pour tirer le panier moyen.
 
 ## 4. Social et acquisition
 
-- **Fête du serveur** : l'acheteur est nommé dans une notification vue par tous. L'achat
+- **Sky Festival** : l'acheteur est nommé dans une notification vue par tous. L'achat
   devient un geste social, très visible, souvent imité.
 - **Offres à durée limitée** : une seule à la fois, jamais bloquante. Le pack de
-  bienvenue apparaît après quelques minutes de jeu ; un boost est proposé au moment
-  précis où le joueur bute sur une barrière de zone.
+  bienvenue apparaît après quelques minutes de jeu ; l'assurance est proposée au moment
+  précis où le joueur vient de perdre une Pouch.
 - **Codes promo** : diffusables sur TikTok, YouTube ou Discord, ils ramènent des joueurs
   sans budget publicitaire.
 
@@ -88,7 +90,7 @@ Un achat perdu, c'est un joueur perdu. Le traitement des reçus applique trois r
    en mémoire puis perdu.
 
 Ces trois cas sont couverts par des tests automatisés
-(`tests/specs/application/monetization.spec.luau`).
+(`tests/specs/application/flight.spec.luau` et le domaine `Monetization`).
 
 ## Mise en service
 
@@ -102,6 +104,6 @@ Aucune ligne de code n'est à modifier pour activer la monétisation.
 
 ## Réglages
 
-Tout se règle dans `src/Shared/Config/Monetization.luau` : durées et cumul des boosts,
-table des récompenses quotidiennes, intervalle des coffres, codes promo, offres, et
-paramètres de la zone AFK (rythme, plafond, position du pad).
+Tout se règle dans `src/Shared/Config/Monetization.luau` : raretés et leurs poids,
+durées de couvaison et emplacements, durées et cumul des boosts, table des récompenses
+quotidiennes, intervalle du Sky Chest, codes promo et offres.

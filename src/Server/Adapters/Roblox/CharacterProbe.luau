@@ -1,16 +1,16 @@
 --!strict
 --[[
-	CharacterProbe — lecture de l'etat physique reel d'un personnage.
+	CharacterProbe — reads the real physical state of a character.
 
-	Convertit les types Roblox (Vector3) en donnees pures ({x, y, z}) attendues par
-	le domaine : la frontiere Roblox / metier passe par ici.
+	Converts Roblox types (Vector3) into the plain data the domain expects
+	({x, y, z}): the Roblox / business boundary runs through here.
 ]]
 
 local CharacterProbe = {}
 
 export type Reading = {
 	position: { x: number, y: number, z: number },
-	walkSpeed: number,
+	velocity: number,
 	grounded: boolean,
 }
 
@@ -29,7 +29,8 @@ function CharacterProbe.read(player: Player): Reading?
 	local position = root.Position
 	return {
 		position = { x = position.X, y = position.Y, z = position.Z },
-		walkSpeed = humanoid.WalkSpeed,
+		-- Actual speed of the body, not the authorised one: that is the point.
+		velocity = root.AssemblyLinearVelocity.Magnitude,
 		grounded = humanoid.FloorMaterial ~= Enum.Material.Air,
 	}
 end

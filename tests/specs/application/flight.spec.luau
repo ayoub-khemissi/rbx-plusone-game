@@ -312,3 +312,30 @@ describe("CrashFlight", function()
 		expect(container.useCases.crashFlight:run(player).code).toBe("NOT_FLYING")
 	end)
 end)
+
+describe("CollectRing", function()
+	local container, player, session
+	beforeEach(function()
+		container = build()
+		player, session = joined(container)
+	end)
+
+	it("pays gold into the pouch, still at risk", function()
+		container.useCases.startFlight:run(player)
+		local result = container.useCases.collectRing:run(player, 100)
+
+		expect(result.value.granted).toBe(100)
+		expect(session.pouch.gold).toBe(100)
+		expect(session.profile.gold).toBe(0)
+	end)
+
+	it("scales with the gold multipliers", function()
+		session.profile.upgrades.goldGain = 1 -- +20%
+		container.useCases.startFlight:run(player)
+		expect(container.useCases.collectRing:run(player, 100).value.granted).toBeCloseTo(120, 1e-9)
+	end)
+
+	it("pays nothing outside a flight", function()
+		expect(container.useCases.collectRing:run(player, 100).code).toBe("NOT_FLYING")
+	end)
+end)

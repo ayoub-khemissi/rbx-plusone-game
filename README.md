@@ -1,127 +1,136 @@
-# ⚡ +1 Évasion du Singe Rapide
+# 🐉 +1 Envol — Dragons de l'Archipel
 
-Un jeu Roblox de course et d'escalade où **chaque pas rend plus rapide**.
-Le joueur incarne un singe qui s'échappe de la jungle : il court, saute sur les murs,
-franchit les obstacles, et voit sa vitesse grimper sans jamais s'arrêter.
+Un jeu Roblox de vol où **chaque mètre parcouru rend plus rapide**, et où la vraie
+question n'est jamais « est-ce que je vais y arriver » mais **« est-ce que j'encaisse
+maintenant, ou est-ce que je monte encore ? »**
 
-> 🐒 Sautez sur les murs et courez comme un singe
-> 👟 Chaque pas vous rend plus rapide
-> 🏆 Surmontez les obstacles pour gagner
-> 💪 Débloquez de nouvelles améliorations
-> 🔥 Renaissez pour repousser vos limites
+> 🐉 Décolle de ton Nest et traverse les Rings
+> ⚡ Chaque envol te rend plus rapide, définitivement
+> 🪙 Remplis ta Pouch d'or — mais elle n'est pas encore à toi
+> 🥚 Touche un Altar pour l'encaisser, ou vise le Tier suivant
+> 💥 Un Wall, et tout ce que tu n'as pas encaissé disparaît
 
 ---
 
 ## La boucle de jeu
 
-**Courir rapporte.** Chaque pas parcouru augmente la **Vitesse** du singe et rapporte des
-**Bananes**. Plus la vitesse monte, plus le personnage se déplace vite — et plus il
-parcourt de distance dans le même temps. Le joueur n'a jamais besoin de cliquer sur
-quoi que ce soit pour progresser : il lui suffit de courir.
+**Voler rapporte.** Chaque mètre augmente la **Speed** du dragon — définitivement — et
+remplit la **Pouch** d'or. La Speed ne se perd jamais : même un vol qui finit contre un
+mur t'a rendu plus rapide.
 
-**Les bananes s'échangent contre de la puissance.** Elles servent à acheter des
-améliorations permanentes qui accélèrent la progression : gain de vitesse, gain de
-bananes, hauteur de saut, adhérence aux murs, élan aérien.
+**Rien n'est acquis tant que tu n'as pas encaissé.** L'or et les œufs de la Pouch
+restent en jeu. À chaque Tier franchi, un **Altar** doré apparaît, volontairement
+**écarté de la trajectoire rapide** : le toucher encaisse tout et te ramène au Nest.
+L'ignorer, c'est viser le Tier suivant, qui vaut environ **2,5 fois plus**.
 
-**La vitesse ouvre le monde.** La jungle est découpée en huit zones successives,
-chacune protégée par une barrière qui exige un palier de vitesse. Plus la zone est
-profonde, plus elle rapporte : c'est là que se joue toute la montée en puissance.
+**Un mur vide la Pouch.** Retour au Nest, relance immédiate. C'est cette tension —
+ta propre décision, jamais la difficulté seule — qui fait le jeu.
 
-**La renaissance repart de zéro, en plus fort.** Passé un certain seuil, le joueur peut
-tout remettre à zéro — vitesse, bananes, améliorations — en échange d'un bonus
-définitif sur tous ses gains futurs. C'est ce cycle qui donne au jeu sa durée de vie.
+**Les œufs deviennent des dragons.** Encaisser rapporte des œufs qui couvent au Nest
+**en temps réel, même déconnecté**. Chaque éclosion donne un dragon de collection, un
+bonus permanent et une monture visible par les autres joueurs.
+
+**La Molt repart de zéro, en plus fort.** Une fois le dernier Tier atteint, tout se
+remet à zéro — Speed, or, améliorations — en échange d'un multiplicateur définitif sur
+tous les gains, d'un ciel plus hostile et de nouvelles écailles.
 
 ---
 
-## Les mouvements du singe
+## Voler
 
-| Mouvement | Ce que ça donne |
+La **Speed est sa propre difficulté** : plus tu progresses, plus tu vas vite, et moins
+tu as de temps pour éviter les murs. Le jeu se durcit exactement à ton rythme.
+
+C'est pour ça que l'**Agility** s'achète séparément. Pousser la Speed sans elle, c'est
+devenir incapable de piloter. Il y a un arbitrage, pas un curseur à pousser à droite.
+
+| Commande | Effet |
 | --- | --- |
-| **Course sur les murs** | En sautant contre un mur latéral, le singe s'y accroche et continue sa course en hauteur pendant quelques secondes. |
-| **Saut mural** | Un appui sur saut pendant l'accroche propulse le singe loin du mur — de quoi enchaîner les murs et franchir les grands vides. |
-| **Élan aérien** | Une amélioration permet de relancer sa course en plein saut pour rattraper une plateforme manquée. |
+| Direction (clavier ou joystick) | Oriente le dragon |
+| Espace / bouton ▲ | Prendre de l'altitude |
+| Maj / bouton ▼ | Piquer |
 
-Le décor est pensé pour ces mouvements : murs de course sur les côtés de la piste,
-plateformes en hauteur qui récompensent la maîtrise, haies à franchir, et rotors qui
-ralentissent temporairement ceux qui les percutent.
+Le dragon avance tout seul : on ne gère que la trajectoire.
 
 ---
 
-## Les huit zones
+## Les dix Tiers
 
-| # | Zone | Ce qui change |
+L'archipel monte : chaque Tier est plus haut et plus hostile que le précédent, et son
+entrée est gardée par une **barrière de vent** que seule une Speed suffisante
+transperce.
+
+| # | Tier | Ce qui change |
 | --- | --- | --- |
-| 1 | Clairière des Bananiers | Le point de départ, sans barrière. |
-| 2 | Canopée Basse | Premiers murs de course, gains renforcés. |
-| 3 | Lianes du Ravin | Grands vides à franchir. |
-| 4 | Temple Moussu | Parcours plus technique. |
-| 5 | Cascade Rugissante | Gains largement supérieurs. |
-| 6 | Falaises de Braise | Obstacles denses. |
-| 7 | Cité des Nuages | Réservée aux joueurs très avancés. |
-| 8 | Sommet du Singe Roi | Zone finale, récompenses maximales. |
+| 1 | Hanging Meadows | Le départ, sans barrière |
+| 2 | Gilded Ruins | Passages étroits entre les arches |
+| 3 | Upturned Falls | Colonnes d'eau mouvantes |
+| 4 | Cloud Grove | Les murs commencent à dériver |
+| 5 | Amber Arches | Herses — œuf rare garanti |
+| 6 | Wind Sanctuary | Anneaux rotatifs |
+| 7 | Sea of Mist | Visibilité réduite |
+| 8 | Crystal Spires | Couloirs resserrés |
+| 9 | The Aurora | Murs mobiles rapides — œuf épique garanti |
+| 10 | The Crown | Tout à la fois — œuf légendaire garanti |
 
-Chaque zone débloquée reste accessible : un menu permet d'y retourner directement.
+Du Tier 1 au Tier 10, le butin passe de 1 œuf commun à 400 œufs légendaires, et
+l'or de la Pouch est multiplié par 10.
+
+---
+
+## Le Nest
+
+La plateforme de départ, et le seul endroit sûr.
+
+- **Launch Pad** — décoller, sans temps mort
+- **Hatchery** — les œufs y couvent, même joueur déconnecté
+- **Perch** — rester connecté accélère la couvaison
+- **Collection** — le livre des dragons à compléter
+- **Boutique** — améliorations en or, et boutique Robux
 
 ---
 
 ## Ce que le joueur gagne gratuitement
 
-- **Récompense quotidienne** — une série de sept jours, de plus en plus généreuse.
-  Manquer plus de deux jours remet la série au début.
-- **Coffre de session** — un coffre de bananes toutes les cinq minutes de jeu.
-- **Zone AFK** — un pad dans le hub qui rapporte des bananes même sans jouer.
-  Volontairement modeste : il ne rapporte jamais de vitesse et s'arrête au bout de
-  quelques heures, pour rester un service rendu et non une façon de jouer.
-- **Codes promo** — des codes diffusés sur les réseaux, échangeables en jeu contre
-  des bananes ou un boost.
-- **Bananes au sol** — semées tout au long de la piste, elles réapparaissent
-  régulièrement et valent d'autant plus que la zone est profonde.
+- **Récompense quotidienne** — une série de sept jours, de plus en plus généreuse
+- **Sky Chest** — un coffre d'or toutes les cinq minutes de jeu
+- **Couvaison hors ligne** — les œufs avancent pendant l'absence, sans jamais la punir
+- **Codes promo** — diffusés sur les réseaux, échangeables en jeu
+- **Rings** — semés le long de chaque Tier, ils tracent la trajectoire idéale
 
 ---
 
 ## Ce qui est proposé à l'achat
 
-Rien n'est obligatoire : tout le contenu du jeu se termine sans dépenser.
-Les achats font gagner du **temps** et du **confort**.
+Rien n'est obligatoire : tout le contenu se termine sans dépenser. Les achats font
+gagner du **temps** et du **confort**.
 
 **Avantages permanents**
-x2 Vitesse · x2 Bananes · Super Saut · Singe VIP · Course automatique · Aimant à bananes
+x2 Gold · x2 Eggs · Swift Wing · Phoenix Feather (un mur pardonné par vol) ·
+Ring Magnet · Nest Keeper (emplacements de couvoir)
 
 **Achats ponctuels**
-Sacs de bananes (quatre tailles) · Ruée du singe (x2 vitesse, 20 min) ·
-Fièvre de la banane (x3 bananes, 20 min) · Fête du serveur (bonus offert à **tous** les
-joueurs présents) · Renaissance immédiate · Pack du petit singe (offre de bienvenue)
+Sacs d'or (quatre tailles) · Swift Rush (x2 Speed, 20 min) · Gold Fever (x3 or, 20 min) ·
+**Sky Festival** (bonus offert à *tous* les joueurs présents) · Éclosion instantanée ·
+**Flight Insurance** (la moitié de la Pouch récupérée sur tes trois prochains vols) ·
+Molt immédiate · Hatchling Pack (offre de bienvenue)
 
-**Offres limitées**
-Le jeu propose ponctuellement une offre à durée limitée — un pack de bienvenue après
-quelques minutes de jeu, ou un boost lorsqu'un joueur bute sur une barrière. Une seule
-à la fois, jamais en pleine course, et toujours refusable.
-
----
-
-## Ce que le joueur voit à l'écran
-
-- **En haut à gauche** : vitesse, bananes, renaissances, zone en cours et progression
-  vers la suivante.
-- **À gauche** : boutique d'améliorations, renaissance, carte des zones, cadeaux,
-  boutique Robux.
-- **En haut à droite** : boosts actifs et leur temps restant, état de la zone AFK.
-- **En bas à droite** : l'offre du moment, avec son compte à rebours.
-- **Effets** : champ de vision qui s'ouvre et traînée derrière le singe à mesure que la
-  vitesse grimpe.
+Les trois produits propres à ce jeu — la plume, l'assurance et l'éclosion instantanée —
+s'achètent dans l'instant du regret. C'est précisément pour ça qu'ils se vendent.
 
 ---
 
 ## Bon à savoir
 
-- La progression est **sauvegardée automatiquement** et restaurée à la reconnexion.
-  En cas d'incident de sauvegarde, la partie reste jouable mais la progression
-  existante n'est jamais écrasée.
-- La vitesse gagnée est **mesurée par le serveur** à partir des déplacements réels :
-  courir vraiment est le seul moyen de progresser.
-- Les achats sont **crédités une seule fois** et ne peuvent pas être perdus, même en
-  cas de coupure au moment du paiement.
+- La progression est **sauvegardée automatiquement**. En cas d'incident, la partie reste
+  jouable mais la sauvegarde existante n'est jamais écrasée.
+- La Speed est **mesurée par le serveur** à partir des déplacements réels, en trois
+  dimensions : voler vraiment est le seul moyen de progresser.
+- Un vol **ne survit pas à une déconnexion** : se déconnecter ne protège pas une Pouch.
+- Les achats sont **crédités une seule fois** et ne peuvent pas être perdus, même en cas
+  de coupure au moment du paiement.
 
 ---
 
-*Documentation technique : voir le dossier [`docs/`](docs/).*
+*Concept détaillé : [`docs/CONCEPT.md`](docs/CONCEPT.md) — documentation technique :
+[`docs/`](docs/).*
