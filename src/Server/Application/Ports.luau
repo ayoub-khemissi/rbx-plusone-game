@@ -30,12 +30,12 @@ export type Notifier = {
 	notify: (self: Notifier, player: PlayerRef, message: string, kind: string?) -> (),
 }
 
---[[ Applies the flight state (velocity, agility) to the dragon. ]]
-export type FlightActuator = {
-	apply: (self: FlightActuator, player: PlayerRef, flight: any) -> (),
+--[[ Applies the movement state (speed, jump, abilities) to the character. ]]
+export type MovementActuator = {
+	apply: (self: MovementActuator, player: PlayerRef, movement: any) -> (),
 }
 
---[[ Forced movement of the character: launch, barrier push-back, return to the Nest. ]]
+--[[ Forced movement of the character: respawn, checkpoint return, gate push-back. ]]
 export type Teleporter = {
 	sendTo: (self: Teleporter, player: PlayerRef, position: Point) -> (),
 }
@@ -51,17 +51,13 @@ export type Marketplace = {
 }
 
 --[[
-	Injectable clock. `now()` is an absolute epoch — incubation and boosts must
-	survive a disconnection — while `monotonic()` measures durations.
+	Injectable clock. `now()` is an absolute epoch — boosts and daily streaks must
+	survive a disconnection — while `monotonic()` measures durations that only make
+	sense within one session, such as an ability cooldown.
 ]]
 export type Clock = {
 	now: () -> number,
 	monotonic: () -> number,
-}
-
---[[ Injectable randomness: keeps every drop reproducible in a test. ]]
-export type Random = {
-	nextNumber: () -> number,
 }
 
 return {}
