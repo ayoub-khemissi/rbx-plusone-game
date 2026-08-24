@@ -18,7 +18,6 @@
 
 local RunService = game:GetService("RunService")
 
-local Sound = require(script.Parent.Parent.Sound)
 local Theme = require(script.Parent.Theme)
 
 local Widgets = {}
@@ -229,14 +228,7 @@ function Widgets.button(parent: Instance, options): TextButton
 	end
 
 	if options.onClick then
-		button.Activated:Connect(function()
-			-- Wired here rather than in each view: a view that has to remember to
-			-- make a noise is a view that will forget. `quiet` opts a button out.
-			if options.quiet ~= true then
-				Sound.play("click")
-			end
-			options.onClick()
-		end)
+		button.Activated:Connect(options.onClick)
 	end
 
 	return button

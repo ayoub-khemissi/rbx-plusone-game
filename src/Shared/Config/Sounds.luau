@@ -61,9 +61,6 @@ local sounds: { [string]: Cue } = {
 	refused = { id = "rbxassetid://7153932260", volume = 0.4 },
 	reward = { id = "rbxassetid://4612373756", volume = 0.65 },
 	boost = { id = "rbxassetid://3406813517", volume = 0.6 },
-
-	-- Interface.
-	click = { id = "rbxassetid://7381722372", volume = 0.35 },
 }
 
 return table.freeze(sounds)
