@@ -55,15 +55,23 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	row.LayoutOrder = order
 	Widgets.padding(row, 10)
 
+	Widgets.icon(row, {
+		image = definition.image,
+		fallback = definition.icon,
+		size = UDim2.fromOffset(30, 30),
+		position = UDim2.fromScale(0, 0),
+	})
+
 	Widgets.label(row, {
-		size = UDim2.new(0.6, 0, 0, 24),
+		size = UDim2.new(0.6, -38, 0, 26),
+		position = UDim2.fromOffset(38, 0),
 		font = Theme.font.title,
-		text = `{definition.icon} {definition.name}`,
+		text = definition.name,
 	})
 
 	local description = Widgets.label(row, {
 		size = UDim2.new(0.6, 0, 0, 20),
-		position = UDim2.fromOffset(0, 26),
+		position = UDim2.fromOffset(0, 28),
 		font = Theme.font.body,
 		color = Theme.color.textMuted,
 		text = definition.description or "",

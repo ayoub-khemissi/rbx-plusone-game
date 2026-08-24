@@ -125,6 +125,69 @@ function Widgets.bar(parent: Instance, options)
 	}
 end
 
+--[[
+	An icon: an image when the theme provides one, the emoji otherwise.
+
+	Keeping the fallback matters — an asset that is missing, still moderated or not
+	yet approved would otherwise leave an empty square where a symbol should be.
+]]
+function Widgets.icon(parent: Instance, options): GuiObject
+	if options.image then
+		local image = Instance.new("ImageLabel")
+		image.Name = options.name or "Icon"
+		image.Size = options.size or UDim2.fromOffset(28, 28)
+		image.Position = options.position or UDim2.fromScale(0, 0)
+		image.AnchorPoint = options.anchorPoint or Vector2.zero
+		image.BackgroundTransparency = 1
+		image.Image = options.image
+		image.ScaleType = Enum.ScaleType.Fit
+		image.ImageColor3 = options.color or Color3.new(1, 1, 1)
+		image.LayoutOrder = options.layoutOrder or 0
+		image.Parent = parent
+		return image
+	end
+
+	return Widgets.label(parent, {
+		name = options.name or "Icon",
+		size = options.size or UDim2.fromOffset(28, 28),
+		position = options.position,
+		anchorPoint = options.anchorPoint,
+		align = Enum.TextXAlignment.Center,
+		text = options.fallback or "",
+		layoutOrder = options.layoutOrder,
+	})
+end
+
+--[[ An icon followed by a value, the pattern every stat row uses. ]]
+function Widgets.statRow(parent: Instance, options)
+	local row = Instance.new("Frame")
+	row.Name = options.name or "Stat"
+	row.Size = options.size or UDim2.new(1, 0, 0, 30)
+	row.Position = options.position or UDim2.fromScale(0, 0)
+	row.BackgroundTransparency = 1
+	row.Parent = parent
+
+	local iconSize = options.iconSize or 26
+	Widgets.icon(row, {
+		image = options.image,
+		fallback = options.fallback,
+		size = UDim2.fromOffset(iconSize, iconSize),
+		position = UDim2.fromScale(0, 0.5),
+		anchorPoint = Vector2.new(0, 0.5),
+	})
+
+	local value = Widgets.label(row, {
+		name = "Value",
+		size = UDim2.new(1, -(iconSize + 8), 1, 0),
+		position = UDim2.fromOffset(iconSize + 8, 0),
+		font = options.font or Theme.font.number,
+		color = options.color,
+		text = options.text or "",
+	})
+
+	return { frame = row, value = value }
+end
+
 function Widgets.list(parent: Instance, options)
 	local layout = Instance.new("UIListLayout")
 	layout.FillDirection = options.direction or Enum.FillDirection.Vertical

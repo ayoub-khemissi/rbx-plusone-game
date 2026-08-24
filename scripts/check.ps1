@@ -37,7 +37,7 @@ try {
 
     Write-Host "`n== Build Rojo ==" -ForegroundColor Cyan
     # Valide default.project.json et l'arborescence sans ouvrir Studio.
-    & (Join-Path $tools "rojo.exe") build default.project.json --output "$env:TEMP\skydragons-check.rbxl"
+    & (Join-Path $tools "rojo.exe") build default.project.json --output "$env:TEMP\build-check.rbxl"
     if ($LASTEXITCODE -ne 0) { $failed += "rojo build" }
 
     Write-Host "`n== Tests ==" -ForegroundColor Cyan

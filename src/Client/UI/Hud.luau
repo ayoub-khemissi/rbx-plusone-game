@@ -6,7 +6,8 @@
 	can spend, and how far the next gate is. The jump and dash indicators sit low and
 	centre, where the eyes already are during a jump.
 
-	Every word comes from the theme: this file never hardcodes a noun.
+	Every word and every icon comes from the theme: this file hardcodes no noun and
+	no asset id.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -21,6 +22,7 @@ local Hud = {}
 Hud.__index = Hud
 
 local LABELS = Config.Theme.labels
+local ICONS = Config.Theme.icons
 
 local function stageName(stageId: number): string
 	local stage = Config.Stages[stageId]
@@ -32,65 +34,77 @@ function Hud.new(parent: ScreenGui, state)
 
 	local card = Widgets.card(parent, {
 		name = "Stats",
-		size = UDim2.fromOffset(268, 146),
+		size = UDim2.fromOffset(268, 156),
 		position = UDim2.fromOffset(14, 14),
 	})
 	Widgets.padding(card, 12)
 
-	self.speedLabel = Widgets.label(card, {
-		size = UDim2.new(1, 0, 0, 42),
+	self.speedRow = Widgets.statRow(card, {
+		name = "Speed",
+		image = LABELS.speed.image,
+		fallback = LABELS.speed.icon,
+		size = UDim2.new(1, 0, 0, 38),
+		iconSize = 34,
 		font = Theme.font.title,
 		color = Theme.color.accent,
-		text = `{LABELS.speed.icon} 0`,
 	})
 
-	self.coinLabel = Widgets.label(card, {
-		size = UDim2.new(1, 0, 0, 26),
-		position = UDim2.fromOffset(0, 46),
-		font = Theme.font.number,
-		text = `{LABELS.coins.icon} 0`,
+	self.coinRow = Widgets.statRow(card, {
+		name = "Coins",
+		image = LABELS.coins.image,
+		fallback = LABELS.coins.icon,
+		size = UDim2.new(1, 0, 0, 28),
+		position = UDim2.fromOffset(0, 42),
 	})
 
-	self.prestigeLabel = Widgets.label(card, {
-		size = UDim2.new(1, 0, 0, 22),
+	self.prestigeRow = Widgets.statRow(card, {
+		name = "Prestige",
+		image = LABELS.prestige.image,
+		fallback = LABELS.prestige.icon,
+		size = UDim2.new(1, 0, 0, 24),
 		position = UDim2.fromOffset(0, 74),
+		iconSize = 20,
 		font = Theme.font.body,
 		color = Theme.color.textMuted,
 	})
 
 	self.stageLabel = Widgets.label(card, {
 		size = UDim2.new(1, 0, 0, 20),
-		position = UDim2.fromOffset(0, 98),
+		position = UDim2.fromOffset(0, 104),
 		font = Theme.font.body,
 		color = Theme.color.textMuted,
 	})
 
 	self.stageBar = Widgets.bar(card, {
 		size = UDim2.new(1, 0, 0, 10),
-		position = UDim2.fromOffset(0, 122),
+		position = UDim2.fromOffset(0, 128),
 	})
 
 	-- Jump and dash, bottom centre: what the hands are doing.
 	self.abilityCard = Widgets.card(parent, {
 		name = "Abilities",
-		size = UDim2.fromOffset(230, 52),
+		size = UDim2.fromOffset(240, 56),
 		position = UDim2.new(0.5, 0, 1, -18),
 		anchorPoint = Vector2.new(0.5, 1),
 		transparency = 0.2,
 	})
 	Widgets.padding(self.abilityCard, 8)
 
-	self.jumpLabel = Widgets.label(self.abilityCard, {
+	self.jumpRow = Widgets.statRow(self.abilityCard, {
+		name = "Jump",
+		image = ICONS.jump,
+		fallback = "🪽",
 		size = UDim2.fromScale(0.5, 1),
-		font = Theme.font.number,
-		align = Enum.TextXAlignment.Center,
+		iconSize = 24,
 	})
 
-	self.dashLabel = Widgets.label(self.abilityCard, {
+	self.dashRow = Widgets.statRow(self.abilityCard, {
+		name = "Dash",
+		image = ICONS.dash,
+		fallback = "💨",
 		size = UDim2.fromScale(0.5, 1),
 		position = UDim2.fromScale(0.5, 0),
-		font = Theme.font.number,
-		align = Enum.TextXAlignment.Center,
+		iconSize = 24,
 	})
 
 	self.statusCard = Widgets.card(parent, {
@@ -118,11 +132,10 @@ end
 function Hud.render(self)
 	local state = self.state
 
-	self.speedLabel.Text = `{LABELS.speed.icon} {Format.abbreviate(state:get("Speed"))}`
-	self.coinLabel.Text = `{LABELS.coins.icon} {Format.abbreviate(state:get("Coins"))}`
-	self.prestigeLabel.Text = `{LABELS.prestige.icon} {state:get("Prestiges")} — {Format.multiplier(
-		state:get("SpeedMultiplier")
-	)}`
+	self.speedRow.value.Text = Format.abbreviate(state:get("Speed"))
+	self.coinRow.value.Text = Format.abbreviate(state:get("Coins"))
+	self.prestigeRow.value.Text =
+		`{state:get("Prestiges")} — {Format.multiplier(state:get("SpeedMultiplier"))}`
 
 	local reached = math.max(state:get("ReachedStage"), 1)
 	local nextRequirement = state:get("NextStageRequirement")
@@ -133,21 +146,25 @@ function Hud.render(self)
 
 	-- Jump level 1 has no air jump: showing "0/0" would only puzzle the player.
 	local jumpLevel = math.max(state:get("JumpLevel"), 1)
-	self.jumpLabel.Text = if jumpLevel > 1
-		then `🪽 {state:get("JumpsLeft")}/{jumpLevel - 1}`
-		else "🪽 —"
+	if jumpLevel > 1 then
+		self.jumpRow.value.Text = `{state:get("JumpsLeft")}/{jumpLevel - 1}`
+		self.jumpRow.value.TextColor3 = Theme.color.text
+	else
+		self.jumpRow.value.Text = "—"
+		self.jumpRow.value.TextColor3 = Theme.color.locked
+	end
 
 	local dashLevel = state:get("DashLevel")
 	local cooldown = state:get("DashCooldown")
 	if dashLevel <= 0 then
-		self.dashLabel.Text = "💨 —"
-		self.dashLabel.TextColor3 = Theme.color.locked
+		self.dashRow.value.Text = "—"
+		self.dashRow.value.TextColor3 = Theme.color.locked
 	elseif cooldown > 0 then
-		self.dashLabel.Text = string.format("💨 %.1fs", cooldown)
-		self.dashLabel.TextColor3 = Theme.color.locked
+		self.dashRow.value.Text = string.format("%.1fs", cooldown)
+		self.dashRow.value.TextColor3 = Theme.color.locked
 	else
-		self.dashLabel.Text = `💨 {dashLevel}`
-		self.dashLabel.TextColor3 = Theme.color.positive
+		self.dashRow.value.Text = tostring(dashLevel)
+		self.dashRow.value.TextColor3 = Theme.color.positive
 	end
 
 	local parts = {}

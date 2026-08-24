@@ -51,11 +51,24 @@ function Root.mount(player: Player, state, remotes)
 
 	local LABELS = Config.Theme.labels
 
+	local ICONS = Config.Theme.icons
+
 	Sidebar.new(screen, {
-		{ name = "Shop", icon = LABELS.coins.icon, onClick = exclusiveToggle("shop") },
-		{ name = "Prestige", icon = LABELS.prestige.icon, onClick = exclusiveToggle("prestige") },
-		{ name = "Gifts", icon = "🎁", onClick = exclusiveToggle("gifts") },
-		{ name = "Store", icon = "💎", color = Theme.color.accentDark, onClick = exclusiveToggle("store") },
+		{ name = "Shop", icon = LABELS.coins.icon, image = ICONS.shop, onClick = exclusiveToggle("shop") },
+		{
+			name = "Prestige",
+			icon = LABELS.prestige.icon,
+			image = LABELS.prestige.image,
+			onClick = exclusiveToggle("prestige"),
+		},
+		{ name = "Gifts", icon = "🎁", image = ICONS.gifts, onClick = exclusiveToggle("gifts") },
+		{
+			name = "Store",
+			icon = "💎",
+			image = ICONS.store,
+			color = Theme.color.accentDark,
+			onClick = exclusiveToggle("store"),
+		},
 	})
 
 	-- A hub pad can ask for a window: the map decides where the shop is.
