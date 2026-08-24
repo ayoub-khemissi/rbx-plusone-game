@@ -2,7 +2,7 @@
 --[[
 	LoadPlayerProfile — opens the session of a player joining the game.
 
-	Major safety rule: if reading the store fails, the player can still fly but the
+	Major safety rule: if reading the store fails, the player can still play but the
 	session is marked NOT savable. Losing one session is far better than overwriting
 	hours of progress with an empty profile.
 ]]

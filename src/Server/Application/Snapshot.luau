@@ -5,10 +5,9 @@
 	This is a PRESENTATION MODEL: the client never sees the Profile entity, it reads
 	this stable contract. Changing the shape of the save therefore does not ripple
 	into the interface, and the reverse holds too.
-]]
 
-local Shared = require(script.Parent.Parent.Shared)
-local Pouch = require(Shared.Domain.Run.Pouch)
+	It carries no themed word either: the client puts the theme labels on top.
+]]
 
 local SessionRegistry = require(script.Parent.SessionRegistry)
 
@@ -21,10 +20,11 @@ export type Dependencies = {
 	ladder: any,
 	progression: any,
 	multipliers: any,
-	moltPolicy: any,
+	prestigePolicy: any,
+	jumpBudget: any,
+	dashPolicy: any,
 	boosts: any,
-	clutch: any,
-	dragons: any,
+	idle: any,
 	clock: any,
 }
 
@@ -39,65 +39,58 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 	local now = self.clock.now()
 
 	local boostBonuses = self.boosts:multipliersFor(profile, now)
-	local dragonBonuses = self.dragons:bonusesFor(profile)
 	local bonuses = self.multipliers:compute(profile, {
+		stage = self.ladder:get(session.stageId),
 		passes = session.passes,
 		boosts = boostBonuses,
-		dragons = dragonBonuses,
 	})
-	local flight = self.progression:flightFor(profile, bonuses)
+	local movement = self.progression:movementFor(profile, bonuses)
 
-	local reachedTier = self.ladder:highestUnlocked(profile.speed)
-	local nextTier = self.ladder:nextOf(reachedTier)
-	local pouch = if session.pouch then Pouch.preview(session.pouch) else nil
+	local reachedStage = self.ladder:highestUnlocked(profile.speed)
+	local nextStage = self.ladder:nextOf(reachedStage)
 
 	return {
 		-- Permanent progression
 		speed = profile.speed,
-		gold = profile.gold,
-		molts = profile.molts,
-		deepestTier = profile.deepestTier,
-		reachedTier = reachedTier,
+		coins = profile.coins,
+		prestiges = profile.prestiges,
+		highestStage = profile.highestStage,
+		reachedStage = reachedStage,
 		upgrades = table.clone(profile.upgrades),
 		passes = table.clone(session.passes),
 
-		-- Current flight
-		flying = session.flying,
-		tierId = session.tierId,
-		feathers = session.feathers,
-		insured = session.insured,
-		insuredFlights = profile.insuredFlights,
-		pouchGold = if pouch then pouch.gold else 0,
-		pouchEggs = if pouch then pouch.eggs else 0,
-		pouchTier = if pouch then pouch.tierId else 0,
+		-- Current run
+		stageId = session.stageId,
+		hasCheckpoint = session.checkpoint ~= nil,
+		idleActive = session.idleActive,
+		idleRemaining = self.idle:remainingFor(session.idle),
 
-		-- Flight state
-		velocity = flight.velocity,
-		agility = flight.agility,
-		magnet = flight.magnet,
-		saturation = flight.saturation,
+		-- Movement
+		walkSpeed = movement.walkSpeed,
+		jumpPower = movement.jumpPower,
+		jumpLevel = movement.jumpLevel,
+		jumpsLeft = self.jumpBudget:remaining(session.jumps, self.jumpBudget:capacityFor(bonuses)),
+		dashLevel = movement.dashLevel,
+		dashPower = movement.dashPower,
+		dashCooldown = self.dashPolicy:remainingCooldown(session.dash, self.clock.monotonic()),
+		magnet = movement.magnet,
+		saturation = movement.saturation,
 
 		-- Multipliers
 		speedMultiplier = bonuses.speed,
-		goldMultiplier = bonuses.gold,
+		coinMultiplier = bonuses.coins,
 		boostSpeed = boostBonuses.speed,
-		boostGold = boostBonuses.gold,
+		boostCoins = boostBonuses.coins,
 		activeBoosts = self.boosts:activeFor(profile, now),
 
-		-- Molt
-		moltMultiplier = self.moltPolicy:multiplierFor(profile.molts),
-		moltRequirement = self.moltPolicy:requirementFor(profile.molts),
-		moltProgress = self.moltPolicy:progressFor(profile),
+		-- Prestige
+		prestigeMultiplier = self.prestigePolicy:multiplierFor(profile.prestiges),
+		prestigeRequirement = self.prestigePolicy:requirementFor(profile.prestiges),
+		prestigeProgress = self.prestigePolicy:progressFor(profile),
 
-		-- Next barrier
-		tierProgress = self.ladder:progressToNext(reachedTier, profile.speed),
-		nextTierRequirement = nextTier and nextTier.requiredSpeed,
-
-		-- Nest
-		eggs = table.clone(profile.eggs),
-		hatchery = self.clutch:statusFor(profile, now),
-		dragons = table.clone(profile.dragons),
-		collection = self.dragons:completion(profile),
+		-- Next gate
+		stageProgress = self.ladder:progressToNext(reachedStage, profile.speed),
+		nextStageRequirement = nextStage and nextStage.requiredSpeed,
 	}
 end
 

@@ -146,7 +146,7 @@ function RewardsPanel.refresh(self)
 
 	local chest = status.chest
 	if chest then
-		self.chestDetail.Text = `+{Format.abbreviate((chest.grant and chest.grant.gold) or 0)} gold`
+		self.chestDetail.Text = `+{Format.abbreviate((chest.grant and chest.grant.coins) or 0)} Coins`
 		self.chestButton.Text = if chest.claimable
 			then "OPEN"
 			else `READY IN {Format.duration(chest.secondsRemaining)}`

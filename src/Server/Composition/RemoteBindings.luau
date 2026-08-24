@@ -25,29 +25,17 @@ local function distanceToPlayer(player: Player, part: BasePart): number
 	return (root.Position - part.Position).Magnitude
 end
 
-function RemoteBindings.bind(container, remotes, world)
+function RemoteBindings.bind(container, remotes)
 	local useCases = container.useCases
 	local events = remotes.events
 	local functions = remotes.functions
-
-	events.StartFlight.OnServerEvent:Connect(function(player)
-		useCases.startFlight:run(player)
-	end)
 
 	events.BuyUpgrade.OnServerEvent:Connect(function(player, upgradeId)
 		useCases.buyUpgrade:run(player, upgradeId)
 	end)
 
-	events.Molt.OnServerEvent:Connect(function(player)
-		useCases.performMolt:run(player)
-	end)
-
-	events.PlaceEgg.OnServerEvent:Connect(function(player, rarity)
-		useCases.placeEgg:run(player, rarity)
-	end)
-
-	events.CollectHatchling.OnServerEvent:Connect(function(player, slotIndex)
-		useCases.collectHatchling:run(player, slotIndex)
+	events.Prestige.OnServerEvent:Connect(function(player)
+		useCases.performPrestige:run(player)
 	end)
 
 	events.RedeemCode.OnServerEvent:Connect(function(player, code)
@@ -66,28 +54,50 @@ function RemoteBindings.bind(container, remotes, world)
 		useCases.promptPurchase:run(player, kind, id)
 	end)
 
-	-- Ring magnet: the client points at the ring, the server checks the pass, the
-	-- distance and the cooldown before paying anything.
-	events.CollectRing.OnServerEvent:Connect(function(player, part)
-		local session = container.sessions:forPlayer(player)
-		if not session or not session.flying then
+	-- The client asks for an air jump; the server owns the budget and answers.
+	events.RequestJump.OnServerEvent:Connect(function(player)
+		local result = useCases.requestJump:run(player)
+		if result.ok then
+			events.JumpGranted:FireClient(player, result.value.jumpPower)
+		end
+	end)
+
+	events.Landed.OnServerEvent:Connect(function(player)
+		useCases.noteLanded:run(player)
+	end)
+
+	-- Same for the dash: the cooldown lives server side, or it would not be waited.
+	events.RequestDash.OnServerEvent:Connect(function(player)
+		local result = useCases.requestDash:run(player)
+		if result.ok then
+			events.DashGranted:FireClient(player, result.value.power)
+		end
+	end)
+
+	-- Coin magnet: the client points at a coin, the server checks the tag and the
+	-- distance before paying anything.
+	events.CollectCoin.OnServerEvent:Connect(function(player, part)
+		if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
 			return
 		end
-		if
-			typeof(part) ~= "Instance"
-			or not part:IsA("BasePart")
-			or not part:IsDescendantOf(world.folder)
-		then
-			return
-		end
-		if not CollectionService:HasTag(part, "Ring") then
+		if not CollectionService:HasTag(part, "Coin") or not part.CanTouch then
 			return
 		end
 		if distanceToPlayer(player, part) > MAX_MAGNET_RANGE then
 			return
 		end
 
-		world.collectRing(player, part)
+		local value = part:GetAttribute("Value") or container.config.Balance.run.coinValue
+		useCases.collectCoin:run(player, value)
+
+		part.Transparency = 1
+		part.CanTouch = false
+		task.delay(container.config.Balance.run.coinRespawn, function()
+			if part.Parent then
+				part.Transparency = 0
+				part.CanTouch = true
+			end
+		end)
 	end)
 
 	functions.GetOffers.OnServerInvoke = function(player)

@@ -22,7 +22,12 @@ local EVENTS = {
 	"ClaimChest", -- client -> server: session chest
 	"PromptPurchase", -- client -> server: open a purchase window
 	"CollectCoin", -- client -> server: coin caught by the magnet
-	"AirJump", -- client -> server: an air jump was spent
+	"RequestJump", -- client -> server: ask for an air jump
+	"RequestDash", -- client -> server: ask for a dash
+	"Landed", -- client -> server: the character touched the ground
+	"JumpGranted", -- server -> client: an air jump was allowed
+	"DashGranted", -- server -> client: a dash was allowed, with its power
+	"OpenPanel", -- server -> client: a hub pad asks to open a window
 }
 
 local FUNCTIONS = {

@@ -17,43 +17,40 @@ AttributeStatsPublisher.__index = AttributeStatsPublisher
 
 local NUMBERS = {
 	Speed = "speed",
-	Gold = "gold",
-	Molts = "molts",
-	DeepestTier = "deepestTier",
-	ReachedTier = "reachedTier",
-	TierId = "tierId",
-	Feathers = "feathers",
-	InsuredFlights = "insuredFlights",
-	PouchGold = "pouchGold",
-	PouchEggs = "pouchEggs",
-	PouchTier = "pouchTier",
-	Velocity = "velocity",
-	Agility = "agility",
+	Coins = "coins",
+	Prestiges = "prestiges",
+	HighestStage = "highestStage",
+	ReachedStage = "reachedStage",
+	StageId = "stageId",
+	WalkSpeed = "walkSpeed",
+	JumpPower = "jumpPower",
+	JumpLevel = "jumpLevel",
+	JumpsLeft = "jumpsLeft",
+	DashLevel = "dashLevel",
+	DashPower = "dashPower",
+	DashCooldown = "dashCooldown",
 	Magnet = "magnet",
 	Saturation = "saturation",
 	SpeedMultiplier = "speedMultiplier",
-	GoldMultiplier = "goldMultiplier",
+	CoinMultiplier = "coinMultiplier",
 	BoostSpeed = "boostSpeed",
-	BoostGold = "boostGold",
-	MoltMultiplier = "moltMultiplier",
-	MoltRequirement = "moltRequirement",
-	MoltProgress = "moltProgress",
-	TierProgress = "tierProgress",
-	NextTierRequirement = "nextTierRequirement",
+	BoostCoins = "boostCoins",
+	PrestigeMultiplier = "prestigeMultiplier",
+	PrestigeRequirement = "prestigeRequirement",
+	PrestigeProgress = "prestigeProgress",
+	StageProgress = "stageProgress",
+	NextStageRequirement = "nextStageRequirement",
+	IdleRemaining = "idleRemaining",
 }
 
 local FLAGS = {
-	Flying = "flying",
-	Insured = "insured",
+	HasCheckpoint = "hasCheckpoint",
+	IdleActive = "idleActive",
 }
 
 -- Attributes cannot hold tables: these travel as JSON.
 local TABLES = {
-	Hatchery = "hatchery",
-	Eggs = "eggs",
-	Dragons = "dragons",
 	ActiveBoosts = "activeBoosts",
-	Collection = "collection",
 }
 
 function AttributeStatsPublisher.new()
@@ -75,9 +72,9 @@ function AttributeStatsPublisher.setupPlayer(_self, player: Player)
 	speed.Name = "Speed"
 	speed.Parent = leaderstats
 
-	local molts = Instance.new("IntValue")
-	molts.Name = "Molts"
-	molts.Parent = leaderstats
+	local prestiges = Instance.new("IntValue")
+	prestiges.Name = "Prestige"
+	prestiges.Parent = leaderstats
 
 	leaderstats.Parent = player
 end
@@ -119,9 +116,9 @@ function AttributeStatsPublisher.publish(_self, player: Player, snapshot: any)
 		if speed then
 			(speed :: IntValue).Value = math.floor(snapshot.speed)
 		end
-		local molts = leaderstats:FindFirstChild("Molts")
-		if molts then
-			(molts :: IntValue).Value = snapshot.molts
+		local prestiges = leaderstats:FindFirstChild("Prestige")
+		if prestiges then
+			(prestiges :: IntValue).Value = snapshot.prestiges
 		end
 	end
 end

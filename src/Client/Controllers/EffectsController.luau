@@ -68,15 +68,14 @@ function EffectsController._update(self)
 	end
 
 	local saturation = math.clamp(self.state:get("Saturation"), 0, 1)
-	local flying = self.state:flag("Flying")
-	local target = BASE_FOV + MAX_EXTRA_FOV * (if flying then saturation else 0)
+	local target = BASE_FOV + MAX_EXTRA_FOV * saturation
 
 	if math.abs(camera.FieldOfView - target) > 0.5 then
 		TweenService:Create(camera, TweenInfo.new(0.4), { FieldOfView = target }):Play()
 	end
 
 	if self.trail and self.trail.Parent then
-		self.trail.Enabled = flying and saturation > TRAIL_THRESHOLD
+		self.trail.Enabled = saturation > TRAIL_THRESHOLD
 	end
 end
 

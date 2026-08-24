@@ -29,11 +29,7 @@ function ProcessReceipt._applyServerBoost(self, buyer, boost, now)
 		self.boosts:grant(session.profile, boost.id, boost.duration, now)
 		if session.player then
 			self.publisher:publish(session.player, self.snapshots:build(session))
-			self.notifier:notify(
-				session.player,
-				`🎉 {buyer.Name} started a Sky Festival for everyone!`,
-				"success"
-			)
+			self.notifier:notify(session.player, `🎉 {buyer.Name} started a Party for everyone!`, "success")
 		end
 	end)
 end

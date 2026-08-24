@@ -3,8 +3,8 @@
 	Client entry point.
 
 	The client computes no gain: it reads the state replicated by the server, draws
-	the interface and handles FEEL (responsive flight, effects, gate colours). Every
-	game decision stays on the server.
+	the interface and handles FEEL — instant jumps and dashes, effects, gates that
+	open without waiting. Every decision that pays stays on the server.
 ]]
 
 local Players = game:GetService("Players")
@@ -15,8 +15,8 @@ local Net = require(Shared.Net)
 
 local State = require(script.State)
 local Root = require(script.UI.Root)
-local FlightController = require(script.Controllers.FlightController)
-local GateController = require(script.Controllers.GateController)
+local MovementController = require(script.Controllers.MovementController)
+local SpeedGateController = require(script.Controllers.SpeedGateController)
 local MagnetController = require(script.Controllers.MagnetController)
 local EffectsController = require(script.Controllers.EffectsController)
 
@@ -26,7 +26,7 @@ local state = State.new(player)
 
 Root.mount(player, state, remotes)
 
-FlightController.new(player, state)
-GateController.new(state)
+MovementController.new(player, state, remotes)
+SpeedGateController.new(state)
 MagnetController.new(player, state, remotes)
 EffectsController.new(player, state)

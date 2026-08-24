@@ -1,6 +1,6 @@
 --!strict
 --[[
-	ShopPanel — upgrades bought with gold.
+	ShopPanel — upgrades bought with Coins.
 
 	The displayed price is computed with the SAME domain module as the server
 	(UpgradeCatalog), so the price shown and the price charged can never drift apart.
@@ -93,7 +93,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 end
 
 function ShopPanel.render(self)
-	local gold = self.state:get("Gold")
+	local coins = self.state:get("Coins")
 
 	for _, definition in Config.Upgrades do
 		local row = self.rows[definition.id]
@@ -109,7 +109,7 @@ function ShopPanel.render(self)
 		else
 			local cost = self.catalog:costFor(definition.id, currentLevel)
 			row.buy.Text = `🪙 {Format.abbreviate(cost)}`
-			row.buy.BackgroundColor3 = if gold >= cost then Theme.color.accent else Theme.color.locked
+			row.buy.BackgroundColor3 = if coins >= cost then Theme.color.accent else Theme.color.locked
 		end
 	end
 end

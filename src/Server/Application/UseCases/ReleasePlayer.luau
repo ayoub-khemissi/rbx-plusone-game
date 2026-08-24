@@ -2,8 +2,8 @@
 --[[
 	ReleasePlayer — saves then frees the session when a player leaves.
 
-	A flight in progress is simply dropped: the pouch was never theirs, and letting
-	it survive would turn disconnecting into a way to protect it.
+	The run in progress is simply dropped: a checkpoint is a position, not progress,
+	and nothing about it deserves to survive a reconnection.
 ]]
 
 local Shared = require(script.Parent.Parent.Parent.Shared)
@@ -23,7 +23,7 @@ function ReleasePlayer.run(self, player)
 		return Result.err("NO_SESSION", "No session to release")
 	end
 
-	self.sessions:endFlight(session)
+	self.sessions:resetRun(session)
 
 	local saved = self.save:run(userId)
 	self.sessions:close(userId)

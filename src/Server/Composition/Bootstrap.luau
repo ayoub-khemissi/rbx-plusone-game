@@ -1,9 +1,12 @@
 --!strict
 --[[
-	Bootstrap — server start-up: build, wire, then run.
+	Bootstrap — server start-up: wire, then run.
 
-	Only three loops:
-	  1. SAMPLING — measures the real displacement and credits the flight;
+	No world is generated here: the map is hand built and read through tags, per
+	docs/MAP.md. The server only discovers what the map declares.
+
+	Three loops:
+	  1. SAMPLING — measures the real displacement, credits it, and feeds the idle pad;
 	  2. AUTOSAVE — writes the profiles periodically;
 	  3. SHUTDOWN — saves everyone before the server closes.
 ]]
@@ -18,52 +21,59 @@ local Net = require(Shared.Net)
 local Container = require(script.Parent.Container)
 local AdaptersFactory = require(script.Parent.Adapters)
 local RemoteBindings = require(script.Parent.RemoteBindings)
-local WorldBindings = require(script.Parent.WorldBindings)
-local SkyBuilder = require(script.Parent.Parent.World.SkyBuilder)
+local MapBindings = require(script.Parent.MapBindings)
 local CharacterProbe = require(script.Parent.Parent.Adapters.Roblox.CharacterProbe)
 
 local Bootstrap = {}
 
 --[[
-	Sampling loop: the server observes, the client declares nothing.
-
-	The very same loop credits perching, because a player who is not flying is either
-	at the Nest or on their way there.
+	The Hub is wherever the map put its SpawnLocation. Falling with no checkpoint
+	sends the player there, so the server has to find it rather than assume it.
 ]]
-local function startSampling(container)
-	local interval = Config.Balance.flight.sampleInterval
-	local perchInterval = Config.Balance.run.perchInterval
+local function findHubPoint(container, logger)
+	local spawn = nil
+	for _, descendant in workspace:GetDescendants() do
+		if descendant:IsA("SpawnLocation") then
+			spawn = descendant
+			break
+		end
+	end
+
+	if not spawn then
+		logger:warn("No SpawnLocation in the map: falls with no checkpoint will land at the origin")
+		return
+	end
+
+	container.hubPoint.x = spawn.Position.X
+	container.hubPoint.y = spawn.Position.Y + Config.Balance.run.respawnHeight
+	container.hubPoint.z = spawn.Position.Z
+end
+
+--[[ Sampling loop: the server observes, the client declares nothing. ]]
+local function startSampling(container, map)
+	local interval = Config.Balance.movement.sampleInterval
 	local accumulator = 0
-	local perchAccumulator = 0
 
 	RunService.Heartbeat:Connect(function(deltaTime)
 		accumulator += deltaTime
-		perchAccumulator += deltaTime
-
 		if accumulator < interval then
 			return
 		end
+
+		local elapsed = accumulator
 		accumulator = 0
-
-		local perching = perchAccumulator >= perchInterval
-		if perching then
-			perchAccumulator = 0
-		end
-
 		local now = container.clock.monotonic()
 
 		for _, player in Players:GetPlayers() do
 			local reading = CharacterProbe.read(player)
 			if reading then
-				container.useCases.sampleFlight:run(player, {
+				container.useCases.sampleMovement:run(player, {
 					position = reading.position,
-					velocity = reading.velocity,
+					walkSpeed = reading.walkSpeed,
 					at = now,
 				})
 
-				if perching then
-					container.useCases.perchAtNest:run(player, perchInterval)
-				end
+				container.useCases.accrueIdleReward:run(player, map.isOnIdlePad(reading.position), elapsed)
 			end
 		end
 	end)
@@ -91,11 +101,14 @@ local function bindPlayers(container)
 			container.ports.logger:warn(`Loading the profile of {player.Name}: {result.code}`)
 		end
 
-		-- Dying mid-flight ends the flight: the pouch was never theirs.
+		-- A fresh character is standing on solid ground: refill the air jumps and
+		-- forget the last sampled position, which belonged to the previous body.
 		player.CharacterAdded:Connect(function()
 			local session = container.sessions:forPlayer(player)
-			if session and session.flying then
-				container.useCases.crashFlight:run(player)
+			if session then
+				session.lastPosition = nil
+				session.lastSampleAt = nil
+				container.useCases.noteLanded:run(player)
 			end
 		end)
 	end
@@ -121,21 +134,20 @@ function Bootstrap.start()
 	local ports = AdaptersFactory.build(remotes)
 	local container = Container.new({ ports = ports })
 
-	local sky = SkyBuilder.new({
-		config = container.config,
-		layout = container.domain.layout,
-		ladder = container.domain.ladder,
-		logger = ports.logger,
-	}):build()
+	-- MapBindings needs the remotes to open a panel from a hub pad.
+	container.remotes = remotes
 
-	local world = WorldBindings.bind(container, sky)
-	RemoteBindings.bind(container, remotes, world)
+	local map = MapBindings.bind(container)
+	RemoteBindings.bind(container, remotes)
+
+	findHubPoint(container, ports.logger)
+	map.report()
 
 	bindPlayers(container)
-	startSampling(container)
+	startSampling(container, map)
 	startAutosave(container)
 
-	ports.logger:info("Server ready 🐉")
+	ports.logger:info("Server ready")
 	return container
 end
 

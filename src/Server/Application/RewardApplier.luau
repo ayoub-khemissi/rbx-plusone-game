@@ -21,52 +21,31 @@ end
 --[[ Readable summary of a reward, for the player notification. ]]
 function RewardApplier.describe(self, summary): string
 	local parts = {}
-	if summary.gold then
-		table.insert(parts, `+{Format.abbreviate(summary.gold)} gold`)
+	if summary.coins then
+		table.insert(parts, `+{Format.abbreviate(summary.coins)} Coins`)
 	end
 	if summary.speed then
 		table.insert(parts, `+{Format.abbreviate(summary.speed)} speed`)
-	end
-	if summary.eggs then
-		table.insert(parts, `+{summary.eggs.amount} {summary.eggs.rarity} egg`)
 	end
 	if summary.boost then
 		local definition = self.boosts:definitionOf(summary.boost.id)
 		table.insert(parts, `{definition and definition.name or summary.boost.id} active`)
 	end
-	if summary.molts then
-		table.insert(parts, `+{summary.molts} molt`)
+	if summary.prestiges then
+		table.insert(parts, `+{summary.prestiges} prestige`)
 	end
-	if summary.insuredFlights then
-		table.insert(parts, `{summary.insuredFlights} insured flights`)
-	end
-	if summary.hatched then
-		table.insert(parts, `{summary.hatched} eggs hatched`)
+	if summary.chestOpened then
+		table.insert(parts, "session chest opened")
 	end
 	return table.concat(parts, ", ")
 end
 
---[[ Grants that need more than the profile — they reach into the Nest. ]]
-function RewardApplier.applyExtras(_self, session, grant, summary)
-	local profile = session.profile
-
-	if typeof(grant.insurance) == "table" then
-		local flights = math.max(math.floor(grant.insurance.flights or 0), 0)
-		profile.insuredFlights += flights
-		summary.insuredFlights = profile.insuredFlights
-	end
-
-	if grant.instantHatch == true then
-		local hatched = 0
-		for _ = 1, #profile.hatchery do
-			local egg = profile.hatchery[1]
-			if not egg then
-				break
-			end
-			egg.readyAt = 0
-			hatched += 1
-		end
-		summary.hatched = hatched
+--[[ Grants that reach beyond the profile fields themselves. ]]
+function RewardApplier.applyExtras(self, session, grant, summary)
+	-- The instant chest simply makes the session chest claimable right now.
+	if grant.instantChest == true then
+		session.profile.timers[self.chestKey] = 0
+		summary.chestOpened = true
 	end
 
 	return summary
@@ -79,7 +58,7 @@ function RewardApplier.award(self, session, grant, options)
 	local summary = Grants.apply(grant, {
 		profile = session.profile,
 		boosts = self.boosts,
-		moltPolicy = self.moltPolicy,
+		prestigePolicy = self.prestigePolicy,
 		now = now,
 	})
 	self:applyExtras(session, grant or {}, summary)

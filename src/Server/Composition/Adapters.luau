@@ -17,7 +17,7 @@ local DataStoreProfileRepository = require(Adapters.Persistence.DataStoreProfile
 local InMemoryProfileRepository = require(Adapters.Persistence.InMemoryProfileRepository)
 local AttributeStatsPublisher = require(Adapters.Replication.AttributeStatsPublisher)
 local RemoteNotifier = require(Adapters.Replication.RemoteNotifier)
-local FlightActuator = require(Adapters.Roblox.FlightActuator)
+local CharacterActuator = require(Adapters.Roblox.CharacterActuator)
 local CharacterTeleporter = require(Adapters.Roblox.CharacterTeleporter)
 local MarketplaceGateway = require(Adapters.Roblox.MarketplaceGateway)
 local Logger = require(Adapters.Roblox.Logger)
@@ -48,22 +48,16 @@ local function buildRepository(logger)
 end
 
 function AdaptersFactory.build(remotes)
-	local logger = Logger.new("SkyDragons")
-	local generator = Random.new()
+	local logger = Logger.new("Runner")
 
 	local ports = {
 		repository = buildRepository(logger),
 		publisher = AttributeStatsPublisher.new(),
 		notifier = RemoteNotifier.new(remotes.events.Notify, { now = os.clock }),
-		actuator = FlightActuator.new(),
+		actuator = CharacterActuator.new(),
 		teleporter = CharacterTeleporter.new(),
 		passGateway = MarketplaceGateway.new(Config.Passes, logger),
 		clock = { now = os.time, monotonic = os.clock },
-		random = {
-			nextNumber = function()
-				return generator:NextNumber()
-			end,
-		},
 		logger = logger,
 	}
 

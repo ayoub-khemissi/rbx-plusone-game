@@ -1,5 +1,5 @@
 --!strict
---[[ BuyUpgrade — spends banked gold on a permanent upgrade. ]]
+--[[ BuyUpgrade — spends Coins on a permanent upgrade. ]]
 
 local Shared = require(script.Parent.Parent.Parent.Shared)
 local Result = require(Shared.Domain.Support.Result)
@@ -9,7 +9,7 @@ local Format = require(Shared.Domain.Support.Format)
 local MESSAGES = {
 	UNKNOWN_UPGRADE = "That upgrade does not exist.",
 	MAX_LEVEL = "Already at maximum level!",
-	INSUFFICIENT_FUNDS = "You are %s gold short.",
+	INSUFFICIENT_FUNDS = "You are %s Coins short.",
 }
 
 local BuyUpgrade = {}

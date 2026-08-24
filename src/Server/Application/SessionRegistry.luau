@@ -3,12 +3,17 @@
 	SessionRegistry — in-memory state of the connected players.
 
 	A session bridges a Roblox player and their domain profile. It also carries
-	everything that must NOT be persisted: the pouch of the current flight, the last
-	sampled position, the feathers armed for this flight.
+	everything that must NOT be persisted: the checkpoint they will come back to, the
+	air jumps already spent, the dash cooldown, the idle counter.
 
-	That separation is deliberate. A flight must never survive a reconnection —
-	otherwise disconnecting would become a way to protect a pouch.
+	That separation is deliberate. Nothing about a run should survive a reconnection:
+	a save is about progress, never about where you were standing.
 ]]
+
+local Shared = require(script.Parent.Parent.Shared)
+local JumpBudget = require(Shared.Domain.Movement.JumpBudget)
+local DashPolicy = require(Shared.Domain.Movement.DashPolicy)
+local IdleAccrual = require(Shared.Domain.Idle.IdleAccrual)
 
 local Ports = require(script.Parent.Ports)
 
@@ -23,15 +28,15 @@ export type Session = {
 	savable: boolean,
 	joinedAt: number?,
 
-	-- Current flight, all of it volatile
-	flying: boolean,
-	pouch: any?,
-	tierId: number,
-	feathers: number,
-	insured: boolean,
+	-- Current run, all of it volatile
+	stageId: number,
+	checkpoint: Point?,
 	lastPosition: Point?,
 	lastSampleAt: number?,
-	perchedAt: number?,
+	jumps: JumpBudget.State,
+	dash: DashPolicy.State,
+	idle: IdleAccrual.State,
+	idleActive: boolean,
 }
 
 local SessionRegistry = {}
@@ -60,14 +65,14 @@ function SessionRegistry.open(
 		savable = true,
 		joinedAt = nil,
 
-		flying = false,
-		pouch = nil,
-		tierId = 0,
-		feathers = 0,
-		insured = false,
+		stageId = 1,
+		checkpoint = nil,
 		lastPosition = nil,
 		lastSampleAt = nil,
-		perchedAt = nil,
+		jumps = JumpBudget.newState(),
+		dash = DashPolicy.newState(),
+		idle = IdleAccrual.newState(),
+		idleActive = false,
 	}
 
 	if self._sessions[userId] == nil then
@@ -77,15 +82,14 @@ function SessionRegistry.open(
 	return session
 end
 
---[[ Clears everything that belongs to a single flight. ]]
-function SessionRegistry.endFlight(_self: SessionRegistry, session: Session)
-	session.flying = false
-	session.pouch = nil
-	session.tierId = 0
-	session.feathers = 0
-	session.insured = false
+--[[ Clears everything tied to the current position on the course. ]]
+function SessionRegistry.resetRun(_self: SessionRegistry, session: Session)
+	session.stageId = 1
+	session.checkpoint = nil
 	session.lastPosition = nil
 	session.lastSampleAt = nil
+	session.jumps = JumpBudget.newState()
+	session.dash = DashPolicy.newState()
 end
 
 function SessionRegistry.get(self: SessionRegistry, userId: number): Session?

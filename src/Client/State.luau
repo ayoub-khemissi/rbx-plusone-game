@@ -18,34 +18,35 @@ State.__index = State
 
 local NUMBERS = {
 	"Speed",
-	"Gold",
-	"Molts",
-	"DeepestTier",
-	"ReachedTier",
-	"TierId",
-	"Feathers",
-	"InsuredFlights",
-	"PouchGold",
-	"PouchEggs",
-	"PouchTier",
-	"Velocity",
-	"Agility",
+	"Coins",
+	"Prestiges",
+	"HighestStage",
+	"ReachedStage",
+	"StageId",
+	"WalkSpeed",
+	"JumpPower",
+	"JumpLevel",
+	"JumpsLeft",
+	"DashLevel",
+	"DashPower",
+	"DashCooldown",
 	"Magnet",
 	"Saturation",
 	"SpeedMultiplier",
-	"GoldMultiplier",
+	"CoinMultiplier",
 	"BoostSpeed",
-	"BoostGold",
-	"MoltMultiplier",
-	"MoltRequirement",
-	"MoltProgress",
-	"TierProgress",
-	"NextTierRequirement",
+	"BoostCoins",
+	"PrestigeMultiplier",
+	"PrestigeRequirement",
+	"PrestigeProgress",
+	"StageProgress",
+	"NextStageRequirement",
+	"IdleRemaining",
 }
 
-local FLAGS = { "Flying", "Insured" }
+local FLAGS = { "HasCheckpoint", "IdleActive" }
 
-local TABLES = { "Hatchery", "Eggs", "Dragons", "ActiveBoosts", "Collection" }
+local TABLES = { "ActiveBoosts" }
 
 function State.new(player: Player)
 	local self = setmetatable({
