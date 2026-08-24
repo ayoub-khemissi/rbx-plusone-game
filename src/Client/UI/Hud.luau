@@ -33,17 +33,23 @@ local function stageName(stageId: number): string
 	return if stage then stage.name else LABELS.hub.name
 end
 
---[[ One ability readout: a rounded chip with its icon and its state. ]]
+--[[
+	One ability readout: a rounded chip with its icon and its state.
+
+	It carries no position of its own — the row lays it out. A chip hidden because
+	the ability is still locked leaves the layout entirely, so a lone chip sits in
+	the middle of the screen instead of off to one side.
+]]
 local function abilityChip(parent: Instance, options)
 	local chip = Widgets.card(parent, {
 		name = options.name,
 		size = UDim2.fromOffset(124, 46),
-		position = options.position,
-		anchorPoint = options.anchorPoint,
 		color = Theme.color.panel,
 		transparency = 0.12,
 		radius = Theme.radius.chip,
+		visible = false,
 	})
+	chip.LayoutOrder = options.layoutOrder or 0
 
 	Widgets.icon(chip, {
 		image = options.image,
@@ -63,7 +69,7 @@ local function abilityChip(parent: Instance, options)
 		color = Theme.color.text,
 	})
 
-	return value
+	return { chip = chip, value = value }
 end
 
 function Hud.new(parent: Instance, state)
@@ -145,20 +151,32 @@ function Hud.new(parent: Instance, state)
 	self.stageValue.ZIndex = 3
 
 	-- The abilities, just above the bar: what the hands are doing.
-	self.jumpValue = abilityChip(parent, {
+	local abilities = Instance.new("Frame")
+	abilities.Name = "Abilities"
+	abilities.Size = UDim2.fromOffset(300, 46)
+	abilities.Position = UDim2.new(0.5, 0, 1, -66)
+	abilities.AnchorPoint = Vector2.new(0.5, 1)
+	abilities.BackgroundTransparency = 1
+	abilities.Parent = parent
+	Widgets.list(abilities, {
+		direction = Enum.FillDirection.Horizontal,
+		padding = 8,
+		horizontalAlignment = Enum.HorizontalAlignment.Center,
+		verticalAlignment = Enum.VerticalAlignment.Center,
+	})
+
+	self.jump = abilityChip(abilities, {
 		name = "Jump",
 		image = ICONS.jump,
 		fallback = "^",
-		position = UDim2.new(0.5, -66, 1, -66),
-		anchorPoint = Vector2.new(0.5, 1),
+		layoutOrder = 1,
 	})
 
-	self.dashValue = abilityChip(parent, {
+	self.dash = abilityChip(abilities, {
 		name = "Dash",
 		image = ICONS.dash,
 		fallback = ">>",
-		position = UDim2.new(0.5, 66, 1, -66),
-		anchorPoint = Vector2.new(0.5, 1),
+		layoutOrder = 2,
 	})
 
 	self.statusCard = Widgets.card(parent, {
@@ -200,27 +218,26 @@ function Hud.render(self)
 		else `last {LABELS.stage.name}`
 	self.stageBar.set(state:get("StageProgress"))
 
-	-- Jump level 1 has no air jump: showing "0/0" would only puzzle the player.
+	-- An ability the player does not own yet has nothing to say. Level 1 means one
+	-- jump, the one everybody has, so there is no air jump to count either.
 	local jumpLevel = math.max(state:get("JumpLevel"), 1)
-	if jumpLevel > 1 then
-		self.jumpValue.Text = `{state:get("JumpsLeft")}/{jumpLevel - 1}`
-		self.jumpValue.TextColor3 = Theme.color.text
-	else
-		self.jumpValue.Text = "—"
-		self.jumpValue.TextColor3 = Theme.color.locked
+	self.jump.chip.Visible = jumpLevel > 1
+	if self.jump.chip.Visible then
+		self.jump.value.Text = `{state:get("JumpsLeft")}/{jumpLevel - 1}`
+		self.jump.value.TextColor3 = Theme.color.text
 	end
 
 	local dashLevel = state:get("DashLevel")
 	local cooldown = state:get("DashCooldown")
-	if dashLevel <= 0 then
-		self.dashValue.Text = "—"
-		self.dashValue.TextColor3 = Theme.color.locked
-	elseif cooldown > 0 then
-		self.dashValue.Text = string.format("%.1fs", cooldown)
-		self.dashValue.TextColor3 = Theme.color.locked
-	else
-		self.dashValue.Text = `Lv {dashLevel}`
-		self.dashValue.TextColor3 = Theme.color.positive
+	self.dash.chip.Visible = dashLevel > 0
+	if self.dash.chip.Visible then
+		if cooldown > 0 then
+			self.dash.value.Text = string.format("%.1fs", cooldown)
+			self.dash.value.TextColor3 = Theme.color.locked
+		else
+			self.dash.value.Text = `Lv {dashLevel}`
+			self.dash.value.TextColor3 = Theme.color.positive
+		end
 	end
 
 	local parts = {}
