@@ -132,5 +132,5 @@ s'achètent dans l'instant du regret. C'est précisément pour ça qu'ils se ven
 
 ---
 
-*Concept détaillé : [`docs/CONCEPT.md`](docs/CONCEPT.md) — documentation technique :
-[`docs/`](docs/).*
+*Concept détaillé : [`docs/CONCEPT.md`](docs/CONCEPT.md) — assets à produire :
+[`docs/ASSETS.md`](docs/ASSETS.md) — documentation technique : [`docs/`](docs/).*
