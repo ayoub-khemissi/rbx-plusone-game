@@ -3,12 +3,15 @@
 	MapBindings — reads the hand built map and turns touching a part into a game
 	action.
 
-	The contract is `docs/MAP.md`, and nothing else: seven tags, a few attributes, no
-	naming convention and no imposed hierarchy. The server never creates, moves or
-	renames anything in the map.
+	The contract is `docs/MAP.md`, and nothing else: a handful of tags, a few
+	attributes, no naming convention and no imposed hierarchy.
 
-	A tagged part that is misconfigured is ignored with a console warning rather than
-	crashing the server: a map should never be able to take the game down.
+	Two deliberate leniencies, because a map is built by hand and not by a compiler:
+
+	  - a tag may sit on a Model as well as on a Part; every BasePart inside is wired;
+	  - a missing attribute falls back to a sane default and logs, rather than being
+	    ignored. A map should never be able to take the game down, nor to silently
+	    do nothing.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -18,9 +21,13 @@ local MapBindings = {}
 
 MapBindings.TAGS = {
 	checkpoint = "Checkpoint",
-	killzone = "Killzone",
+	-- Killzone and TrapPart are the same idea; both names are accepted so a map can
+	-- use whichever word its author already had in mind.
+	killzone = { "Killzone", "TrapPart" },
 	coin = "Coin",
 	speedGate = "SpeedGate",
+	conveyor = "Conveyor",
+	bouncePad = "BouncePad",
 	shopPad = "ShopPad",
 	prestigePad = "PrestigePad",
 	idlePad = "AfkPad",
@@ -29,22 +36,48 @@ MapBindings.TAGS = {
 local FALL_GRACE_FALLBACK = 1
 local PAD_COOLDOWN = 1
 local IDLE_PAD_MARGIN = 6
+local DEFAULT_STAGE = 1
+local DEFAULT_BOUNCE = 200
+local DEFAULT_CONVEYOR = 10
 
 local function playerFromTouch(hit: BasePart): Player?
 	local character = hit.Parent
 	return if character then Players:GetPlayerFromCharacter(character) else nil
 end
 
---[[ Connects a tag to a handler, for the parts already there and the ones to come. ]]
-local function onTagged(tag: string, handler: (Instance) -> ())
-	for _, instance in CollectionService:GetTagged(tag) do
-		handler(instance)
+--[[ Every BasePart carrying the tag, whether it is tagged directly or through a Model. ]]
+local function partsOf(instance: Instance): { BasePart }
+	if instance:IsA("BasePart") then
+		return { instance }
 	end
-	CollectionService:GetInstanceAddedSignal(tag):Connect(handler)
+
+	local parts = {}
+	for _, descendant in instance:GetDescendants() do
+		if descendant:IsA("BasePart") then
+			table.insert(parts, descendant)
+		end
+	end
+	return parts
 end
 
-local function countTagged(tag: string): number
-	return #CollectionService:GetTagged(tag)
+--[[ Connects a tag (or a list of aliases) to a handler, now and for what comes later. ]]
+local function onTagged(tag: string | { string }, handler: (Instance) -> ())
+	local names = if typeof(tag) == "table" then tag else { tag }
+	for _, name in names do
+		for _, instance in CollectionService:GetTagged(name) do
+			handler(instance)
+		end
+		CollectionService:GetInstanceAddedSignal(name):Connect(handler)
+	end
+end
+
+local function countTagged(tag: string | { string }): number
+	local names = if typeof(tag) == "table" then tag else { tag }
+	local total = 0
+	for _, name in names do
+		total += #CollectionService:GetTagged(name)
+	end
+	return total
 end
 
 function MapBindings.bind(container)
@@ -56,6 +89,7 @@ function MapBindings.bind(container)
 	local lastFall: { [Player]: number } = {}
 	local lastPad: { [Player]: number } = {}
 	local idlePads: { BasePart } = {}
+	local missingStageId = 0
 
 	local function cooled(memory, player: Player, delay: number): boolean
 		local now = os.clock()
@@ -66,80 +100,125 @@ function MapBindings.bind(container)
 		return true
 	end
 
-	-- Checkpoints: the backbone of a course. Without a StageId a checkpoint cannot
-	-- be priced, so it is skipped rather than guessed.
-	onTagged(TAGS.checkpoint, function(instance)
-		local part = instance :: BasePart
-		local stageId = part:GetAttribute("StageId")
+	--[[ Sends the player back to their checkpoint, once per grace period. ]]
+	local function fall(player: Player)
+		if cooled(lastFall, player, settings.fallGrace or FALL_GRACE_FALLBACK) then
+			useCases.fallToCheckpoint:run(player)
+		end
+	end
 
+	onTagged(TAGS.checkpoint, function(instance)
+		-- A checkpoint with no StageId belongs to the first Stage: most maps have
+		-- only one, and demanding the attribute would break them for nothing.
+		local stageId = instance:GetAttribute("StageId")
 		if typeof(stageId) ~= "number" then
-			logger:warn(`A Checkpoint has no StageId, ignored ({part:GetFullName()})`)
-			return
+			stageId = DEFAULT_STAGE
+			missingStageId += 1
 		end
 
-		part.Touched:Connect(function(hit)
-			local player = playerFromTouch(hit)
-			if not player then
-				return
-			end
-			useCases.reachCheckpoint:run(player, {
-				stageId = stageId,
-				position = {
-					x = part.Position.X,
-					y = part.Position.Y + settings.respawnHeight,
-					z = part.Position.Z,
-				},
-			})
-		end)
+		for _, part in partsOf(instance) do
+			part.Touched:Connect(function(hit)
+				local player = playerFromTouch(hit)
+				if not player then
+					return
+				end
+				useCases.reachCheckpoint:run(player, {
+					stageId = stageId,
+					position = {
+						x = part.Position.X,
+						y = part.Position.Y + settings.respawnHeight,
+						z = part.Position.Z,
+					},
+				})
+			end)
+		end
 	end)
 
-	-- Killzones: the void under the course, and anything else that hurts.
 	onTagged(TAGS.killzone, function(instance)
-		local part = instance :: BasePart
-		part.Touched:Connect(function(hit)
-			local player = playerFromTouch(hit)
-			-- The grace period stops a killzone from firing again on the way out.
-			if player and cooled(lastFall, player, settings.fallGrace or FALL_GRACE_FALLBACK) then
-				useCases.fallToCheckpoint:run(player)
-			end
-		end)
+		for _, part in partsOf(instance) do
+			part.Touched:Connect(function(hit)
+				local player = playerFromTouch(hit)
+				if player then
+					fall(player)
+				end
+			end)
+		end
 	end)
 
 	onTagged(TAGS.coin, function(instance)
-		local part = instance :: BasePart
-		local value = part:GetAttribute("Value")
-		if typeof(value) ~= "number" then
-			value = settings.coinValue
-		end
-
-		part.Touched:Connect(function(hit)
-			local player = playerFromTouch(hit)
-			if not player or not part.CanTouch then
-				return
+		for _, part in partsOf(instance) do
+			local value = part:GetAttribute("Value")
+			if typeof(value) ~= "number" then
+				value = settings.coinValue
 			end
 
-			useCases.collectCoin:run(player, value)
+			part.Touched:Connect(function(hit)
+				local player = playerFromTouch(hit)
+				if not player or not part.CanTouch then
+					return
+				end
 
-			part.Transparency = 1
-			part.CanTouch = false
-			task.delay(settings.coinRespawn, function()
-				if part.Parent then
-					part.Transparency = 0
-					part.CanTouch = true
+				useCases.collectCoin:run(player, value)
+
+				part.Transparency = 1
+				part.CanTouch = false
+				task.delay(settings.coinRespawn, function()
+					if part.Parent then
+						part.Transparency = 0
+						part.CanTouch = true
+					end
+				end)
+			end)
+		end
+	end)
+
+	--[[
+		Conveyor belts need no per-player logic: an anchored part with a velocity
+		drags whatever stands on it, and Roblox physics does the rest.
+
+		The direction is the part's front face, so rotating the part in Studio is
+		enough to change where it pushes.
+	]]
+	onTagged(TAGS.conveyor, function(instance)
+		for _, part in partsOf(instance) do
+			local speed = part:GetAttribute("Speed")
+			if typeof(speed) ~= "number" then
+				speed = DEFAULT_CONVEYOR
+			end
+			part.AssemblyLinearVelocity = part.CFrame.LookVector * speed
+		end
+	end)
+
+	--[[ Bounce pads: a designed launch, so the vertical speed is replaced, not added. ]]
+	onTagged(TAGS.bouncePad, function(instance)
+		for _, part in partsOf(instance) do
+			local impulse = part:GetAttribute("BounceImpulse")
+			if typeof(impulse) ~= "number" then
+				impulse = DEFAULT_BOUNCE
+			end
+
+			part.Touched:Connect(function(hit)
+				local player = playerFromTouch(hit)
+				local character = player and player.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+				if root then
+					local velocity = root.AssemblyLinearVelocity
+					root.AssemblyLinearVelocity = Vector3.new(velocity.X, impulse, velocity.Z)
 				end
 			end)
-		end)
+		end
 	end)
 
 	local function padHandler(open: (Player) -> ())
 		return function(instance)
-			local part = instance :: BasePart
-			part.Touched:Connect(function(hit)
-				local player = playerFromTouch(hit)
-				if player and cooled(lastPad, player, PAD_COOLDOWN) then
-					open(player)
-				end
-			end)
+			for _, part in partsOf(instance) do
+				part.Touched:Connect(function(hit)
+					local player = playerFromTouch(hit)
+					if player and cooled(lastPad, player, PAD_COOLDOWN) then
+						open(player)
+					end
+				end)
+			end
 		end
 	end
 
@@ -160,8 +239,8 @@ function MapBindings.bind(container)
 	-- The idle pad is polled by the sampling loop rather than wired to Touched:
 	-- standing still on a part does not keep firing Touched events.
 	onTagged(TAGS.idlePad, function(instance)
-		if instance:IsA("BasePart") then
-			table.insert(idlePads, instance)
+		for _, part in partsOf(instance) do
+			table.insert(idlePads, part)
 		end
 	end)
 
@@ -170,7 +249,6 @@ function MapBindings.bind(container)
 		lastPad[player] = nil
 	end)
 
-	--[[ Is this position standing on one of the idle pads? ]]
 	local function isOnIdlePad(position: { x: number, y: number, z: number }): boolean
 		for _, pad in idlePads do
 			if pad.Parent then
@@ -190,19 +268,19 @@ function MapBindings.bind(container)
 	--[[ The report announced in docs/MAP.md: what the server actually found. ]]
 	local function report()
 		logger:info(
-			`Map loaded: {countTagged(TAGS.checkpoint)} checkpoints, {countTagged(TAGS.coin)} coins, `
-				.. `{countTagged(TAGS.killzone)} killzones, {countTagged(TAGS.speedGate)} speed gates, `
-				.. `{#idlePads} idle pads`
+			`Map loaded: {countTagged(TAGS.checkpoint)} checkpoints, {countTagged(TAGS.killzone)} hazards, `
+				.. `{countTagged(TAGS.coin)} coins, {countTagged(TAGS.conveyor)} conveyors, `
+				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#idlePads} idle pads`
 		)
+		if missingStageId > 0 then
+			logger:info(`{missingStageId} checkpoints without a StageId, assigned to Stage {DEFAULT_STAGE}`)
+		end
 		if countTagged(TAGS.checkpoint) == 0 then
 			logger:warn("No Checkpoint in the map: players will always respawn at the Hub")
 		end
-		if countTagged(TAGS.killzone) == 0 then
-			logger:warn("No Killzone in the map: a player falling off will never come back")
-		end
 	end
 
-	return { isOnIdlePad = isOnIdlePad, report = report }
+	return { isOnIdlePad = isOnIdlePad, fall = fall, report = report }
 end
 
 return MapBindings

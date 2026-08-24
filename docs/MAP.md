@@ -12,19 +12,25 @@ comptent.
 
 ---
 
-## Les sept tags
+## Les tags
 
 | Tag | À poser sur | Ce que le serveur en fait |
 | --- | --- | --- |
-| `Checkpoint` | Une part traversable | Enregistre le point de réapparition du joueur |
-| `Killzone` | Une part traversable | Renvoie le joueur à son dernier checkpoint |
-| `Coin` | Une part traversable | Donne des Coins, disparaît, réapparaît |
-| `SpeedGate` | Une part solide | Bloque tant que la Speed du joueur est trop basse |
-| `ShopPad` | Une part traversable | Ouvre la boutique |
-| `PrestigePad` | Une part traversable | Déclenche le Prestige |
-| `AfkPad` | Une part traversable | Zone de revenu passif |
+| `Checkpoint` | Part **ou Model** | Enregistre le point de réapparition du joueur |
+| `TrapPart` *(ou `Killzone`)* | Part ou Model | Renvoie le joueur à son dernier checkpoint |
+| `Conveyor` | Part | Tapis roulant : pousse dans le sens de la face avant |
+| `BouncePad` | Part | Trampoline : propulse le joueur vers le haut |
+| `Coin` | Part | Donne des Coins, disparaît, réapparaît |
+| `SpeedGate` | Part solide | Bloque tant que la Speed du joueur est trop basse |
+| `ShopPad` | Part | Ouvre la boutique |
+| `PrestigePad` | Part | Déclenche le Prestige |
+| `AfkPad` | Part | Zone de revenu passif |
 
-C'est tout. Sept tags pour une map complète.
+**Un tag peut être posé sur un Model** : toutes ses parts sont alors câblées. C'est ce
+qui permet de taguer un checkpoint décoré une seule fois.
+
+Seuls `Checkpoint` et un moyen de mourir sont vraiment nécessaires. Le reste s'ajoute
+quand tu en as besoin.
 
 ---
 
@@ -37,8 +43,10 @@ définit où le joueur réapparaît.
 
 | Attribut | Type | Obligatoire | Rôle |
 | --- | --- | --- | --- |
-| `StageId` | number | **oui** | Le Stage auquel ce checkpoint appartient (1, 2, 3…) |
-| `Order` | number | non | Ordre dans le Stage, pour l'affichage « 3 / 8 » |
+| `StageId` | number | non | Le Stage auquel ce checkpoint appartient. **Sans lui, Stage 1** |
+
+Une map d'un seul Stage n'a donc rien à déclarer. Le `StageId` ne devient utile que le
+jour où tu veux une barrière de vitesse entre deux portions.
 
 **Conseils de pose.** Fais-en une part large et fine posée en travers du parcours, en
 `CanCollide = false`, `Transparency = 1` si tu ne veux pas la voir — mets un décor
@@ -47,16 +55,34 @@ sur du sol plat.
 
 Le premier checkpoint d'un Stage sert aussi de point d'entrée du Stage.
 
-### `Killzone`
+### `TrapPart` *(ou `Killzone`)*
 
-Tout ce qui tue : le vide sous le parcours, la lave, les piques, un obstacle mortel.
+Tout ce qui tue : la lave, les piques, un obstacle mortel. Les deux noms sont acceptés.
 
 Aucun attribut. Le joueur revient à son dernier `Checkpoint`, **garde sa Speed et ses
 Coins**, et perd seulement du temps.
 
-**Le vide.** Ne compte pas sur la chute libre : pose une **grande dalle invisible**
-(`Transparency = 1`, `CanCollide = false`) taguée `Killzone` sous tout le parcours. Elle
-attrape toutes les chutes, quelle que soit la hauteur.
+**Le vide n'a rien à taguer.** Le serveur cherche la part la plus basse de la map au
+démarrage et considère toute chute sous ce niveau comme mortelle. Pas de dalle
+invisible à poser, et rien à oublier.
+
+### `Conveyor`
+
+| Attribut | Type | Obligatoire | Rôle |
+| --- | --- | --- | --- |
+| `Speed` | number | non | Vitesse du tapis. Défaut : 10 |
+
+Le tapis pousse dans le sens de sa **face avant** : tourne la part dans Studio pour
+changer la direction. Aucune logique par joueur, c'est la physique Roblox qui travaille.
+
+### `BouncePad`
+
+| Attribut | Type | Obligatoire | Rôle |
+| --- | --- | --- | --- |
+| `BounceImpulse` | number | non | Vitesse verticale donnée. Défaut : 200 |
+
+La vitesse verticale est **remplacée**, pas ajoutée : un pad propulse pareil qu'on
+arrive en tombant ou en montant.
 
 ### `Coin`
 

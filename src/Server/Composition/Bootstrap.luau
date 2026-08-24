@@ -49,8 +49,36 @@ local function findHubPoint(container, logger)
 	container.hubPoint.z = spawn.Position.Z
 end
 
+--[[
+	The floor of the world.
+
+	A map does not need an invisible slab under it to catch falls: the server finds
+	the lowest part of the map and treats anything below it as a fall. One less thing
+	to remember when building, and it cannot be forgotten.
+]]
+local function findVoidLevel(logger): number
+	local lowest = math.huge
+	for _, descendant in workspace:GetDescendants() do
+		if descendant:IsA("BasePart") then
+			local bottom = descendant.Position.Y - descendant.Size.Y / 2
+			if bottom < lowest then
+				lowest = bottom
+			end
+		end
+	end
+
+	if lowest == math.huge then
+		logger:warn("Empty map: no floor found, falls will not be detected")
+		return -math.huge
+	end
+
+	local level = lowest - Config.Balance.run.voidMargin
+	logger:info(`Void level set to {math.floor(level)} studs`)
+	return level
+end
+
 --[[ Sampling loop: the server observes, the client declares nothing. ]]
-local function startSampling(container, map)
+local function startSampling(container, map, voidLevel: number)
 	local interval = Config.Balance.movement.sampleInterval
 	local accumulator = 0
 
@@ -67,13 +95,23 @@ local function startSampling(container, map)
 		for _, player in Players:GetPlayers() do
 			local reading = CharacterProbe.read(player)
 			if reading then
-				container.useCases.sampleMovement:run(player, {
-					position = reading.position,
-					walkSpeed = reading.walkSpeed,
-					at = now,
-				})
+				-- Falling out of the world is checked before crediting: the plunge
+				-- itself must not pay for the distance it covers.
+				if reading.position.y < voidLevel then
+					map.fall(player)
+				else
+					container.useCases.sampleMovement:run(player, {
+						position = reading.position,
+						walkSpeed = reading.walkSpeed,
+						at = now,
+					})
 
-				container.useCases.accrueIdleReward:run(player, map.isOnIdlePad(reading.position), elapsed)
+					container.useCases.accrueIdleReward:run(
+						player,
+						map.isOnIdlePad(reading.position),
+						elapsed
+					)
+				end
 			end
 		end
 	end)
@@ -144,7 +182,7 @@ function Bootstrap.start()
 	map.report()
 
 	bindPlayers(container)
-	startSampling(container, map)
+	startSampling(container, map, findVoidLevel(ports.logger))
 	startAutosave(container)
 
 	ports.logger:info("Server ready")

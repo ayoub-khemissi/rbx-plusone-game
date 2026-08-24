@@ -61,7 +61,8 @@ return table.freeze({
 		coinValue = 10, -- default value of a Coin with no `Value` attribute
 		coinRespawn = 15, -- seconds before a picked coin comes back
 		respawnHeight = 4, -- studs above a checkpoint where the player reappears
-		fallGrace = 1, -- seconds of immunity after respawning, so a killzone cannot loop
+		fallGrace = 1, -- seconds of immunity after respawning, so a hazard cannot loop
+		voidMargin = 80, -- studs under the lowest part of the map: below that, it is a fall
 	}),
 
 	afk = table.freeze({
