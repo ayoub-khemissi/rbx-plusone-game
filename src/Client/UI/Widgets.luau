@@ -229,6 +229,25 @@ function Widgets.button(parent: Instance, options): TextButton
 	return button
 end
 
+--[[
+	A progress bar.
+
+	THE FILL IS NEVER NARROWER THAN THE TRACK IS TALL.
+
+	A UICorner radius is capped by the SMALLER side of the object it rounds. A fill a
+	few pixels wide therefore gets a few pixels of radius and sits inside the track's
+	much rounder cap, leaving a dark crescent to its left that only closes once the
+	bar is wide enough to earn its full radius. Holding the fill to at least the
+	track's height means its cap always has exactly the track's curve — the bar reads
+	as filling from the very first pixel instead of growing a hole shut.
+
+	The floor is taken from the track's measured height, not from a constant, so it
+	survives the interface being scaled.
+
+	The honest cost: a barely started bar shows a round pip rather than a hairline.
+	Zero still shows nothing at all, so "not started" and "just started" stay
+	distinguishable, which is the distinction that actually matters.
+]]
 function Widgets.bar(parent: Instance, options)
 	local track = Instance.new("Frame")
 	track.Name = options.name or "Bar"
@@ -246,25 +265,31 @@ function Widgets.bar(parent: Instance, options)
 	fill.Size = UDim2.fromScale(0, 1)
 	fill.BackgroundColor3 = options.color or Theme.color.positive
 	fill.BorderSizePixel = 0
+	fill.Visible = false
 	fill.Parent = track
 	Widgets.corner(fill, Theme.radius.chip)
 	Widgets.gradient(fill)
+
+	local floor = Instance.new("UISizeConstraint")
+	floor.Parent = fill
+
+	local function matchCap()
+		floor.MinSize = Vector2.new(track.AbsoluteSize.Y, 0)
+	end
+
+	matchCap()
+	track:GetPropertyChangedSignal("AbsoluteSize"):Connect(matchCap)
 
 	return {
 		instance = track,
 		set = function(ratio: number)
 			local clamped = math.clamp(ratio, 0, 1)
+			fill.Visible = clamped > 0
 			TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(clamped, 1) }):Play()
 		end,
 	}
 end
 
---[[
-	An icon: an image when the theme provides one, the emoji otherwise.
-
-	Keeping the fallback matters — an asset that is missing, still moderated or not
-	yet approved would otherwise leave an empty square where a symbol should be.
-]]
 function Widgets.icon(parent: Instance, options): GuiObject
 	if options.image then
 		local image = Instance.new("ImageLabel")
