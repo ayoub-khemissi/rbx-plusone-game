@@ -345,3 +345,34 @@ describe("Dev codes", function()
 		expect(session.profile.coins).toBe(Config.Monetization.codes[1].grant.coins)
 	end)
 end)
+
+describe("Level", function()
+	it("reaches the client through the snapshot", function()
+		local container, ports = build()
+		local player, session = joined(container)
+
+		session.profile.speed = 3000
+		container.useCases.saveProfile:run(session.userId)
+		ports.publisher:publish(player, container.snapshots:build(session))
+
+		local snapshot = container.snapshots:build(session)
+		expect(snapshot.level).toBeGreaterThan(1)
+		expect(snapshot.levelCurrent).toBeLessThan(snapshot.levelRequired)
+		expect(snapshot.levelProgress).toBeLessThan(1)
+	end)
+
+	--[[
+		A prestige wipes the Speed, so the rank has to fall with it. Reading level 40
+		on an empty profile would be the first sign the two had drifted apart.
+	]]
+	it("falls back to 1 when a prestige clears the speed", function()
+		local container = build()
+		local _, session = joined(container)
+
+		session.profile.speed = 20000
+		expect(container.snapshots:build(session).level).toBeGreaterThan(20)
+
+		session.profile.speed = 0
+		expect(container.snapshots:build(session).level).toBe(1)
+	end)
+end)

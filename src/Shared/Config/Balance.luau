@@ -51,6 +51,22 @@ return table.freeze({
 		coinsPerStep = 0.4,
 	}),
 
+	--[[
+		Speed read as a rank. `base * level^exponent`, so the first levels arrive in
+		seconds and the pace stretches without ever flattening.
+
+		At the starting walk speed this is roughly a level every 15 seconds at the
+		start, every 4 minutes around level 25, and the last Stage lands near level
+		50 — far enough that there is always a next one in sight.
+
+		A level grants nothing on its own. Rewards hang off Stages, which the map
+		lays out; retuning this changes how progress READS, never what it pays.
+	]]
+	level = table.freeze({
+		base = 20,
+		exponent = 1.7,
+	}),
+
 	-- The long loop. The requirement matches the last Stage: prestige is what you do
 	-- once the course has nothing left to show you.
 	prestige = table.freeze({

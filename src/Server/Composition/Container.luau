@@ -14,6 +14,7 @@ local Shared = require(script.Parent.Parent.Shared)
 
 local UpgradeCatalog = require(Shared.Domain.Economy.UpgradeCatalog)
 local StageLadder = require(Shared.Domain.Run.StageLadder)
+local LevelCurve = require(Shared.Domain.Run.LevelCurve)
 local SpeedCurve = require(Shared.Domain.Movement.SpeedCurve)
 local MovementAccounting = require(Shared.Domain.Movement.MovementAccounting)
 local JumpBudget = require(Shared.Domain.Movement.JumpBudget)
@@ -125,6 +126,7 @@ function Container.new(options: Options)
 
 	local catalog = UpgradeCatalog.new(config.Upgrades)
 	local ladder = StageLadder.new(config.Stages)
+	local levels = LevelCurve.new(balance.level)
 	local curve = SpeedCurve.new(balance.speedCurve)
 	local accounting = MovementAccounting.new(balance.movement)
 	local jumpBudget = JumpBudget.new(balance.movement)
@@ -155,6 +157,7 @@ function Container.new(options: Options)
 	local domain = {
 		catalog = catalog,
 		ladder = ladder,
+		levels = levels,
 		curve = curve,
 		accounting = accounting,
 		jumpBudget = jumpBudget,
@@ -174,6 +177,7 @@ function Container.new(options: Options)
 	local sessions = SessionRegistry.new()
 	local snapshots = Snapshot.new({
 		ladder = ladder,
+		levels = levels,
 		progression = progression,
 		multipliers = multipliers,
 		prestigePolicy = prestigePolicy,

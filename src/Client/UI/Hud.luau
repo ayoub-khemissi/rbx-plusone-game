@@ -31,11 +31,6 @@ local ICONS = Config.Theme.icons
 
 local BAR_INSET = 20
 
-local function stageName(stageId: number): string
-	local stage = Config.Stages[stageId]
-	return if stage then stage.name else LABELS.hub.name
-end
-
 --[[
 	One readout: a rounded chip carrying an icon and a value.
 
@@ -94,7 +89,7 @@ function Hud.new(parent: Instance, state)
 
 	-- The run, centre bottom: the bar the player watches fill.
 	self.stageBar = Widgets.bar(parent, {
-		name = "StageProgress",
+		name = "LevelProgress",
 		size = UDim2.fromOffset(480, 40),
 		position = UDim2.new(0.5, 0, 1, -18),
 		anchorPoint = Vector2.new(0.5, 1),
@@ -102,7 +97,7 @@ function Hud.new(parent: Instance, state)
 	})
 
 	self.stageLabel = Widgets.label(self.stageBar.instance, {
-		name = "Stage",
+		name = "Level",
 		-- Clear of the rounded cap: the glyphs must stay in the middle band, where
 		-- the shape is at full width.
 		size = UDim2.new(0.5, -BAR_INSET, 1, 0),
@@ -169,39 +164,44 @@ function Hud.new(parent: Instance, state)
 		verticalAlignment = Enum.VerticalAlignment.Center,
 	})
 
-	self.coins = chip(row, {
+	-- Coins sit apart, bottom left. They are consulted rather than watched: the
+	-- question they answer is "can I afford it", asked on the way to the shop, not
+	-- during a jump. Keeping them out of the centre row also keeps that row for
+	-- what changes second by second.
+	self.coins = chip(parent, {
 		name = "Coins",
 		image = LABELS.coins.image,
 		fallback = LABELS.coins.icon,
-		layoutOrder = 1,
 	})
+	self.coins.frame.Position = UDim2.new(0, 18, 1, -18)
+	self.coins.frame.AnchorPoint = Vector2.new(0, 1)
 
 	self.prestige = chip(row, {
 		name = "Prestige",
 		image = LABELS.prestige.image,
 		fallback = LABELS.prestige.icon,
-		layoutOrder = 2,
+		layoutOrder = 1,
 	})
 
 	self.jump = chip(row, {
 		name = "Jump",
 		image = ICONS.jump,
 		fallback = "^",
-		layoutOrder = 3,
+		layoutOrder = 2,
 	})
 
 	self.dash = chip(row, {
 		name = "Dash",
 		image = ICONS.dash,
 		fallback = ">>",
-		layoutOrder = 4,
+		layoutOrder = 3,
 	})
 
 	self.boosts = chip(row, {
 		name = "Boosts",
 		image = ICONS.boost,
 		fallback = "*",
-		layoutOrder = 5,
+		layoutOrder = 4,
 	})
 
 	state.changed:connect(function()
@@ -215,13 +215,13 @@ end
 function Hud.render(self)
 	local state = self.state
 
-	local reached = math.max(state:get("ReachedStage"), 1)
-	local nextRequirement = state:get("NextStageRequirement")
-	self.stageLabel.Text = stageName(reached)
-	self.stageValue.Text = if nextRequirement > 0
-		then `{Format.abbreviate(state:get("Speed"))}/{Format.abbreviate(nextRequirement)}`
-		else Format.abbreviate(state:get("Speed"))
-	self.stageBar.set(state:get("StageProgress"))
+	-- The bar reads as a rank, not as a place on the map. Stage names still gate
+	-- the course and multiply the Coins; they are simply not what a player watches
+	-- while running.
+	self.stageLabel.Text = `{LABELS.level.name} {math.max(state:get("Level"), 1)}`
+	self.stageValue.Text =
+		`{Format.abbreviate(state:get("LevelCurrent"))}/{Format.abbreviate(state:get("LevelRequired"))}`
+	self.stageBar.set(state:get("LevelProgress"))
 
 	self.coins.frame.Visible = true
 	self.coins.value.Text = Format.abbreviate(state:get("Coins"))

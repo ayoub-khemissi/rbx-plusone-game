@@ -18,6 +18,7 @@ Snapshot.__index = Snapshot
 
 export type Dependencies = {
 	ladder: any,
+	levels: any,
 	progression: any,
 	multipliers: any,
 	prestigePolicy: any,
@@ -48,6 +49,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 
 	local reachedStage = self.ladder:highestUnlocked(profile.speed)
 	local nextStage = self.ladder:nextOf(reachedStage)
+	local level = self.levels:progressFor(profile.speed)
 
 	return {
 		-- Permanent progression
@@ -87,6 +89,12 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 		prestigeMultiplier = self.prestigePolicy:multiplierFor(profile.prestiges),
 		prestigeRequirement = self.prestigePolicy:requirementFor(profile.prestiges),
 		prestigeProgress = self.prestigePolicy:progressFor(profile),
+
+		-- Rank. What the player reads; the Stage is what the map gates on.
+		level = level.level,
+		levelCurrent = level.current,
+		levelRequired = level.required,
+		levelProgress = level.ratio,
 
 		-- Next gate
 		stageProgress = self.ladder:progressToNext(reachedStage, profile.speed),

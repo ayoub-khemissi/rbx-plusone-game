@@ -12,6 +12,7 @@ local SpeedCurve = require(Domain.Movement.SpeedCurve)
 local JumpBudget = require(Domain.Movement.JumpBudget)
 local DashPolicy = require(Domain.Movement.DashPolicy)
 local ProductCatalog = require(Domain.Monetization.ProductCatalog)
+local LevelCurve = require(Domain.Run.LevelCurve)
 
 local KNOWN_EFFECTS = {
 	speedMultiplier = true,
@@ -170,6 +171,19 @@ describe("Config.Products and Passes", function()
 				expect(KNOWN_EFFECTS[key]).toBe(true)
 			end
 		end
+	end)
+
+	--[[
+		The real curve, against the real Stages. The rank is only worth reading if it
+		keeps moving over the whole span the map covers.
+	]]
+	it("keeps the level climbing across the whole course", function()
+		local curve = LevelCurve.new(Config.Balance.level)
+		local lastStage = Config.Stages[#Config.Stages]
+
+		expect(curve:levelFor(0)).toBe(1)
+		expect(curve:requirementFor(2)).toBeLessThan(200)
+		expect(curve:levelFor(lastStage.requiredSpeed)).toBeGreaterThan(20)
 	end)
 
 	it("points every offer at a product that exists", function()

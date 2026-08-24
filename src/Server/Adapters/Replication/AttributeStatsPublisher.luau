@@ -19,6 +19,10 @@ local NUMBERS = {
 	Speed = "speed",
 	Coins = "coins",
 	Prestiges = "prestiges",
+	Level = "level",
+	LevelCurrent = "levelCurrent",
+	LevelRequired = "levelRequired",
+	LevelProgress = "levelProgress",
 	HighestStage = "highestStage",
 	ReachedStage = "reachedStage",
 	StageId = "stageId",
@@ -63,14 +67,20 @@ local function setIfChanged(player: Player, name: string, value: any)
 	end
 end
 
---[[ Builds the leaderstats shown in the player list. ]]
+--[[
+	Builds the leaderstats shown in the player list.
+
+	The rank, not the raw Speed. Both say the same thing, but a column of six digit
+	numbers is unreadable at a glance and gives a new player nothing to compare
+	themselves against.
+]]
 function AttributeStatsPublisher.setupPlayer(_self, player: Player)
 	local leaderstats = Instance.new("Folder")
 	leaderstats.Name = "leaderstats"
 
-	local speed = Instance.new("IntValue")
-	speed.Name = "Speed"
-	speed.Parent = leaderstats
+	local level = Instance.new("IntValue")
+	level.Name = "Level"
+	level.Parent = leaderstats
 
 	local prestiges = Instance.new("IntValue")
 	prestiges.Name = "Prestige"
@@ -112,9 +122,9 @@ function AttributeStatsPublisher.publish(_self, player: Player, snapshot: any)
 
 	local leaderstats = player:FindFirstChild("leaderstats")
 	if leaderstats then
-		local speed = leaderstats:FindFirstChild("Speed")
-		if speed then
-			(speed :: IntValue).Value = math.floor(snapshot.speed)
+		local level = leaderstats:FindFirstChild("Level")
+		if level then
+			(level :: IntValue).Value = snapshot.level or 1
 		end
 		local prestiges = leaderstats:FindFirstChild("Prestige")
 		if prestiges then
