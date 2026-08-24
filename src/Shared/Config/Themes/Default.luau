@@ -32,6 +32,7 @@ export type Theme = {
 	labels: { [string]: Label },
 	icons: { [string]: string },
 	palette: { [string]: { number } },
+	textures: { [string]: string? },
 }
 
 local theme: Theme = {
@@ -87,13 +88,38 @@ local theme: Theme = {
 	},
 
 	palette = {
-		background = { 24, 28, 40 },
-		panel = { 36, 42, 60 },
-		accent = { 250, 206, 110 },
-		positive = { 120, 214, 150 },
-		negative = { 226, 96, 92 },
-		speed = { 250, 206, 110 },
-		coins = { 250, 214, 120 },
+		-- Panels are LIGHT and text on them is dark. The simulator look reads as a
+		-- paper card laid over the world, not as a dark overlay swallowing it.
+		panel = { 250, 249, 246 },
+		panelSoft = { 233, 231, 226 },
+		panelEdge = { 46, 50, 72 },
+		background = { 30, 34, 52 },
+
+		-- `outline` is the black worn by every big number so it survives being read
+		-- over a bright sky, a lava pit or a white wall.
+		outline = { 20, 22, 34 },
+		text = { 52, 56, 78 },
+		textMuted = { 122, 128, 150 },
+		textOnColor = { 255, 255, 255 },
+
+		-- Saturated fills. Each one names a meaning, not a hue: a theme may repaint
+		-- them all and the interface keeps saying the same things.
+		accent = { 247, 197, 37 },
+		accentDark = { 206, 152, 16 },
+		info = { 59, 178, 240 },
+		positive = { 92, 201, 74 },
+		negative = { 229, 51, 60 },
+		special = { 150, 60, 220 },
+		locked = { 152, 156, 172 },
+	},
+
+	-- Optional decoration. Leave a field out and the surface stays flat, which is
+	-- perfectly readable: a texture is polish, never a requirement.
+	textures = {
+		-- A seamless tile laid faintly over every panel, at 8% opacity: it gives the
+		-- surface a grain instead of a colour. Any seamless texture works — see
+		-- docs/TEXTURES.md for the ones already available.
+		panelPattern = "rbxassetid://4621488899",
 	},
 }
 

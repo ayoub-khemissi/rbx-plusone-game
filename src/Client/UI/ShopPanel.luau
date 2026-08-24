@@ -16,11 +16,13 @@ local Panel = require(script.Parent.Panel)
 local Theme = require(script.Parent.Theme)
 local Widgets = require(script.Parent.Widgets)
 
+local LABELS = Config.Theme.labels
+
 local ShopPanel = {}
 ShopPanel.__index = ShopPanel
 
-function ShopPanel.new(parent: ScreenGui, state, remotes)
-	local panel = Panel.new(parent, { name = "Shop", title = "🪙 Upgrades" })
+function ShopPanel.new(parent: Instance, state, remotes)
+	local panel = Panel.new(parent, { name = "Shop", title = "UPGRADES", size = UDim2.fromOffset(600, 480) })
 
 	local self = setmetatable({
 		panel = panel,
@@ -48,50 +50,54 @@ end
 function ShopPanel._row(self, parent: Instance, definition, order: number)
 	local row = Widgets.card(parent, {
 		name = definition.id,
-		size = UDim2.new(1, -8, 0, 78),
-		color = Theme.color.panelLight,
-		transparency = 0.15,
+		size = UDim2.new(1, -10, 0, 88),
+		color = Theme.color.panelSoft,
+		radius = Theme.radius.button,
 	})
 	row.LayoutOrder = order
-	Widgets.padding(row, 10)
+	Widgets.padding(row, 12)
 
 	Widgets.icon(row, {
 		image = definition.image,
 		fallback = definition.icon,
-		size = UDim2.fromOffset(30, 30),
-		position = UDim2.fromScale(0, 0),
+		size = UDim2.fromOffset(52, 52),
+		position = UDim2.fromScale(0, 0.5),
+		anchorPoint = Vector2.new(0, 0.5),
 	})
 
 	Widgets.label(row, {
-		size = UDim2.new(0.6, -38, 0, 26),
-		position = UDim2.fromOffset(38, 0),
+		size = UDim2.new(0.58, -64, 0, 26),
+		position = UDim2.fromOffset(64, 0),
 		font = Theme.font.title,
+		textSize = Theme.text.big,
 		text = definition.name,
 	})
 
-	local description = Widgets.label(row, {
-		size = UDim2.new(0.6, 0, 0, 20),
-		position = UDim2.fromOffset(0, 28),
+	Widgets.label(row, {
+		size = UDim2.new(0.58, -64, 0, 20),
+		position = UDim2.fromOffset(64, 26),
 		font = Theme.font.body,
+		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
 		text = definition.description or "",
-		textScaled = false,
 	})
-	description.TextSize = 14
 
 	local level = Widgets.label(row, {
-		size = UDim2.new(0.6, 0, 0, 18),
-		position = UDim2.fromOffset(0, 48),
+		size = UDim2.new(0.58, -64, 0, 20),
+		position = UDim2.fromOffset(64, 46),
 		font = Theme.font.number,
-		color = Theme.color.accent,
+		textSize = Theme.text.body,
+		color = Theme.color.accentDark,
 		text = "Level 0",
 	})
 
 	local buy = Widgets.button(row, {
-		text = "🪙 —",
-		size = UDim2.new(0.36, 0, 0, 48),
+		text = "—",
+		size = UDim2.new(0.34, 0, 0, 56),
 		position = UDim2.fromScale(1, 0.5),
 		anchorPoint = Vector2.new(1, 0.5),
+		textSize = Theme.text.big,
+		textColor = Theme.color.background,
 		onClick = function()
 			self.remotes.events.BuyUpgrade:FireServer(definition.id)
 		end,
@@ -116,7 +122,7 @@ function ShopPanel.render(self)
 			row.buy.BackgroundColor3 = Theme.color.locked
 		else
 			local cost = self.catalog:costFor(definition.id, currentLevel)
-			row.buy.Text = `🪙 {Format.abbreviate(cost)}`
+			row.buy.Text = `{LABELS.coins.icon} {Format.abbreviate(cost)}`
 			row.buy.BackgroundColor3 = if coins >= cost then Theme.color.accent else Theme.color.locked
 		end
 	end

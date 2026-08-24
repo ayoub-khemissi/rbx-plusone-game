@@ -17,9 +17,8 @@ local Widgets = require(script.Parent.Widgets)
 local StorePanel = {}
 StorePanel.__index = StorePanel
 
-function StorePanel.new(parent: ScreenGui, state, remotes)
-	local panel =
-		Panel.new(parent, { name = "Store", title = "💎 Store", size = UDim2.fromOffset(580, 470) })
+function StorePanel.new(parent: Instance, state, remotes)
+	local panel = Panel.new(parent, { name = "Store", title = "STORE", size = UDim2.fromOffset(620, 500) })
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes, passRows = {} }, StorePanel)
 
 	local list = Widgets.scroll(panel.content, { name = "Items" })
@@ -64,6 +63,7 @@ function StorePanel.new(parent: ScreenGui, state, remotes)
 		Widgets.label(list, {
 			size = UDim2.new(1, 0, 0, 60),
 			font = Theme.font.body,
+			textSize = Theme.text.body,
 			color = Theme.color.textMuted,
 			wrapped = true,
 			text = "Store opening soon: items appear here as soon as they are created on Roblox.",
@@ -81,49 +81,50 @@ end
 function StorePanel._row(_self, parent: Instance, options)
 	local row = Widgets.card(parent, {
 		name = options.name,
-		size = UDim2.new(1, -8, 0, 78),
-		color = Theme.color.panelLight,
-		transparency = 0.15,
+		size = UDim2.new(1, -10, 0, 88),
+		color = Theme.color.panelSoft,
+		radius = Theme.radius.button,
 	})
 	row.LayoutOrder = options.order
-	Widgets.padding(row, 10)
+	Widgets.padding(row, 12)
 
 	Widgets.label(row, {
-		size = UDim2.new(0.62, 0, 0, 24),
+		size = UDim2.new(0.62, 0, 0, 26),
 		font = Theme.font.title,
+		textSize = Theme.text.big,
 		text = `{options.icon or "💠"} {options.name}`,
 	})
 
-	local description = Widgets.label(row, {
-		size = UDim2.new(0.62, 0, 0, 36),
+	Widgets.label(row, {
+		size = UDim2.new(0.62, 0, 0, 38),
 		position = UDim2.fromOffset(0, 28),
 		font = Theme.font.body,
+		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
 		wrapped = true,
+		verticalAlign = Enum.TextYAlignment.Top,
 		text = options.description or "",
-		textScaled = false,
 	})
-	description.TextSize = 14
 
 	if options.badge then
-		local badge = Widgets.label(row, {
-			size = UDim2.new(0.34, 0, 0, 16),
+		Widgets.label(row, {
+			size = UDim2.new(0.34, 0, 0, 18),
 			position = UDim2.fromScale(1, 0),
 			anchorPoint = Vector2.new(1, 0),
 			font = Theme.font.number,
-			color = Theme.color.accent,
+			textSize = Theme.text.small,
+			color = Theme.color.accentDark,
 			align = Enum.TextXAlignment.Right,
 			text = string.upper(options.badge),
-			textScaled = false,
 		})
-		badge.TextSize = 13
 	end
 
 	local button = Widgets.button(row, {
 		text = options.action,
-		size = UDim2.new(0.32, 0, 0, 44),
+		size = UDim2.new(0.32, 0, 0, 50),
 		position = UDim2.fromScale(1, 1),
 		anchorPoint = Vector2.new(1, 1),
+		textSize = Theme.text.big,
 		color = Theme.color.positive,
 		onClick = options.onClick,
 	})

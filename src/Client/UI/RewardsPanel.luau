@@ -18,14 +18,14 @@ RewardsPanel.__index = RewardsPanel
 
 local REFRESH_INTERVAL = 5
 
-function RewardsPanel.new(parent: ScreenGui, state, remotes)
-	local panel =
-		Panel.new(parent, { name = "Gifts", title = "🎁 Gifts", size = UDim2.fromOffset(500, 400) })
+function RewardsPanel.new(parent: Instance, state, remotes)
+	local panel = Panel.new(parent, { name = "Gifts", title = "GIFTS", size = UDim2.fromOffset(540, 440) })
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes }, RewardsPanel)
 
 	self.dailyTitle = Widgets.label(panel.content, {
-		size = UDim2.new(1, 0, 0, 26),
+		size = UDim2.new(1, 0, 0, 28),
 		font = Theme.font.title,
+		textSize = Theme.text.big,
 		text = "Daily reward",
 	})
 
@@ -33,13 +33,16 @@ function RewardsPanel.new(parent: ScreenGui, state, remotes)
 		size = UDim2.new(1, 0, 0, 22),
 		position = UDim2.fromOffset(0, 28),
 		font = Theme.font.body,
+		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
 	})
 
 	self.dailyButton = Widgets.button(panel.content, {
 		text = "CLAIM",
-		size = UDim2.new(1, 0, 0, 46),
-		position = UDim2.fromOffset(0, 56),
+		size = UDim2.new(1, 0, 0, 52),
+		position = UDim2.fromOffset(0, 54),
+		textSize = Theme.text.big,
+		textColor = Theme.color.background,
 		onClick = function()
 			self.remotes.events.ClaimDaily:FireServer()
 			task.delay(0.4, function()
@@ -49,23 +52,26 @@ function RewardsPanel.new(parent: ScreenGui, state, remotes)
 	})
 
 	Widgets.label(panel.content, {
-		size = UDim2.new(1, 0, 0, 26),
-		position = UDim2.fromOffset(0, 118),
+		size = UDim2.new(1, 0, 0, 28),
+		position = UDim2.fromOffset(0, 120),
 		font = Theme.font.title,
+		textSize = Theme.text.big,
 		text = Config.Monetization.sessionChest.label,
 	})
 
 	self.chestDetail = Widgets.label(panel.content, {
 		size = UDim2.new(1, 0, 0, 22),
-		position = UDim2.fromOffset(0, 146),
+		position = UDim2.fromOffset(0, 148),
 		font = Theme.font.body,
+		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
 	})
 
 	self.chestButton = Widgets.button(panel.content, {
 		text = "OPEN",
-		size = UDim2.new(1, 0, 0, 46),
-		position = UDim2.fromOffset(0, 174),
+		size = UDim2.new(1, 0, 0, 52),
+		position = UDim2.fromOffset(0, 176),
+		textSize = Theme.text.big,
 		onClick = function()
 			self.remotes.events.ClaimChest:FireServer()
 			task.delay(0.4, function()
@@ -75,32 +81,36 @@ function RewardsPanel.new(parent: ScreenGui, state, remotes)
 	})
 
 	Widgets.label(panel.content, {
-		size = UDim2.new(1, 0, 0, 26),
-		position = UDim2.fromOffset(0, 236),
+		size = UDim2.new(1, 0, 0, 28),
+		position = UDim2.fromOffset(0, 242),
 		font = Theme.font.title,
+		textSize = Theme.text.big,
 		text = "Promo code",
 	})
 
 	local input = Instance.new("TextBox")
 	input.Name = "CodeInput"
-	input.Size = UDim2.new(0.62, 0, 0, 44)
-	input.Position = UDim2.fromOffset(0, 266)
-	input.BackgroundColor3 = Theme.color.background
+	input.Size = UDim2.new(0.62, 0, 0, 50)
+	input.Position = UDim2.fromOffset(0, 274)
+	input.BackgroundColor3 = Theme.color.panelSoft
 	input.BorderSizePixel = 0
 	input.Font = Theme.font.number
 	input.PlaceholderText = "YOUR CODE"
+	input.PlaceholderColor3 = Theme.color.textMuted
 	input.Text = ""
 	input.TextColor3 = Theme.color.text
-	input.TextScaled = true
+	input.TextSize = Theme.text.body
 	input.ClearTextOnFocus = false
 	input.Parent = panel.content
 	Widgets.corner(input)
+	Widgets.stroke(input, Theme.color.panelEdge, Theme.stroke.button)
 
 	Widgets.button(panel.content, {
 		text = "REDEEM",
-		size = UDim2.new(0.34, 0, 0, 44),
-		position = UDim2.new(1, 0, 0, 266),
+		size = UDim2.new(0.34, 0, 0, 50),
+		position = UDim2.new(1, 0, 0, 274),
 		anchorPoint = Vector2.new(1, 0),
+		textSize = Theme.text.big,
 		color = Theme.color.positive,
 		onClick = function()
 			if input.Text ~= "" then

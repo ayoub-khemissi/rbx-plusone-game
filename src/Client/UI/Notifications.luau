@@ -3,8 +3,11 @@
 	Notifications — short lived messages stacked near the top of the screen.
 
 	They sit BELOW the Roblox top bar, not at the very top: the ScreenGui ignores the
-	GUI inset, so anything within the first ~90 pixels is hidden behind the platform
-	bar and the message is never seen.
+	GUI inset, so anything drawn in the first pixels of the screen hides behind the
+	platform bar and the message is never seen.
+
+	The toast is coloured by what it means, so a refusal and a reward do not have to
+	be read to be told apart.
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -23,19 +26,20 @@ local COLORS = {
 }
 
 local LIFETIME = 3.5
--- The Roblox top bar is 36 px, plus a margin so a toast never touches it.
-local TOP_BAR_CLEARANCE = 96
+-- The platform bar is a fixed 36 real pixels; this is written in design pixels and
+-- clears it comfortably at every scale the interface allows.
+local TOP_BAR_CLEARANCE = 64
 
-function Notifications.new(parent: ScreenGui)
+function Notifications.new(parent: Instance)
 	local container = Instance.new("Frame")
 	container.Name = "Notifications"
-	container.Size = UDim2.fromOffset(460, 240)
+	container.Size = UDim2.fromOffset(500, 260)
 	container.Position = UDim2.new(0.5, 0, 0, TOP_BAR_CLEARANCE)
 	container.AnchorPoint = Vector2.new(0.5, 0)
 	container.BackgroundTransparency = 1
 	container.Parent = parent
 
-	Widgets.list(container, { padding = 6, horizontalAlignment = Enum.HorizontalAlignment.Center })
+	Widgets.list(container, { padding = 8, horizontalAlignment = Enum.HorizontalAlignment.Center })
 
 	return setmetatable({ container = container, order = 0 }, Notifications)
 end
@@ -45,20 +49,25 @@ function Notifications.push(self, message: string, kind: string?)
 
 	local toast = Widgets.card(self.container, {
 		name = "Message",
-		size = UDim2.new(1, 0, 0, 46),
-		transparency = 0.05,
+		size = UDim2.new(1, 0, 0, 52),
+		color = COLORS[kind or "info"] or Theme.color.info,
+		radius = Theme.radius.chip,
 	})
 	toast.ZIndex = 20
 	toast.LayoutOrder = self.order
-	Widgets.padding(toast, 8)
+	Widgets.padding(toast, 10)
+	Widgets.gradient(toast)
 
-	Widgets.label(toast, {
+	local text = Widgets.label(toast, {
 		text = message,
 		align = Enum.TextXAlignment.Center,
 		font = Theme.font.number,
-		color = COLORS[kind or "info"] or Theme.color.text,
+		textSize = Theme.text.body,
+		color = Theme.color.textOnColor,
+		outline = true,
 		wrapped = true,
 	})
+	text.ZIndex = 21
 
 	task.delay(LIFETIME, function()
 		if not toast.Parent then

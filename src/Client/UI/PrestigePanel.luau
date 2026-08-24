@@ -15,11 +15,11 @@ PrestigePanel.__index = PrestigePanel
 
 local LABELS = Config.Theme.labels
 
-function PrestigePanel.new(parent: ScreenGui, state, remotes)
+function PrestigePanel.new(parent: Instance, state, remotes)
 	local panel = Panel.new(parent, {
 		name = "Prestige",
-		title = `{LABELS.prestige.icon} {LABELS.prestige.name}`,
-		size = UDim2.fromOffset(500, 340),
+		title = string.upper(LABELS.prestige.name),
+		size = UDim2.fromOffset(540, 380),
 	})
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes }, PrestigePanel)
 
@@ -28,23 +28,25 @@ function PrestigePanel.new(parent: ScreenGui, state, remotes)
 		font = Theme.font.body,
 		color = Theme.color.textMuted,
 		wrapped = true,
-		textScaled = false,
+		textSize = Theme.text.small,
 		text = `Resets your {LABELS.speed.name}, your {LABELS.coins.plural} and your upgrades, and raises`
 			.. " every future gain for good.",
 	})
-	explain.TextSize = 16
+	explain.TextYAlignment = Enum.TextYAlignment.Top
 
 	self.current = Widgets.label(panel.content, {
 		size = UDim2.new(1, 0, 0, 30),
 		position = UDim2.fromOffset(0, 74),
 		font = Theme.font.title,
-		color = Theme.color.accent,
+		textSize = Theme.text.big,
+		color = Theme.color.accentDark,
 	})
 
 	self.next = Widgets.label(panel.content, {
 		size = UDim2.new(1, 0, 0, 26),
 		position = UDim2.fromOffset(0, 108),
 		font = Theme.font.number,
+		textSize = Theme.text.body,
 		color = Theme.color.positive,
 	})
 
@@ -52,6 +54,7 @@ function PrestigePanel.new(parent: ScreenGui, state, remotes)
 		size = UDim2.new(1, 0, 0, 22),
 		position = UDim2.fromOffset(0, 140),
 		font = Theme.font.body,
+		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
 	})
 
@@ -63,9 +66,10 @@ function PrestigePanel.new(parent: ScreenGui, state, remotes)
 
 	self.action = Widgets.button(panel.content, {
 		text = LABELS.prestige.verb or "PRESTIGE",
-		size = UDim2.new(1, 0, 0, 54),
-		position = UDim2.new(0, 0, 1, -8),
+		size = UDim2.new(1, 0, 0, 58),
+		position = UDim2.new(0, 0, 1, -6),
 		anchorPoint = Vector2.new(0, 1),
+		textSize = Theme.text.big,
 		onClick = function()
 			self.remotes.events.Prestige:FireServer()
 		end,

@@ -19,3 +19,6 @@ Thumbs.db
 # Outils locaux telecharges (rokit gere les versions)
 .tools/
 roblox.yml
+
+# Captures et references visuelles (hors depot)
+img/

@@ -15,49 +15,49 @@ OfferPopup.__index = OfferPopup
 
 local POLL_INTERVAL = 10
 
-function OfferPopup.new(parent: ScreenGui, remotes)
+function OfferPopup.new(parent: Instance, remotes)
 	local card = Widgets.card(parent, {
 		name = "Offer",
-		size = UDim2.fromOffset(250, 132),
-		position = UDim2.new(1, -14, 1, -14),
+		size = UDim2.fromOffset(280, 152),
+		position = UDim2.new(1, -18, 1, -18),
 		anchorPoint = Vector2.new(1, 1),
-		color = Theme.color.panelLight,
 		visible = false,
 	})
-	Widgets.padding(card, 10)
+	Widgets.padding(card, 12)
 
 	local self = setmetatable({ card = card, remotes = remotes, current = nil }, OfferPopup)
 
 	self.title = Widgets.label(card, {
-		size = UDim2.new(1, 0, 0, 24),
+		size = UDim2.new(1, 0, 0, 26),
 		font = Theme.font.title,
-		color = Theme.color.accent,
+		textSize = Theme.text.big,
+		color = Theme.color.accentDark,
 	})
 
 	self.description = Widgets.label(card, {
-		size = UDim2.new(1, 0, 0, 32),
-		position = UDim2.fromOffset(0, 26),
+		size = UDim2.new(1, 0, 0, 36),
+		position = UDim2.fromOffset(0, 28),
 		font = Theme.font.body,
+		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
 		wrapped = true,
-		textScaled = false,
+		verticalAlign = Enum.TextYAlignment.Top,
 	})
-	self.description.TextSize = 14
 
 	self.countdown = Widgets.label(card, {
-		size = UDim2.new(1, 0, 0, 18),
-		position = UDim2.fromOffset(0, 60),
+		size = UDim2.new(1, 0, 0, 20),
+		position = UDim2.fromOffset(0, 68),
 		font = Theme.font.number,
+		textSize = Theme.text.small,
 		color = Theme.color.negative,
-		textScaled = false,
 	})
-	self.countdown.TextSize = 14
 
 	self.action = Widgets.button(card, {
 		text = "VIEW",
-		size = UDim2.new(1, 0, 0, 40),
+		size = UDim2.new(1, 0, 0, 46),
 		position = UDim2.fromScale(0, 1),
 		anchorPoint = Vector2.new(0, 1),
+		textSize = Theme.text.big,
 		color = Theme.color.positive,
 		onClick = function()
 			if self.current then

@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage:WaitForChild("Shared").Config)
 
 local Theme = require(script.Parent.Theme)
+local Widgets = require(script.Parent.Widgets)
 local Hud = require(script.Parent.Hud)
 local Sidebar = require(script.Parent.Sidebar)
 local Notifications = require(script.Parent.Notifications)
@@ -28,14 +29,18 @@ function Root.mount(player: Player, state, remotes)
 	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screen.Parent = player:WaitForChild("PlayerGui")
 
-	local hud = Hud.new(screen, state)
-	local notifications = Notifications.new(screen)
+	-- Everything is built inside the scaled frame: sizes are written once, for a
+	-- 1280x720 screen, and this is what makes them mean the same on every device.
+	local root = Widgets.scaled(screen)
+
+	local hud = Hud.new(root, state)
+	local notifications = Notifications.new(root)
 
 	local panels = {
-		shop = ShopPanel.new(screen, state, remotes),
-		prestige = PrestigePanel.new(screen, state, remotes),
-		gifts = RewardsPanel.new(screen, state, remotes),
-		store = StorePanel.new(screen, state, remotes),
+		shop = ShopPanel.new(root, state, remotes),
+		prestige = PrestigePanel.new(root, state, remotes),
+		gifts = RewardsPanel.new(root, state, remotes),
+		store = StorePanel.new(root, state, remotes),
 	}
 
 	local function exclusiveToggle(key: string)
@@ -50,23 +55,37 @@ function Root.mount(player: Player, state, remotes)
 	end
 
 	local LABELS = Config.Theme.labels
-
 	local ICONS = Config.Theme.icons
 
-	Sidebar.new(screen, {
-		{ name = "Shop", icon = LABELS.coins.icon, image = ICONS.shop, onClick = exclusiveToggle("shop") },
+	-- One colour per window: the player learns the position AND the colour, and stops
+	-- reading the caption after the first minute.
+	Sidebar.new(root, {
 		{
-			name = "Prestige",
+			name = "Shop",
+			icon = LABELS.coins.icon,
+			image = ICONS.shop,
+			color = Theme.color.negative,
+			onClick = exclusiveToggle("shop"),
+		},
+		{
+			name = LABELS.prestige.name,
 			icon = LABELS.prestige.icon,
 			image = LABELS.prestige.image,
+			color = Theme.color.info,
 			onClick = exclusiveToggle("prestige"),
 		},
-		{ name = "Gifts", icon = "🎁", image = ICONS.gifts, onClick = exclusiveToggle("gifts") },
+		{
+			name = "Gifts",
+			icon = "🎁",
+			image = ICONS.gifts,
+			color = Theme.color.positive,
+			onClick = exclusiveToggle("gifts"),
+		},
 		{
 			name = "Store",
 			icon = "💎",
 			image = ICONS.store,
-			color = Theme.color.accentDark,
+			color = Theme.color.special,
 			onClick = exclusiveToggle("store"),
 		},
 	})
@@ -78,7 +97,7 @@ function Root.mount(player: Player, state, remotes)
 		end
 	end)
 
-	OfferPopup.new(screen, remotes)
+	OfferPopup.new(root, remotes)
 
 	remotes.events.Notify.OnClientEvent:Connect(function(payload)
 		if typeof(payload) == "table" and typeof(payload.message) == "string" then
@@ -86,7 +105,7 @@ function Root.mount(player: Player, state, remotes)
 		end
 	end)
 
-	return { screen = screen, hud = hud, panels = panels, notifications = notifications }
+	return { screen = screen, root = root, hud = hud, panels = panels, notifications = notifications }
 end
 
 return Root
