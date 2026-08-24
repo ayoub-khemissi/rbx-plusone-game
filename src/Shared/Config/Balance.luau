@@ -13,9 +13,13 @@
 return table.freeze({
 	-- Accumulated speed -> actual walk speed
 	speedCurve = table.freeze({
-		baseWalkSpeed = 16,
-		maxBonusWalkSpeed = 234, -- ceiling at 250 studs/s: past that a character skips through thin floors
-		softness = 1500,
+		baseWalkSpeed = 16, -- Roblox default, and the speed the first jump was designed around
+		-- Ceiling at 60 studs/s. The physics tolerates far more, but an obstacle
+		-- course does not: past that the character overshoots every platform and the
+		-- level design stops mattering. Speed is meant to be a growing NUMBER, not a
+		-- growing problem.
+		maxBonusWalkSpeed = 44,
+		softness = 6000,
 		baseJumpPower = 50,
 		jumpPowerPerLevel = 2.5,
 		maxJumpPower = 140,

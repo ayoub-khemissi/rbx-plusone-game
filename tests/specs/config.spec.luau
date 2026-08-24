@@ -8,6 +8,7 @@ local Config = require(Config)
 local StageLadder = require(Domain.Run.StageLadder)
 local UpgradeCatalog = require(Domain.Economy.UpgradeCatalog)
 local PrestigePolicy = require(Domain.Prestige.PrestigePolicy)
+local SpeedCurve = require(Domain.Movement.SpeedCurve)
 local JumpBudget = require(Domain.Movement.JumpBudget)
 local DashPolicy = require(Domain.Movement.DashPolicy)
 local ProductCatalog = require(Domain.Monetization.ProductCatalog)
@@ -93,9 +94,21 @@ describe("Config.Upgrades", function()
 end)
 
 describe("Config.Balance", function()
-	it("keeps walk speed under the physics ceiling", function()
-		local curve = Config.Balance.speedCurve
-		expect(curve.baseWalkSpeed + curve.maxBonusWalkSpeed).toBeLessThanOrEqual(250)
+	-- Regression : a 500 de Speed le personnage courait a 82 studs/s, soit cinq fois
+	-- la vitesse par defaut. Un parcours a trous devient injouable bien avant.
+	it("keeps the character controllable at every point of the curve", function()
+		local curve = SpeedCurve.new(Config.Balance.speedCurve)
+
+		-- Les premieres minutes doivent se sentir, sans devenir incontrolables.
+		expect(curve:walkSpeedFor(500)).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
+		expect(curve:walkSpeedFor(500)).toBeLessThan(24)
+
+		-- Au seuil de Prestige, on est rapide mais on pose encore ses sauts.
+		local prestige = PrestigePolicy.new(Config.Balance.prestige):requirementFor(0)
+		expect(curve:walkSpeedFor(prestige)).toBeLessThan(60)
+
+		-- Et le plafond reste franchement sous la limite physique de Roblox.
+		expect(curve:walkSpeedFor(1e12)).toBeLessThanOrEqual(60)
 	end)
 
 	it("leaves an anti-cheat margin above 1", function()
