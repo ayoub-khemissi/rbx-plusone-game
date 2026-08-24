@@ -1,5 +1,11 @@
 --!strict
---[[ Notifications — short lived messages stacked at the top of the screen. ]]
+--[[
+	Notifications — short lived messages stacked near the top of the screen.
+
+	They sit BELOW the Roblox top bar, not at the very top: the ScreenGui ignores the
+	GUI inset, so anything within the first ~90 pixels is hidden behind the platform
+	bar and the message is never seen.
+]]
 
 local TweenService = game:GetService("TweenService")
 
@@ -17,12 +23,14 @@ local COLORS = {
 }
 
 local LIFETIME = 3.5
+-- The Roblox top bar is 36 px, plus a margin so a toast never touches it.
+local TOP_BAR_CLEARANCE = 96
 
 function Notifications.new(parent: ScreenGui)
 	local container = Instance.new("Frame")
 	container.Name = "Notifications"
-	container.Size = UDim2.fromOffset(440, 220)
-	container.Position = UDim2.new(0.5, 0, 0, 16)
+	container.Size = UDim2.fromOffset(460, 240)
+	container.Position = UDim2.new(0.5, 0, 0, TOP_BAR_CLEARANCE)
 	container.AnchorPoint = Vector2.new(0.5, 0)
 	container.BackgroundTransparency = 1
 	container.Parent = parent
@@ -37,9 +45,10 @@ function Notifications.push(self, message: string, kind: string?)
 
 	local toast = Widgets.card(self.container, {
 		name = "Message",
-		size = UDim2.new(1, 0, 0, 42),
+		size = UDim2.new(1, 0, 0, 46),
 		transparency = 0.05,
 	})
+	toast.ZIndex = 20
 	toast.LayoutOrder = self.order
 	Widgets.padding(toast, 8)
 
