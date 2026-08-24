@@ -31,7 +31,7 @@ Popups.__index = Popups
 -- How far below the middle of the screen the throw starts. The camera keeps the
 -- character centred, so its feet sit a little under that: starting there makes the
 -- number look kicked up off the ground rather than out of the chest.
-local ORIGIN_Y = 80
+local ORIGIN_Y = 140
 
 local LIFETIME = 1.15
 local SPREAD = 130 -- how far out it travels, in design pixels
