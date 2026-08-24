@@ -9,6 +9,7 @@ local Widgets = require(script.Parent.Widgets)
 local Hud = require(script.Parent.Hud)
 local Sidebar = require(script.Parent.Sidebar)
 local Notifications = require(script.Parent.Notifications)
+local Popups = require(script.Parent.Popups)
 local ShopPanel = require(script.Parent.ShopPanel)
 local PrestigePanel = require(script.Parent.PrestigePanel)
 local RewardsPanel = require(script.Parent.RewardsPanel)
@@ -35,6 +36,7 @@ function Root.mount(player: Player, state, remotes)
 
 	local hud = Hud.new(root, state)
 	local notifications = Notifications.new(root)
+	local popups = Popups.new(root)
 
 	local panels = {
 		shop = ShopPanel.new(root, state, remotes),
@@ -107,7 +109,14 @@ function Root.mount(player: Player, state, remotes)
 		end
 	end)
 
-	return { screen = screen, root = root, hud = hud, panels = panels, notifications = notifications }
+	return {
+		screen = screen,
+		root = root,
+		hud = hud,
+		panels = panels,
+		notifications = notifications,
+		popups = popups,
+	}
 end
 
 return Root

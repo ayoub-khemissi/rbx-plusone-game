@@ -2,8 +2,8 @@
 --[[
 	EffectsController — the feeling of speed.
 
-	A widening field of view and a trail behind the dragon do more for the sensation
-	of velocity than the number on the HUD ever will.
+	A widening field of view and a trail behind the character do more for the
+	sensation of velocity than any number on the HUD ever will.
 ]]
 
 local RunService = game:GetService("RunService")
