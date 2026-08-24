@@ -47,7 +47,7 @@ function RewardApplier.describe(self, summary): string
 end
 
 --[[ Grants that need more than the profile — they reach into the Nest. ]]
-function RewardApplier.applyExtras(self, session, grant, summary)
+function RewardApplier.applyExtras(_self, session, grant, summary)
 	local profile = session.profile
 
 	if typeof(grant.insurance) == "table" then
