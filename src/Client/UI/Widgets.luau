@@ -339,6 +339,14 @@ function Widgets.list(parent: Instance, options)
 	return layout
 end
 
+--[[
+	A scrolling list.
+
+	`inset` is not decoration. A ScrollingFrame clips its descendants, and an outline
+	is drawn OUTSIDE the frame it belongs to: a row flush against the edge loses the
+	outline the eye needs to separate it from the next one. The inset gives the
+	outline somewhere to be drawn, and keeps the rows clear of the scrollbar.
+]]
 function Widgets.scroll(parent: Instance, options): ScrollingFrame
 	local scroll = Instance.new("ScrollingFrame")
 	scroll.Name = options.name or "List"
@@ -351,6 +359,11 @@ function Widgets.scroll(parent: Instance, options): ScrollingFrame
 	scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 	scroll.CanvasSize = UDim2.fromScale(0, 0)
 	scroll.Parent = parent
+
+	if options.inset ~= false then
+		Widgets.padding(scroll, options.inset or 8)
+	end
+
 	return scroll
 end
 

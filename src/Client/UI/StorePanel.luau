@@ -21,7 +21,7 @@ function StorePanel.new(parent: Instance, state, remotes)
 	local panel = Panel.new(parent, { name = "Store", title = "STORE", size = UDim2.fromOffset(620, 500) })
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes, passRows = {} }, StorePanel)
 
-	local list = Widgets.scroll(panel.content, { name = "Items" })
+	local list = Widgets.scroll(panel.content, { name = "Items", inset = 8 })
 	Widgets.list(list, { padding = 8 })
 
 	local order = 0
@@ -81,7 +81,7 @@ end
 function StorePanel._row(_self, parent: Instance, options)
 	local row = Widgets.card(parent, {
 		name = options.name,
-		size = UDim2.new(1, -10, 0, 88),
+		size = UDim2.new(1, -8, 0, 88),
 		color = Theme.color.panelSoft,
 		radius = Theme.radius.button,
 	})
@@ -90,7 +90,7 @@ function StorePanel._row(_self, parent: Instance, options)
 
 	Widgets.label(row, {
 		size = UDim2.new(0.62, 0, 0, 26),
-		font = Theme.font.title,
+		font = Theme.font.number,
 		textSize = Theme.text.big,
 		text = `{options.icon or "💠"} {options.name}`,
 	})
@@ -135,7 +135,7 @@ end
 function StorePanel.render(self)
 	for passId, row in self.passRows do
 		if self.state:owns(passId) then
-			row.button.Text = "✔ OWNED"
+			row.button.Text = "OWNED"
 			row.button.BackgroundColor3 = Theme.color.locked
 			row.button.Active = false
 		end

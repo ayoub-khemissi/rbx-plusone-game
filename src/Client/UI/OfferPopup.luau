@@ -29,7 +29,7 @@ function OfferPopup.new(parent: Instance, remotes)
 
 	self.title = Widgets.label(card, {
 		size = UDim2.new(1, 0, 0, 26),
-		font = Theme.font.title,
+		font = Theme.font.number,
 		textSize = Theme.text.big,
 		color = Theme.color.accentDark,
 	})

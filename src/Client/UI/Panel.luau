@@ -41,7 +41,7 @@ function Panel.new(parent: Instance, options)
 	-- without reading, and it must never hide behind the content.
 	local close = Widgets.button(frame, {
 		name = "Close",
-		text = "✕",
+		text = "X",
 		size = UDim2.fromOffset(46, 46),
 		position = UDim2.new(1, -6, 0, -6),
 		anchorPoint = Vector2.new(1, 0),

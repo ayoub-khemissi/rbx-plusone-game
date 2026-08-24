@@ -54,10 +54,17 @@ return table.freeze({
 		panelPattern = Config.Theme.textures and Config.Theme.textures.panelPattern,
 	}),
 
+	--[[
+		FredokaOne carries the simulator look but only Latin glyphs: a symbol it does
+		not have is drawn as nothing at all, which is how a close button ends up an
+		empty red circle. It is reserved for text whose characters are known — the
+		headings and the big counters — and `number` keeps a font that covers the
+		dashes, arrows and currency marks a value can contain.
+	]]
 	font = table.freeze({
 		title = Enum.Font.FredokaOne,
 		body = Enum.Font.GothamMedium,
-		number = Enum.Font.FredokaOne,
+		number = Enum.Font.GothamBold,
 	}),
 
 	--[[

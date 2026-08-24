@@ -84,6 +84,7 @@ function Hud.new(parent: Instance, state)
 		fallback = LABELS.speed.icon,
 		size = UDim2.new(1, 0, 0, 48),
 		iconSize = 44,
+		font = Theme.font.title,
 		textSize = Theme.text.hero,
 		color = Theme.color.accent,
 		layoutOrder = 1,
@@ -95,6 +96,7 @@ function Hud.new(parent: Instance, state)
 		fallback = LABELS.coins.icon,
 		size = UDim2.new(1, 0, 0, 40),
 		iconSize = 36,
+		font = Theme.font.title,
 		textSize = Theme.text.title,
 		layoutOrder = 2,
 	})
