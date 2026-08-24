@@ -171,6 +171,7 @@ function Container.new(options: Options)
 		clock = clock,
 		hubPoint = hubPoint,
 		chestKey = monetization.sessionChest.key,
+		labels = config.Theme.labels,
 		passes = indexById(config.Passes),
 
 		repository = ports.repository,
