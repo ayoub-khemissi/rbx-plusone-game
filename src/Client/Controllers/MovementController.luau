@@ -19,6 +19,10 @@
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local PressGate = require(ReplicatedStorage:WaitForChild("Shared").Domain.Movement.PressGate)
+
 local Flip = require(script.Parent.Parent.Flip)
 
 local MovementController = {}
@@ -28,6 +32,9 @@ local DASH_ACTION = "Dash"
 local DASH_KEYS = { Enum.KeyCode.Q, Enum.KeyCode.LeftShift }
 local DASH_LIFT = 8 -- a touch of lift, so a dash can save a jump that fell short
 
+-- Above one frame, below a human double tap. See PressGate for why this exists.
+local JUMP_PRESS_WINDOW = 0.1
+
 function MovementController.new(player: Player, state, remotes)
 	local self = setmetatable({
 		player = player,
@@ -35,6 +42,8 @@ function MovementController.new(player: Player, state, remotes)
 		remotes = remotes,
 		airJumpsUsed = 0,
 		lastDashAt = -math.huge,
+		jumpGate = PressGate.new(JUMP_PRESS_WINDOW),
+		jumpPress = PressGate.newState(),
 	}, MovementController)
 
 	player.CharacterAdded:Connect(function(character)
@@ -97,6 +106,15 @@ function MovementController._airborne(self): boolean
 end
 
 function MovementController._onJumpRequest(self)
+	-- Offered FIRST, and unconditionally. JumpRequest repeats while the input is
+	-- held, so the ground jump and the air jump arrive from the same press. Hiding
+	-- the grounded events from the gate would open a gap that was never there.
+	local newPress = self.jumpGate:offer(self.jumpPress, os.clock())
+
+	if not newPress then
+		return
+	end
+
 	if not self.character or not self:_airborne() then
 		return -- the ground jump belongs to Roblox
 	end
