@@ -122,8 +122,9 @@ function Hud.new(parent: Instance, state)
 
 	self.stageLabel = Widgets.label(self.stageBar.instance, {
 		name = "Stage",
-		size = UDim2.new(0.6, -18, 1, 0),
-		position = UDim2.fromOffset(18, 0),
+		-- Clear of the rounded cap: the track clips its children now.
+		size = UDim2.new(0.6, -20, 1, 0),
+		position = UDim2.fromOffset(20, 0),
 		font = Theme.font.number,
 		textSize = Theme.text.body,
 		color = Theme.color.textOnColor,
@@ -133,7 +134,7 @@ function Hud.new(parent: Instance, state)
 
 	self.stageValue = Widgets.label(self.stageBar.instance, {
 		name = "Progress",
-		size = UDim2.new(0.4, -18, 1, 0),
+		size = UDim2.new(0.4, -20, 1, 0),
 		position = UDim2.fromScale(0.6, 0),
 		font = Theme.font.number,
 		textSize = Theme.text.body,

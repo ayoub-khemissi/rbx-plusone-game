@@ -232,21 +232,23 @@ end
 --[[
 	A progress bar.
 
-	THE FILL IS NEVER NARROWER THAN THE TRACK IS TALL.
+	THE TRACK CLIPS, THE FILL IS A RECTANGLE.
 
-	A UICorner radius is capped by the SMALLER side of the object it rounds. A fill a
-	few pixels wide therefore gets a few pixels of radius and sits inside the track's
-	much rounder cap, leaving a dark crescent to its left that only closes once the
-	bar is wide enough to earn its full radius. Holding the fill to at least the
-	track's height means its cap always has exactly the track's curve — the bar reads
-	as filling from the very first pixel instead of growing a hole shut.
+	Rounding the fill itself cannot work: a UICorner radius is capped by the SMALLER
+	side of what it rounds, so a narrow fill gets a tiny radius and sits inside the
+	track's much rounder cap, leaving a dark crescent to its left. Holding the fill
+	to a minimum width hides that crescent but costs more than it buys — the bar then
+	shows the same pip at 0.5% and at 3%, so the first percents stop moving it at
+	all, which is exactly when a player is looking for movement.
 
-	The floor is taken from the track's measured height, not from a constant, so it
-	survives the interface being scaled.
+	Letting the track's own rounded shape cut a plain rectangle gives the left cap
+	the right curve at every value AND keeps the width strictly proportional, down to
+	the first pixel. The right edge stays straight, which is what a filling bar
+	should look like anyway.
 
-	The honest cost: a barely started bar shows a round pip rather than a hairline.
-	Zero still shows nothing at all, so "not started" and "just started" stay
-	distinguishable, which is the distinction that actually matters.
+	Text laid over the bar goes inside the track and must stay clear of the caps: the
+	glyphs sit in the middle band, where the rounded shape is at full width, so an
+	inset of about half the height keeps them out of the curve.
 ]]
 function Widgets.bar(parent: Instance, options)
 	local track = Instance.new("Frame")
@@ -256,6 +258,7 @@ function Widgets.bar(parent: Instance, options)
 	track.AnchorPoint = options.anchorPoint or Vector2.zero
 	track.BackgroundColor3 = options.trackColor or Theme.color.background
 	track.BorderSizePixel = 0
+	track.ClipsDescendants = true
 	track.Parent = parent
 	Widgets.corner(track, Theme.radius.chip)
 	Widgets.stroke(track, Theme.color.panelEdge, Theme.stroke.button)
@@ -265,26 +268,13 @@ function Widgets.bar(parent: Instance, options)
 	fill.Size = UDim2.fromScale(0, 1)
 	fill.BackgroundColor3 = options.color or Theme.color.positive
 	fill.BorderSizePixel = 0
-	fill.Visible = false
 	fill.Parent = track
-	Widgets.corner(fill, Theme.radius.chip)
 	Widgets.gradient(fill)
-
-	local floor = Instance.new("UISizeConstraint")
-	floor.Parent = fill
-
-	local function matchCap()
-		floor.MinSize = Vector2.new(track.AbsoluteSize.Y, 0)
-	end
-
-	matchCap()
-	track:GetPropertyChangedSignal("AbsoluteSize"):Connect(matchCap)
 
 	return {
 		instance = track,
 		set = function(ratio: number)
 			local clamped = math.clamp(ratio, 0, 1)
-			fill.Visible = clamped > 0
 			TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(clamped, 1) }):Play()
 		end,
 	}
