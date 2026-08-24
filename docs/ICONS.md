@@ -11,20 +11,33 @@ from an afternoon of copy-paste into one command.
 ## Uploading a new set
 
 ```powershell
-./tools/stage-icons.ps1        # copies the chosen icons into icons/, renamed
-```
-
-1. Studio → **View → Asset Manager** → **Images** → right-click → *Add Images…*
-2. Select everything in `icons/` and upload. Roblox moderates images, so they
-   may take a few minutes to become usable.
-3. For each one, right-click → *Copy Asset ID*
-4. Write them into `icons/ids.txt`, one `slot=id` per line
-5. Apply them:
-
-```powershell
-./tools/apply-icon-ids.ps1     # writes them into the four config files
+./tools/stage-icons.ps1                            # pack  -> icons/, renamed
+./tools/upload-icons.ps1 -CreatorId <your user id> # icons/ -> Roblox, ids collected
+./tools/apply-icon-ids.ps1                         # ids    -> the four config files
 ./scripts/check.ps1
 ```
+
+`upload-icons.ps1` goes through the Open Cloud Assets API and needs an API key
+with the `asset:write` scope, created at **create.roblox.com → Settings →
+Credentials → API Keys**. Put it in `icons/api-key.txt` (ignored by git, never
+printed) or in `ROBLOX_API_KEY`. Add `-Group` if the assets belong to a group
+rather than to your account.
+
+The run is **resumable**: each id is appended to `icons/ids.txt` the moment it
+comes back, and a slot already listed is skipped. A rate limit or a closed
+terminal costs only the uploads that had not finished — run the same command
+again.
+
+### By hand instead
+
+1. Studio → **View → Asset Manager** → **Images** → right-click → *Add Images…*
+2. Select everything in `icons/` and upload
+3. For each one, right-click → *Copy Asset ID*
+4. Write them into `icons/ids.txt`, one `slot=id` per line, then run
+   `./tools/apply-icon-ids.ps1`
+
+The staged files are named after their slot precisely so that this stays a
+lookup: Roblox lists uploads under their file name.
 
 `apply-icon-ids.ps1 -DryRun` reports what it would change without saving.
 

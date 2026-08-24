@@ -27,3 +27,6 @@ img/
 # source, and reproducible with ./tools/stage-icons.ps1
 Free Icon Pack*/
 icons/*.png
+
+# Never commit a credential.
+icons/api-key.txt
