@@ -10,6 +10,10 @@
 	be read to be told apart. It is also sized to be read WHILE RUNNING, at a glance
 	and without stopping — which is the only way any of these are ever read.
 
+	And it is only as WIDE as what it says. A full-width bar around the word
+	"Checkpoint" reads as a banner rather than as a message, and covers more of the
+	course than the message is worth.
+
 	THE STACK IS A PERSPECTIVE, NOT A LIST. The newest message sits on top at full
 	size; the ones under it shrink and fade with depth, and only three are ever
 	visible. Coins, checkpoints and boosts can all fire within a second of each
@@ -43,10 +47,15 @@ local TOP_BAR_CLEARANCE = 64
 	adding a fourth row here is all it takes to show four.
 ]]
 local DEPTHS = {
-	{ height = 72, width = 1, textSize = Theme.text.title, faded = 0 },
-	{ height = 60, width = 0.9, textSize = Theme.text.big, faded = 0.3 },
-	{ height = 50, width = 0.8, textSize = Theme.text.body, faded = 0.55 },
+	{ height = 66, textSize = Theme.text.title, faded = 0 },
+	{ height = 56, textSize = Theme.text.big, faded = 0.3 },
+	{ height = 48, textSize = Theme.text.body, faded = 0.55 },
 }
+
+-- A toast is only as wide as what it says. The cap stops one long message from
+-- reaching across the screen; past it the text truncates rather than spilling.
+local MAX_WIDTH = 520
+local SIDE_PADDING = 22
 
 local SETTLE = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local DISMISS = TweenInfo.new(0.3)
@@ -78,12 +87,18 @@ function Notifications.restack(self)
 		if depth then
 			-- The layout sorts ascending, so the newest message owns the top slot.
 			entry.card.LayoutOrder = index
+			-- Only the height is driven. The width belongs to the text, and a tween
+			-- fighting AutomaticSize would snap between the two every frame.
 			tween(entry.card, {
-				Size = UDim2.new(depth.width, 0, 0, depth.height),
+				Size = UDim2.fromOffset(0, depth.height),
 				BackgroundTransparency = depth.faded,
 			})
 			tween(entry.cardStroke, { Transparency = depth.faded })
-			tween(entry.label, { TextSize = depth.textSize, TextTransparency = depth.faded })
+			tween(entry.label, {
+				Size = UDim2.fromOffset(0, depth.height),
+				TextSize = depth.textSize,
+				TextTransparency = depth.faded,
+			})
 			tween(entry.labelStroke, { Transparency = depth.faded })
 		end
 	end
@@ -122,26 +137,37 @@ end
 function Notifications.push(self, message: string, kind: string?)
 	local toast = Widgets.card(self.container, {
 		name = "Message",
-		size = UDim2.new(1, 0, 0, DEPTHS[1].height),
+		size = UDim2.fromOffset(0, DEPTHS[1].height),
 		color = COLORS[kind or "info"] or Theme.color.info,
 		radius = Theme.radius.chip,
 		-- No grain on something this small, and one less layer to fade out.
 		pattern = false,
 	})
 	toast.ZIndex = 20
-	Widgets.padding(toast, 10)
+	toast.AutomaticSize = Enum.AutomaticSize.X
 	Widgets.gradient(toast)
+
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, SIDE_PADDING)
+	padding.PaddingRight = UDim.new(0, SIDE_PADDING)
+	padding.Parent = toast
 
 	local text = Widgets.label(toast, {
 		text = message,
+		size = UDim2.fromOffset(0, DEPTHS[1].height),
 		align = Enum.TextXAlignment.Center,
 		font = Theme.font.number,
 		textSize = DEPTHS[1].textSize,
 		color = Theme.color.textOnColor,
 		outline = true,
-		wrapped = true,
 	})
 	text.ZIndex = 21
+	text.AutomaticSize = Enum.AutomaticSize.X
+	text.TextTruncate = Enum.TextTruncate.AtEnd
+
+	local cap = Instance.new("UISizeConstraint")
+	cap.MaxSize = Vector2.new(MAX_WIDTH, math.huge)
+	cap.Parent = text
 
 	local entry = {
 		card = toast,
