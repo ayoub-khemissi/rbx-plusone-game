@@ -19,7 +19,7 @@ function RemoteNotifier.new(remote: RemoteEvent, clock: any)
 	}, RemoteNotifier)
 end
 
-function RemoteNotifier.notify(self, player: Player, message: string, kind: string?)
+function RemoteNotifier.notify(self, player: Player, message: string, kind: string?, cue: string?)
 	if not player or not player.Parent then
 		return
 	end
@@ -27,12 +27,14 @@ function RemoteNotifier.notify(self, player: Player, message: string, kind: stri
 	local now = self.clock.now()
 	local last = self._last[player]
 
-	if last and last.message == message and now - last.at < REPEAT_COOLDOWN then
+	-- A repeated CUE is not spam: falling twice in three seconds is two falls, and
+	-- both carry the same empty message. Only a repeated message is silenced.
+	if last and last.message == message and cue == nil and now - last.at < REPEAT_COOLDOWN then
 		return
 	end
 
 	self._last[player] = { message = message, at = now }
-	self.remote:FireClient(player, { message = message, kind = kind or "info" })
+	self.remote:FireClient(player, { message = message, kind = kind or "info", cue = cue })
 end
 
 function RemoteNotifier.forget(self, player: Player)

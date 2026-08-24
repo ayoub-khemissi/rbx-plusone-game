@@ -73,13 +73,14 @@ function ReachCheckpoint.run(self, player, checkpoint)
 	-- Crossing a checkpoint has to be VISIBLE. Without a message the player cannot
 	-- tell a working checkpoint from a decorative one, and neither could we.
 	if discovered then
-		self.notifier:notify(player, `{stage.name or `Stage {stageId}`} reached!`, "success")
+		self.notifier:notify(player, `{stage.name or `Stage {stageId}`} reached!`, "success", "stageReached")
 	else
 		local label = self.labels and self.labels.checkpoint
 		self.notifier:notify(
 			player,
 			`{(label and label.icon) or "🏁"} {(label and label.name) or "Checkpoint"}`,
-			"info"
+			"info",
+			"checkpoint"
 		)
 	end
 

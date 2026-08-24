@@ -387,3 +387,31 @@ describe("Level", function()
 		expect(container.snapshots:build(session).level).toBe(1)
 	end)
 end)
+
+--[[
+	The audio cues travel on the notification, so they are part of that contract
+	rather than a client-side guess. These specs exist because the two moments they
+	cover have no signal the client could trust on its own.
+]]
+describe("Sound cues", function()
+	it("names the moment when a player falls back to a checkpoint", function()
+		local container, ports = build()
+		local player = joined(container)
+
+		container.useCases.fallToCheckpoint:run(player)
+
+		expect(ports.notifier:cues()).toContain("fall")
+	end)
+
+	-- A fall carries no message on purpose: a toast on every miss would nag. The
+	-- anti-spam must not read two empty messages as one repeat and go silent.
+	it("still fires on a second fall inside the anti-spam window", function()
+		local container, ports = build()
+		local player = joined(container)
+
+		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.fallToCheckpoint:run(player)
+
+		expect(#ports.notifier:cues()).toBe(2)
+	end)
+end)

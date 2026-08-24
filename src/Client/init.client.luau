@@ -19,6 +19,7 @@ local MovementController = require(script.Controllers.MovementController)
 local SpeedGateController = require(script.Controllers.SpeedGateController)
 local MagnetController = require(script.Controllers.MagnetController)
 local EffectsController = require(script.Controllers.EffectsController)
+local SoundController = require(script.Controllers.SoundController)
 
 local player = Players.LocalPlayer
 local remotes = Net.client()
@@ -30,3 +31,4 @@ MovementController.new(player, state, remotes)
 SpeedGateController.new(state)
 MagnetController.new(player, state, remotes)
 EffectsController.new(player, state)
+SoundController.new(state, remotes)

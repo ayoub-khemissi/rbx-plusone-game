@@ -83,13 +83,26 @@ end
 function Fakes.notifier()
 	local fake = { messages = {} }
 
-	function fake:notify(playerRef, message: string, kind: string?)
-		table.insert(self.messages, { player = playerRef, message = message, kind = kind or "info" })
+	function fake:notify(playerRef, message: string, kind: string?, cue: string?)
+		table.insert(
+			self.messages,
+			{ player = playerRef, message = message, kind = kind or "info", cue = cue }
+		)
 	end
 
 	function fake:lastMessage(): string?
 		local entry = self.messages[#self.messages]
 		return entry and entry.message
+	end
+
+	function fake:cues(): { string }
+		local cues = {}
+		for _, entry in self.messages do
+			if entry.cue then
+				table.insert(cues, entry.cue)
+			end
+		end
+		return cues
 	end
 
 	return fake
@@ -106,7 +119,7 @@ function Fakes.actuator()
 	return fake
 end
 
---[[ Generateur deterministe : parcourt la liste fournie, puis boucle. ]]
+--[[ Deterministic generator: walks the given list, then loops. ]]
 function Fakes.random(values: { number }?)
 	local sequence = values or { 0.5 }
 	local cursor = 0

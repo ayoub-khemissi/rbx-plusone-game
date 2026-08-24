@@ -100,7 +100,9 @@ function Root.mount(player: Player, state, remotes)
 	OfferPopup.new(root, remotes)
 
 	remotes.events.Notify.OnClientEvent:Connect(function(payload)
-		if typeof(payload) == "table" and typeof(payload.message) == "string" then
+		-- An empty message is a cue-only notification: it exists to make a sound,
+		-- and a toast with nothing in it would be worse than no toast.
+		if typeof(payload) == "table" and typeof(payload.message) == "string" and payload.message ~= "" then
 			notifications:push(payload.message, payload.kind)
 		end
 	end)

@@ -25,9 +25,15 @@ export type StatsPublisher = {
 	publish: (self: StatsPublisher, player: PlayerRef, snapshot: any) -> (),
 }
 
---[[ Short messages shown to the player. ]]
+--[[
+	Short messages shown to the player.
+
+	`cue` names a MOMENT the client may answer with a sound — "checkpoint", "fall".
+	The server never names a clip: which sound a moment makes, or whether it makes
+	one at all, is the client's business and a theme's to change.
+]]
 export type Notifier = {
-	notify: (self: Notifier, player: PlayerRef, message: string, kind: string?) -> (),
+	notify: (self: Notifier, player: PlayerRef, message: string, kind: string?, cue: string?) -> (),
 }
 
 --[[ Applies the movement state (speed, jump, abilities) to the character. ]]

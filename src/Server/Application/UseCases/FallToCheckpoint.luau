@@ -37,6 +37,10 @@ function FallToCheckpoint.run(self, player)
 
 	local destination = session.checkpoint or self.hubPoint
 	self.teleporter:sendTo(player, destination)
+
+	-- Silent message: a fall is loud enough on its own, and a toast on every miss
+	-- would nag. The cue is the whole point of the call.
+	self.notifier:notify(player, "", "info", "fall")
 	self.publisher:publish(player, self.snapshots:build(session))
 
 	return Result.ok({ destination = destination, atCheckpoint = session.checkpoint ~= nil })

@@ -19,5 +19,6 @@ return table.freeze({
 	Passes = require(script.Passes),
 	Products = require(script.Products),
 	Monetization = require(script.Monetization),
+	Sounds = require(script.Sounds),
 	Theme = require(script.Themes[ACTIVE_THEME]),
 })
