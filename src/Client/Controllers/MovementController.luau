@@ -19,6 +19,8 @@
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
+local Flip = require(script.Parent.Parent.Flip)
+
 local MovementController = {}
 MovementController.__index = MovementController
 
@@ -57,6 +59,11 @@ function MovementController.new(player: Player, state, remotes)
 	-- The server confirms and hands back the exact power to apply.
 	remotes.events.JumpGranted.OnClientEvent:Connect(function(power)
 		self:_applyJump(power)
+		-- Only air jumps somersault. The first jump is the one everybody has, and
+		-- flipping on it would turn ordinary walking into a circus act.
+		if self.character then
+			Flip.play(self.character)
+		end
 	end)
 	remotes.events.DashGranted.OnClientEvent:Connect(function(power)
 		self:_applyDash(power)
