@@ -71,7 +71,7 @@ describe("SampleMovement", function()
 		expect(ports.actuator.last.dashLevel).toBe(0)
 	end)
 
-	-- Sauter sur place n'est pas courir.
+	-- Jumping on the spot is not running.
 	it("pays nothing for vertical movement", function()
 		run(container, player, { x = 0, y = 5, z = 0 }, { x = 0, y = 60, z = 0 }, 10)
 		expect(session.profile.speed).toBe(0)
@@ -238,7 +238,7 @@ describe("RequestDash", function()
 		expect(container.useCases.requestDash:run(player).code).toBe("NO_DASH")
 	end)
 
-	-- Le niveau EST la puissance : c'est ce que le joueur achete.
+	-- The level IS the power: that is what the player is buying.
 	it("returns more power on a higher level", function()
 		session.profile.upgrades.dash = 1
 		local weak = container.useCases.requestDash:run(player).value.power

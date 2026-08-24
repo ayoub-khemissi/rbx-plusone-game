@@ -27,7 +27,7 @@ function Format.abbreviate(value: number): string
 		return sign .. tostring(math.floor(magnitude))
 	end
 
-	-- Division iterative plutot que math.log : pas d'erreur d'arrondi aux puissances exactes.
+	-- Iterative division rather than math.log: no rounding slip at exact powers.
 	local tier = 0
 	local scaled = magnitude
 	while scaled >= 1000 and tier < #SUFFIXES - 1 do

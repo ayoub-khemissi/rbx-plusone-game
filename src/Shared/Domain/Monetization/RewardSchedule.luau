@@ -1,10 +1,10 @@
 --!strict
 --[[
-	RewardSchedule — recompense quotidienne a serie (streak).
+	RewardSchedule — the daily reward and its streak.
 
-	Levier de RETENTION, donc de revenus : le joueur revient chaque jour pour ne pas
-	casser sa serie, et plus il revient, plus il a de chances d'acheter. La serie
-	repart a 1 apres une absence superieure a `graceWindow`.
+	A RETENTION lever, and therefore a revenue one: the player comes back each day
+	so as not to break the streak, and the more they come back the likelier they are
+	to buy. The streak restarts at 1 after an absence longer than `graceWindow`.
 ]]
 
 local Result = require(script.Parent.Parent.Support.Result)
@@ -44,7 +44,7 @@ function RewardSchedule.new(tuning: Tuning): RewardSchedule
 	}, RewardSchedule)
 end
 
---[[ Jour du cycle correspondant a une serie donnee (la serie boucle sur le cycle). ]]
+--[[ The day of the cycle a given streak lands on: the streak loops the cycle. ]]
 function RewardSchedule.dayFor(self: RewardSchedule, streak: number): number
 	local count = #self.rewards
 	if count == 0 then
@@ -89,7 +89,7 @@ end
 function RewardSchedule.claim(self: RewardSchedule, profile: any, now: number): Result
 	local status = self:statusFor(profile, now)
 	if not status.claimable then
-		return Result.err("ALREADY_CLAIMED", "Recompense deja reclamee aujourd'hui", {
+		return Result.err("ALREADY_CLAIMED", "Already claimed today.", {
 			secondsRemaining = status.secondsRemaining,
 		})
 	end

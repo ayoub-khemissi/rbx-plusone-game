@@ -1,7 +1,7 @@
 --!nocheck
 --[[
 	Doubles de test pour les PORTS de la couche Application.
-	Chaque double enregistre les appels recus afin de pouvoir les asserter.
+	Every double records the calls it receives, so a test can assert on them.
 ]]
 
 local Fakes = {}
@@ -157,7 +157,7 @@ function Fakes.snapshots()
 end
 
 function Fakes.player(userId: number, name: string?)
-	return { UserId = userId, Name = name or `Joueur{userId}` }
+	return { UserId = userId, Name = name or `Player{userId}` }
 end
 
 return Fakes

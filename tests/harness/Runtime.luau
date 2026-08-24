@@ -34,7 +34,7 @@ end
 --[[ Equivalent de `require(module)` cote Roblox : execution unique puis cache. ]]
 function Runtime:require(target)
 	if typeof(target) ~= "table" or target.ClassName == nil then
-		error(`require() attend une Instance de l'arbre virtuel, recu : {typeof(target)}`, 2)
+		error(`require() expects an Instance of the virtual tree, got: {typeof(target)}`, 2)
 	end
 	if target.ClassName ~= "ModuleScript" then
 		error(`require() sur {target:GetFullName()} qui est un {target.ClassName}`, 2)
@@ -60,7 +60,7 @@ function Runtime:require(target)
 	return value
 end
 
---[[ Charge un fichier de test avec des globales supplementaires (describe/it/expect...). ]]
+--[[ Loads a spec file with the extra globals it expects (describe/it/expect...). ]]
 function Runtime:loadScript(path: string, source: string, extraGlobals: { [string]: any })
 	local pseudoScript = {
 		ClassName = "ModuleScript",

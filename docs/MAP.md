@@ -165,7 +165,7 @@ pas casser le serveur avec une map, seulement obtenir un comportement partiel.
 
 ## Vérifier ta map
 
-Une commande listera ce que le serveur a trouvé au démarrage :
+Au démarrage, le serveur écrit dans la console ce qu'il a trouvé :
 
 ```
 [Runner] Map loaded: 6 checkpoints, 11 hazards, 0 coins, 4 conveyors, 1 bounce pads, 0 idle pads
@@ -174,3 +174,18 @@ Une commande listera ce que le serveur a trouvé au démarrage :
 ```
 
 Si le compte ne correspond pas à ce que tu as posé, c'est un tag oublié.
+
+**Sans ouvrir Studio**, la même chose se lit directement dans le fichier de map :
+
+```
+./.tools/lune.exe run tools/probe maps/TaMap.rbxl
+```
+
+Il liste chaque part taguée avec sa position et ses attributs, le SpawnLocation, le
+niveau du vide, et les scripts embarqués dans le lieu. C'est le moyen le plus rapide
+de répondre à « pourquoi cet obstacle ne réagit pas » : s'il n'apparaît pas dans la
+liste, le tag manque.
+
+> ⚠️ Si le lieu contient **tes propres scripts** de gestion (un `CheckpointManager`,
+> un `TrapManager`…), ils tournent **en même temps** que le serveur, qui lit les mêmes
+> tags. Deux téléportations, deux vélocités. Le probe les signale ; supprime-les.

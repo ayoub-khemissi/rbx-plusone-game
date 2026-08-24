@@ -1,10 +1,10 @@
 --!strict
 --[[
-	ProductCatalog — produits developpeur (achats consommables en Robux).
+	ProductCatalog — developer products, the repeatable Robux purchases.
 
-	`productId = 0` signifie "pas encore cree sur le site Roblox" : le produit est
-	alors invisible et impossible a acheter, ce qui permet de livrer le jeu sans
-	identifiants et de les renseigner plus tard sans toucher au code.
+	`productId = 0` means "not created on the Roblox site yet": the product is then
+	invisible and unbuyable. That is what lets the game ship before any id exists,
+	and the ids be filled in later without touching a line of code.
 ]]
 
 export type Definition = {
@@ -14,7 +14,7 @@ export type Definition = {
 	description: string?,
 	icon: string?,
 	robux: number?,
-	badge: string?, -- "populaire", "meilleure offre"...
+	badge: string?, -- "popular", "best value"...
 	grant: { [string]: any },
 }
 
@@ -31,14 +31,14 @@ function ProductCatalog.new(definitions: { Definition }): ProductCatalog
 
 	for _, definition in definitions do
 		if byId[definition.id] then
-			error(`Produit duplique dans le catalogue : {definition.id}`, 2)
+			error(`Duplicate product in the catalogue: {definition.id}`, 2)
 		end
 		byId[definition.id] = definition
 		table.insert(order, definition.id)
 
 		if definition.productId ~= 0 then
 			if byProductId[definition.productId] then
-				error(`Deux produits partagent le productId {definition.productId}`, 2)
+				error(`Two products share the productId {definition.productId}`, 2)
 			end
 			byProductId[definition.productId] = definition
 		end
@@ -63,7 +63,7 @@ function ProductCatalog.isConfigured(self: ProductCatalog, id: string): boolean
 	return definition ~= nil and definition.productId ~= 0
 end
 
---[[ Produits reellement proposables au joueur (identifiant Roblox renseigne). ]]
+--[[ The products actually offerable: the ones whose Roblox id is filled in. ]]
 function ProductCatalog.sellable(self: ProductCatalog): { Definition }
 	local sellable = {}
 	for _, id in self._order do

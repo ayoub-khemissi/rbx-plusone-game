@@ -1,11 +1,15 @@
 --!nocheck
 --[[
-	VirtualTree — reconstruit une arborescence d'Instances Roblox en memoire a partir
-	de `default.project.json` et du systeme de fichiers.
+	VirtualTree — rebuilds a tree of Roblox Instances in memory, from
+	`default.project.json` and the file system.
 
-	C'est un ADAPTATEUR DE TEST : il permet d'executer, hors de Roblox Studio, tout
-	module ecrit avec la semantique Roblox habituelle (`script.Parent.Foo`,
-	`game:GetService(...)`). Le code de production n'a aucune connaissance de ce fichier.
+	A TEST ADAPTER: it runs any module written with the usual Roblox semantics
+	(`script.Parent.Foo`, `game:GetService(...)`) outside of Studio. Production code
+	knows nothing about this file.
+
+	Reading the real project file is the point. A hand-written tree would drift from
+	the one Rojo builds, and the tests would then pass against a structure that does
+	not exist.
 ]]
 
 local fs = require("@lune/fs")
@@ -146,7 +150,7 @@ local function buildNode(name: string, spec, parent)
 	return node
 end
 
---[[ Construit le DataModel virtuel decrit par un fichier projet Rojo. ]]
+--[[ Builds the virtual DataModel a Rojo project file describes. ]]
 function VirtualTree.fromProjectFile(projectPath: string)
 	local project = serde.decode("json", fs.readFile(projectPath))
 	local dataModel = buildNode(project.name or "game", project.tree, nil)

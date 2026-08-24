@@ -1,6 +1,6 @@
 <#
-    Lance la suite de tests (filtre optionnel sur le chemin des specs).
-    Usage :  ./scripts/test.ps1            |  ./scripts/test.ps1 economy
+    Runs the test suite, with an optional filter on the spec path.
+    Usage:  ./scripts/test.ps1            |  ./scripts/test.ps1 economy
 #>
 param([string]$Filter)
 $root = Split-Path -Parent $PSScriptRoot

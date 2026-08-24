@@ -1,10 +1,10 @@
 --!strict
 --[[
-	UpgradeCatalog — regles de cout et d'effet des ameliorations.
+	UpgradeCatalog — the cost and effect rules of the upgrades.
 
-	Le catalogue est construit A PARTIR de definitions injectees (Config.Upgrades en
-	production, fixtures en test) : rien n'est code en dur ici, l'equilibrage reste
-	de la donnee.
+	The catalogue is built FROM injected definitions: the real configuration in
+	production, fixtures in tests. Nothing is hardcoded here, so balancing stays
+	data and a test never has to bend the real numbers to make a point.
 ]]
 
 export type Definition = {
@@ -12,11 +12,11 @@ export type Definition = {
 	name: string?,
 	icon: string?,
 	description: string?,
-	maxLevel: number, -- 0 = illimite
+	maxLevel: number, -- 0 means unlimited
 	baseCost: number,
 	costGrowth: number,
 	effectPerLevel: number,
-	effect: string, -- "speedMultiplier" | "bananaMultiplier" | "jumpPower" | "wallGrip" | "airDash"
+	effect: string, -- "speedMultiplier" | "coinMultiplier" | a flat key such as "jumps"
 }
 
 local UpgradeCatalog = {}
@@ -32,7 +32,7 @@ function UpgradeCatalog.new(definitions: { Definition }): UpgradeCatalog
 
 	for _, definition in definitions do
 		if byId[definition.id] then
-			error(`Amelioration dupliquee dans le catalogue : {definition.id}`, 2)
+			error(`Duplicate upgrade in the catalogue: {definition.id}`, 2)
 		end
 		byId[definition.id] = definition
 		table.insert(order, definition.id)
@@ -52,12 +52,12 @@ end
 function UpgradeCatalog.expect(self: UpgradeCatalog, upgradeId: string): Definition
 	local definition = self._byId[upgradeId]
 	if not definition then
-		error(`Amelioration inconnue : {tostring(upgradeId)}`, 3)
+		error(`Unknown upgrade: {tostring(upgradeId)}`, 3)
 	end
 	return definition
 end
 
---[[ Cout pour passer de `currentLevel` a `currentLevel + 1`. ]]
+--[[ The cost of going from `currentLevel` to `currentLevel + 1`. ]]
 function UpgradeCatalog.costFor(self: UpgradeCatalog, upgradeId: string, currentLevel: number): number
 	local definition = self:expect(upgradeId)
 	return math.floor(definition.baseCost * definition.costGrowth ^ math.max(currentLevel, 0))
@@ -73,7 +73,7 @@ function UpgradeCatalog.effectFor(self: UpgradeCatalog, upgradeId: string, level
 	return math.max(level, 0) * definition.effectPerLevel
 end
 
---[[ Toutes les definitions portant un type d'effet donne. ]]
+--[[ Every definition carrying a given effect type. ]]
 function UpgradeCatalog.byEffect(self: UpgradeCatalog, effect: string): { Definition }
 	local matches = {}
 	for _, id in self._order do

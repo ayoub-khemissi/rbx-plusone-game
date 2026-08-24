@@ -1,9 +1,9 @@
 --!strict
 --[[
-	InMemoryProfileRepository — port ProfileRepository sans DataStore.
+	InMemoryProfileRepository — the ProfileRepository port, without a DataStore.
 
-	Utilise en Studio quand l'acces aux API n'est pas active : le jeu reste
-	entierement testable, la sauvegarde est simplement perdue a l'arret du serveur.
+	Used in Studio when API access is off: the game stays entirely playable and the
+	save is simply lost when the server stops.
 ]]
 
 local InMemoryProfileRepository = {}
@@ -18,7 +18,7 @@ function InMemoryProfileRepository.load(self, userId: number): any?
 end
 
 function InMemoryProfileRepository.save(self, userId: number, profile: any): boolean
-	-- Copie superficielle : on stocke un instantane, pas la table vivante.
+	-- A shallow copy: what is stored is a snapshot, not the live table.
 	self.store[userId] = table.clone(profile)
 	return true
 end

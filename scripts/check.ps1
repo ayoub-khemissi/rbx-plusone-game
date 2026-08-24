@@ -1,6 +1,6 @@
 <#
-    Verification complete : format, lint, tests.
-    Usage :  ./scripts/check.ps1  [-Fix]
+    Full check: format, lint, build, tests.
+    Usage:  ./scripts/check.ps1  [-Fix]
 #>
 param([switch]$Fix)
 
@@ -11,13 +11,13 @@ Push-Location $root
 
 $failed = @()
 
-# Un fichier de configuration absent ne fait pas echouer les outils : ils appliquent
-# silencieusement leurs valeurs par defaut et reformatent tout le depot. On verifie
-# donc leur presence explicitement.
+# A missing configuration file does not make these tools fail: they quietly fall
+# back to their defaults and reformat the whole repository. So their presence is
+# checked explicitly, which is cheaper than reviewing a thousand-line diff.
 $required = @("stylua.toml", "selene.toml", ".luaurc", "default.project.json")
 foreach ($file in $required) {
     if (-not (Test-Path (Join-Path $root $file))) {
-        Write-Host "Fichier de configuration manquant : $file" -ForegroundColor Red
+        Write-Host "Missing configuration file: $file" -ForegroundColor Red
         $failed += $file
     }
 }
@@ -36,7 +36,7 @@ try {
     if ($LASTEXITCODE -ne 0) { $failed += "selene" }
 
     Write-Host "`n== Build Rojo ==" -ForegroundColor Cyan
-    # Valide default.project.json et l'arborescence sans ouvrir Studio.
+    # Validates default.project.json and the tree without opening Studio.
     & (Join-Path $tools "rojo.exe") build default.project.json --output "$env:TEMP\build-check.rbxl"
     if ($LASTEXITCODE -ne 0) { $failed += "rojo build" }
 
@@ -48,7 +48,7 @@ try {
 }
 
 if ($failed.Count -gt 0) {
-    Write-Host "`nEchec : $($failed -join ', ')" -ForegroundColor Red
+    Write-Host "`nFailed: $($failed -join ', ')" -ForegroundColor Red
     exit 1
 }
-Write-Host "`nTout est vert." -ForegroundColor Green
+Write-Host "`nAll green." -ForegroundColor Green

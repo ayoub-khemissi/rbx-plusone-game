@@ -1,13 +1,14 @@
 --!strict
 --[[
-	OfferEngine — offres a duree limitee, presentees au bon moment.
+	OfferEngine — limited-time offers, shown at the moment they answer something.
 
-	Deux declencheurs :
-	  - `triggerAfterSeconds` : apres N secondes de jeu (pack de bienvenue) ;
-	  - `trigger` : sur evenement metier (le joueur bute sur une barriere de zone).
+	Two triggers:
+	  - `triggerAfterSeconds`: after N seconds of play, for a welcome pack;
+	  - `trigger`: on a business event, such as the player being turned away by a
+	    gate they cannot pass yet.
 
-	Regle produit : une seule offre visible a la fois (`maxVisible`), la plus
-	ancienne d'abord. Empiler les fenetres d'achat fait fuir les joueurs.
+	Product rule: one offer visible at a time (`maxVisible`), oldest first. Stacking
+	purchase windows drives players away faster than any of them sells.
 ]]
 
 export type Definition = {
@@ -53,13 +54,13 @@ local function isExhausted(profile: any, definition: Definition): boolean
 	return definition.oncePerProfile == true and profile.offers.purchased[definition.id] == true
 end
 
---[[ Declenche une offre contextuelle (ex : "zoneBlocked"). ]]
+--[[ Fires a contextual offer, named by the event that earned it. ]]
 function OfferEngine.trigger(self: OfferEngine, profile: any, event: string, now: number): boolean
 	local triggered = false
 	for _, definition in self._definitions do
 		if definition.trigger == event and not isExhausted(profile, definition) then
 			local startedAt = profile.offers.seen[definition.id]
-			-- On ne relance pas une offre deja affichee et encore valide.
+			-- An offer already on screen and still valid is not restarted.
 			if not startedAt or now > startedAt + definition.durationSeconds then
 				profile.offers.seen[definition.id] = now
 				triggered = true
@@ -73,7 +74,7 @@ function OfferEngine.markPurchased(_self: OfferEngine, profile: any, offerId: st
 	profile.offers.purchased[offerId] = true
 end
 
---[[ Marque comme consommees toutes les offres qui vendaient ce produit. ]]
+--[[ Marks as consumed every offer that was selling this product. ]]
 function OfferEngine.markPurchasedByProduct(self: OfferEngine, profile: any, productKey: string)
 	for _, definition in self._definitions do
 		if definition.productKey == productKey then
@@ -82,7 +83,7 @@ function OfferEngine.markPurchasedByProduct(self: OfferEngine, profile: any, pro
 	end
 end
 
---[[ Offres actuellement affichables. Peut demarrer une offre passive au passage. ]]
+--[[ The offers currently showable. May start a timed one along the way. ]]
 function OfferEngine.visibleFor(self: OfferEngine, profile: any, context: Context): { VisibleOffer }
 	local candidates = {}
 

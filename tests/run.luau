@@ -1,9 +1,9 @@
 --!nocheck
 --[[
-	Lanceur de tests headless.
+	Headless test runner.
 
-	Usage :  .tools/lune.exe run tests/run           (tous les specs)
-	         .tools/lune.exe run tests/run economy   (filtre sur le nom de fichier)
+	Usage:  .tools/lune.exe run tests/run           (every spec)
+	        .tools/lune.exe run tests/run economy   (filters on the file name)
 ]]
 
 local fs = require("@lune/fs")
@@ -65,10 +65,7 @@ for _, specPath in specs do
 
 	if not ok then
 		failed += 1
-		table.insert(
-			failures,
-			{ name = "<chargement du fichier>", message = tostring(loadErr), file = specPath }
-		)
+		table.insert(failures, { name = "<loading the file>", message = tostring(loadErr), file = specPath })
 		continue
 	end
 
@@ -94,13 +91,16 @@ end
 local total = passed + failed
 if failed == 0 then
 	stdio.write(
-		`{stdio.color("green")}  {total} test(s) OK{stdio.color("reset")} en {string.format("%.0f", elapsed)} ms\n\n`
+		`{stdio.color("green")}  {total} test(s) passed{stdio.color("reset")} in {string.format(
+			"%.0f",
+			elapsed
+		)} ms\n\n`
 	)
 	process.exit(0)
 else
 	stdio.write(
-		`{stdio.color("red")}  {failed} echec(s){stdio.color("reset")} / {total} test(s) `
-			.. `en {string.format("%.0f", elapsed)} ms\n\n`
+		`{stdio.color("red")}  {failed} failed{stdio.color("reset")} / {total} test(s) `
+			.. `in {string.format("%.0f", elapsed)} ms\n\n`
 	)
 	process.exit(1)
 end

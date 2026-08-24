@@ -1,10 +1,12 @@
 --!strict
 --[[
-	Result — resultat explicite d'une operation metier.
+	Result — the explicit outcome of a business operation.
 
-	Le domaine ne leve jamais d'erreur pour un cas metier attendu (solde insuffisant,
-	niveau maximal...) : il renvoie un Result que l'appelant traduit en message joueur.
-	`error()` reste reserve aux violations de contrat (bug de programmation).
+	The domain never raises for an expected business case — not enough currency, a
+	level already maxed. It returns a Result, and the caller turns it into something
+	the player reads. `error()` stays reserved for contract violations, which is to
+	say programming bugs: the two must not travel the same path, because only one of
+	them deserves a crash.
 ]]
 
 export type Result = {
@@ -28,10 +30,10 @@ function Result.isOk(result: Result): boolean
 	return result ~= nil and result.ok == true
 end
 
---[[ Extrait la valeur d'un succes, leve sur un echec (a reserver aux invariants). ]]
+--[[ Unwraps a success and raises on a failure: for invariants, never for input. ]]
 function Result.unwrap(result: Result): any
 	if not result.ok then
-		error(`Result.unwrap sur un echec : {result.code} — {result.message}`, 2)
+		error(`Result.unwrap on a failure: {result.code} — {result.message}`, 2)
 	end
 	return result.value
 end

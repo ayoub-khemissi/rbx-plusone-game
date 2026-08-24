@@ -1,12 +1,12 @@
 --!strict
 --[[
-	DataStoreProfileRepository — port ProfileRepository realise avec DataStoreService.
+	DataStoreProfileRepository — the ProfileRepository port, over DataStoreService.
 
-	Deux precautions indispensables en production :
-	  - RETRY avec attente croissante : les DataStores echouent regulierement pour
-	    des raisons de quota ou de reseau ;
-	  - remontee de l'echec par `error()` : le cas d'usage marque alors la session
-	    en lecture seule plutot que d'ecraser la sauvegarde du joueur.
+	Two precautions that production cannot do without:
+	  - RETRY with a growing wait: DataStores fail regularly, for quota or network
+	    reasons, and a first failure means very little;
+	  - raise the failure through `error()`: the use case then marks the session
+	    read-only rather than overwriting the player's save with a blank profile.
 ]]
 
 local DataStoreService = game:GetService("DataStoreService")
@@ -28,8 +28,12 @@ function DataStoreProfileRepository.new(tuning: Tuning)
 	}, DataStoreProfileRepository)
 end
 
+--[[
+	The storage key. Changing it orphans every existing save, so it is fixed for the
+	lifetime of the game — which is why it is worth getting right before launch.
+]]
 local function keyFor(userId: number): string
-	return `joueur_{userId}`
+	return `player_{userId}`
 end
 
 function DataStoreProfileRepository._attempt(self, action: () -> any): any
@@ -47,7 +51,7 @@ function DataStoreProfileRepository._attempt(self, action: () -> any): any
 		end
 	end
 
-	error(`DataStore indisponible apres {self.maxRetries} tentatives : {tostring(lastError)}`, 0)
+	error(`DataStore unavailable after {self.maxRetries} attempts: {tostring(lastError)}`, 0)
 end
 
 function DataStoreProfileRepository.load(self, userId: number): any?
@@ -58,8 +62,8 @@ end
 
 function DataStoreProfileRepository.save(self, userId: number, profile: any): boolean
 	self:_attempt(function()
-		-- UpdateAsync plutot que SetAsync : ecriture serialisee, resistante aux
-		-- ecritures concurrentes entre deux serveurs.
+		-- UpdateAsync rather than SetAsync: a serialised write, which survives two
+		-- servers saving the same profile at the same time.
 		return self.store:UpdateAsync(keyFor(userId), function()
 			return profile
 		end)

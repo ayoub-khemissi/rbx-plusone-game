@@ -71,7 +71,7 @@ describe("Config.Upgrades", function()
 		end
 	end)
 
-	-- Les deux mecaniques que le joueur vient chercher doivent etre achetables.
+	-- The two mechanics the player comes for must both be buyable.
 	it("sells both the extra jumps and the dash", function()
 		local catalog = UpgradeCatalog.new(Config.Upgrades)
 		expect(catalog:get("jump")).never.toBeNil()
@@ -83,7 +83,7 @@ describe("Config.Upgrades", function()
 		local jumps = JumpBudget.new(Config.Balance.movement)
 		local dash = DashPolicy.new(Config.Balance.dash)
 
-		-- Acheter le dernier niveau doit donner le niveau maximum, ni plus ni moins.
+		-- Buying the last level must land exactly on the maximum, not past it.
 		expect(jumps:levelFor({ flat = { jumps = catalog:get("jump").maxLevel } })).toBe(
 			Config.Balance.movement.maxJumpLevel
 		)
@@ -132,7 +132,7 @@ describe("Config.Balance", function()
 end)
 
 describe("Config.Theme", function()
-	-- Le theme ne porte que de l'affichage : aucun nombre d'equilibrage.
+	-- A theme carries presentation only: never a balancing number.
 	it("names every core concept", function()
 		for _, key in { "speed", "coins", "prestige", "stage", "checkpoint", "hub" } do
 			local label = Config.Theme.labels[key]

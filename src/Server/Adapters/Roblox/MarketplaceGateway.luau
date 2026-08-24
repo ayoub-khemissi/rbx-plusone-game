@@ -1,10 +1,11 @@
 --!strict
 --[[
-	MarketplaceGateway — ports PassGateway et Marketplace via MarketplaceService.
+	MarketplaceGateway — the PassGateway and Marketplace ports, over
+	MarketplaceService.
 
-	La possession d'un gamepass est mise en cache par session : `UserOwnsGamePassAsync`
-	est un appel reseau, l'appeler a chaque calcul de multiplicateur ferait ramer le
-	serveur. Le cache est invalide des qu'un achat aboutit.
+	Pass ownership is cached per session. `UserOwnsGamePassAsync` is a network call,
+	and every multiplier computation would otherwise make one. The cache is dropped
+	as soon as a purchase goes through.
 ]]
 
 local MarketplaceService = game:GetService("MarketplaceService")
@@ -34,7 +35,7 @@ function MarketplaceGateway.ownedPasses(self, player: Player): { [string]: boole
 			if ok then
 				owned[pass.id] = result == true
 			elseif self.logger then
-				self.logger:warn(`Verification du gamepass {pass.id} impossible : {tostring(result)}`)
+				self.logger:warn(`Could not check gamepass {pass.id}: {tostring(result)}`)
 			end
 		end
 	end

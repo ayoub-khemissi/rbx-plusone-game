@@ -1,8 +1,8 @@
 <#
-    Installe la chaine d'outils locale (Lune, Selene, StyLua) dans .tools/
-    et genere la definition standard Roblox pour Selene.
+    Installs the local toolchain (Rojo, Lune, Selene, StyLua) into .tools/
+    and generates the standard Roblox definition Selene needs.
 
-    Usage :  ./scripts/setup.ps1
+    Usage:  ./scripts/setup.ps1
 #>
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -18,9 +18,9 @@ $downloads = @(
 
 foreach ($item in $downloads) {
     $exe = Join-Path $tools "$($item.Name).exe"
-    if (Test-Path $exe) { Write-Host "$($item.Name) deja installe"; continue }
+    if (Test-Path $exe) { Write-Host "$($item.Name) already installed"; continue }
     $zip = Join-Path $tools "$($item.Name).zip"
-    Write-Host "Telechargement de $($item.Name)..."
+    Write-Host "Downloading $($item.Name)..."
     Invoke-WebRequest -Uri $item.Url -OutFile $zip -TimeoutSec 300
     Expand-Archive -Path $zip -DestinationPath $tools -Force
     Remove-Item $zip
@@ -29,22 +29,22 @@ foreach ($item in $downloads) {
 Push-Location $root
 try {
     if (-not (Test-Path (Join-Path $root "roblox.yml"))) {
-        Write-Host "Generation de la std Roblox pour Selene..."
+        Write-Host "Generating the Roblox std for Selene..."
         & (Join-Path $tools "selene.exe") generate-roblox-std
     }
 } finally {
     Pop-Location
 }
 
-# Le sourcemap donne l'autocompletion et le typage a luau-lsp dans l'editeur.
+# The sourcemap is what gives luau-lsp autocompletion and types in the editor.
 Push-Location $root
 try {
     & (Join-Path $tools "rojo.exe") sourcemap default.project.json --output sourcemap.json
-    Write-Host "sourcemap.json genere"
+    Write-Host "sourcemap.json generated"
 } finally {
     Pop-Location
 }
 
-Write-Host "Chaine d'outils prete."
-Write-Host "  ./scripts/check.ps1   verifie tout"
-Write-Host "  ./scripts/serve.ps1   sert le projet vers Roblox Studio"
+Write-Host "Toolchain ready."
+Write-Host "  ./scripts/check.ps1   checks everything"
+Write-Host "  ./scripts/serve.ps1   serves the project to Roblox Studio"

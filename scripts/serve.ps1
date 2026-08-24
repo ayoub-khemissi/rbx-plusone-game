@@ -1,11 +1,12 @@
 <#
-    Sert le projet vers Roblox Studio.
+    Serves the project to Roblox Studio.
 
-    1. Lance ce script
-    2. Dans Studio : plugin Rojo -> Connect
-    3. Le code se synchronise en direct a chaque sauvegarde de fichier
+    1. Run this script
+    2. In Studio: Rojo plugin -> Connect
+    3. The code syncs live on every file save
 
-    La carte est generee par le serveur au demarrage : rien a construire a la main.
+    Open the place holding your map: the server reads it through tags, and builds
+    nothing of its own.
 #>
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root

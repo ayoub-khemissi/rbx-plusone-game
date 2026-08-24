@@ -1,5 +1,5 @@
 --!strict
---[[ CharacterTeleporter — port Teleporter : deplace le personnage du joueur. ]]
+--[[ CharacterTeleporter — the Teleporter port: moves the player character. ]]
 
 local CharacterTeleporter = {}
 CharacterTeleporter.__index = CharacterTeleporter
@@ -19,7 +19,7 @@ function CharacterTeleporter.sendTo(_self, player: Player, position: { x: number
 		return
 	end
 
-	-- On oriente le joueur vers la suite de la piste (axe +X).
+	-- Face the player down the course rather than wherever they fell from.
 	root.CFrame = CFrame.lookAt(
 		Vector3.new(position.x, position.y + 3, position.z),
 		Vector3.new(position.x + 10, position.y + 3, position.z)

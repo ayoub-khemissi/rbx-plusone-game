@@ -7,18 +7,18 @@
 *.rbxlx.lock
 sourcemap.json
 
-# Outils
+# Tools
 .rokit/
 ~/
 
-# OS / editeur
+# OS / editor
 .DS_Store
 Thumbs.db
 .vscode/
 
-# Outils locaux telecharges (rokit gere les versions)
+# Locally downloaded tools (rokit manages the versions)
 .tools/
 roblox.yml
 
-# Captures et references visuelles (hors depot)
+# Screenshots and visual references, kept out of the repository
 img/

@@ -1,7 +1,7 @@
 --!nocheck
 --[[
 	TestKit — micro framework de test (describe / it / expect) sans dependance externe.
-	API volontairement proche de Jest-Lua : `expect(x).toBe(y)`, `expect(x).never.toBe(y)`.
+	The API deliberately mirrors Jest-Lua: `expect(x).toBe(y)`, `expect(x).never.toBe(y)`.
 ]]
 
 local TestKit = {}
@@ -46,55 +46,55 @@ end
 local MATCHERS = {}
 
 function MATCHERS.toBe(value, expected)
-	return value == expected, `attendu {stringify(expected)}, recu {stringify(value)}`
+	return value == expected, `expected {stringify(expected)}, got {stringify(value)}`
 end
 
 function MATCHERS.toEqual(value, expected)
 	return deepEqual(value, expected),
-		`attendu (egalite profonde) {stringify(expected)}, recu {stringify(value)}`
+		`expected (deep equality) {stringify(expected)}, got {stringify(value)}`
 end
 
 function MATCHERS.toBeCloseTo(value, expected, tolerance)
 	local delta = tolerance or 1e-6
 	local ok = typeof(value) == "number" and math.abs(value - expected) <= delta
-	return ok, `attendu ~{expected} (+/- {delta}), recu {stringify(value)}`
+	return ok, `expected ~{expected} (+/- {delta}), got {stringify(value)}`
 end
 
 function MATCHERS.toBeGreaterThan(value, expected)
-	return typeof(value) == "number" and value > expected, `attendu > {expected}, recu {stringify(value)}`
+	return typeof(value) == "number" and value > expected, `expected > {expected}, got {stringify(value)}`
 end
 
 function MATCHERS.toBeGreaterThanOrEqual(value, expected)
-	return typeof(value) == "number" and value >= expected, `attendu >= {expected}, recu {stringify(value)}`
+	return typeof(value) == "number" and value >= expected, `expected >= {expected}, got {stringify(value)}`
 end
 
 function MATCHERS.toBeLessThan(value, expected)
-	return typeof(value) == "number" and value < expected, `attendu < {expected}, recu {stringify(value)}`
+	return typeof(value) == "number" and value < expected, `expected < {expected}, got {stringify(value)}`
 end
 
 function MATCHERS.toBeLessThanOrEqual(value, expected)
-	return typeof(value) == "number" and value <= expected, `attendu <= {expected}, recu {stringify(value)}`
+	return typeof(value) == "number" and value <= expected, `expected <= {expected}, got {stringify(value)}`
 end
 
 function MATCHERS.toBeNil(value)
-	return value == nil, `attendu nil, recu {stringify(value)}`
+	return value == nil, `expected nil, got {stringify(value)}`
 end
 
 function MATCHERS.toBeTruthy(value)
-	return (value and true or false), `attendu une valeur vraie, recu {stringify(value)}`
+	return (value and true or false), `expected a truthy value, got {stringify(value)}`
 end
 
 function MATCHERS.toBeFalsy(value)
-	return not value, `attendu une valeur fausse, recu {stringify(value)}`
+	return not value, `expected a falsy value, got {stringify(value)}`
 end
 
 function MATCHERS.toBeA(value, expected)
-	return typeof(value) == expected, `attendu un {expected}, recu un {typeof(value)}`
+	return typeof(value) == expected, `expected a {expected}, got a {typeof(value)}`
 end
 
 function MATCHERS.toHaveLength(value, expected)
 	local length = if typeof(value) == "table" then #value else #tostring(value)
-	return length == expected, `attendu une longueur de {expected}, recue {length}`
+	return length == expected, `expected a length of {expected}, got {length}`
 end
 
 function MATCHERS.toContain(value, expected)
@@ -118,8 +118,8 @@ function MATCHERS.toThrow(value, pattern)
 	if threw and pattern then
 		threw = string.find(tostring(err), pattern, 1, true) ~= nil
 	end
-	local suffix = if pattern then ` contenant "{pattern}"` else ""
-	return threw, `attendu une erreur{suffix}, recu : {tostring(err)}`
+	local suffix = if pattern then ` containing "{pattern}"` else ""
+	return threw, `expected an error{suffix}, got: {tostring(err)}`
 end
 
 local function buildExpectation(value, negated: boolean)

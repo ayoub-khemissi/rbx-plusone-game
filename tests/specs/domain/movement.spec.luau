@@ -94,7 +94,7 @@ describe("MovementAccounting", function()
 		expect(accounting:measure(10, -1, 50).steps).toBe(0)
 	end)
 
-	-- Sauter n'est pas courir : la composante verticale ne rapporte rien.
+	-- Jumping is not running: the vertical component pays nothing.
 	it("measures ground distance only", function()
 		expect(accounting:distanceBetween({ x = 0, y = 0, z = 0 }, { x = 3, y = 99, z = 4 })).toBe(5)
 	end)
@@ -107,8 +107,8 @@ describe("JumpBudget", function()
 		state = JumpBudget.newState()
 	end)
 
-	-- Le domaine parle en NIVEAUX, comme le joueur : niveau 1 = un saut, niveau 3 =
-	-- triple saut. Les "sauts aeriens" ne sont qu'une soustraction.
+	-- The domain speaks in LEVELS, as the player does: level 1 is one jump, level 3
+	-- is a triple jump. "Air jumps" are only that number minus one.
 	it("starts every character at jump level 1", function()
 		expect(budget:levelFor({ flat = {} })).toBe(1)
 		expect(budget:capacityFor({ flat = {} })).toBe(0)
@@ -120,7 +120,7 @@ describe("JumpBudget", function()
 		expect(budget:capacityFor({ flat = { jumps = 2 } })).toBe(2)
 	end)
 
-	-- Le plafond protege le level design : un joueur qui vole rendrait les trous inutiles.
+	-- The ceiling protects the level design: a player who flies makes holes pointless.
 	it("caps the level whatever the upgrades say", function()
 		expect(budget:levelFor({ flat = { jumps = 99 } })).toBe(3)
 		expect(budget:capacityFor({ flat = { jumps = 99 } })).toBe(2)
@@ -172,7 +172,7 @@ describe("DashPolicy", function()
 		expect(dash:tryConsume(state, 0, 100)).toBe(0)
 	end)
 
-	-- Le niveau de dash EST sa puissance : c'est ce que le joueur achete.
+	-- The dash level IS its power: that is what the player is buying.
 	it("turns the level into raw power", function()
 		expect(dash:powerFor(1)).toBe(60)
 		expect(dash:powerFor(2)).toBe(90)

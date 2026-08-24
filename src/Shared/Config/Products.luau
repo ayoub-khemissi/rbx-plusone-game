@@ -3,9 +3,9 @@
 	Products — developer products (repeatable Robux purchases).
 
 	These carry most of the revenue of a game like this: the player comes back to buy
-	at every hard step. Three of them are specific to a push-your-luck loop and sell
-	themselves because they are bought in the moment of regret — the feather, the
-	insurance and the instant hatch.
+	at every hard step. The ones that sell best are bought in a precise moment of
+	friction — a barrier that refuses to open, an upgrade tree nobody wants to buy
+	twice — which is why the catalogue answers problems rather than listing goods.
 
 	IMPORTANT: `productId = 0` means "not created on the Roblox site yet" — the product
 	is then invisible and unbuyable, so the game ships without ids and they can be

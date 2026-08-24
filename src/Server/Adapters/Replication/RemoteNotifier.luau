@@ -1,9 +1,9 @@
 --!strict
 --[[
-	RemoteNotifier — port Notifier via un RemoteEvent.
+	RemoteNotifier — the Notifier port, over a RemoteEvent.
 
-	Anti-spam : deux messages identiques envoyes coup sur coup au meme joueur sont
-	fusionnes (une barriere de zone declenche sinon un message a chaque echantillon).
+	Anti-spam: two identical messages sent back to back to the same player are
+	merged. Without it, standing against a gate produces one message per sample.
 ]]
 
 local RemoteNotifier = {}

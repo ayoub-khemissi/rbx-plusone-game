@@ -1,10 +1,9 @@
 --!strict
 --[[
-	IntervalReward — recompense periodique (coffre toutes les X minutes de jeu).
+	IntervalReward — a reward that comes round every N minutes of play.
 
-	Levier de SESSION : donne une raison de rester connecte, ce qui augmente le temps
-	de jeu moyen, la probabilite d'achat et le classement du jeu dans les
-	recommandations Roblox.
+	A SESSION lever: it gives a reason to stay connected, which raises average play
+	time, the chance of a purchase, and how the game ranks in recommendations.
 ]]
 
 local Result = require(script.Parent.Parent.Support.Result)
@@ -48,7 +47,7 @@ function IntervalReward.statusFor(self: IntervalReward, profile: any, key: strin
 	}
 end
 
---[[ Repart le compteur (a la connexion, pour ne pas offrir un coffre immediat). ]]
+--[[ Restarts the counter, so connecting never hands out an instant reward. ]]
 function IntervalReward.touch(_self: IntervalReward, profile: any, key: string, now: number)
 	profile.timers[key] = now
 end
@@ -56,7 +55,7 @@ end
 function IntervalReward.claim(self: IntervalReward, profile: any, key: string, now: number): Result
 	local status = self:statusFor(profile, key, now)
 	if not status.claimable then
-		return Result.err("NOT_READY", "Le coffre n'est pas encore pret", {
+		return Result.err("NOT_READY", "That is not ready yet.", {
 			secondsRemaining = status.secondsRemaining,
 		})
 	end

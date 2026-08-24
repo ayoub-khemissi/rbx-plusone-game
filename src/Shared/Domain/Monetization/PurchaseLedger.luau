@@ -1,14 +1,14 @@
 --!strict
 --[[
-	PurchaseLedger — registre des achats Robux deja traites.
+	PurchaseLedger — the record of Robux purchases already handled.
 
-	C'est la piece qui rend la monetisation FIABLE : Roblox peut rejouer un meme
-	`ProcessReceipt` (relance de serveur, timeout reseau). Sans registre, le joueur
-	est credite deux fois ; si on renvoie `NotProcessedYet` par erreur, Roblox
-	rejoue indefiniment. On enregistre donc l'identifiant d'achat AVANT de confirmer,
-	et on ne credite jamais deux fois le meme.
+	This is what makes the monetization RELIABLE. Roblox may replay the same receipt
+	after a server restart or a network timeout. Without a ledger the player is
+	credited twice; answering `NotProcessedYet` by mistake makes Roblox replay
+	forever. So the purchase id is recorded BEFORE the receipt is confirmed, and the
+	same id is never credited twice.
 
-	L'historique est borne : une sauvegarde DataStore ne doit pas grossir sans fin.
+	The history is bounded: a DataStore save must not grow without end.
 ]]
 
 export type Record = {
@@ -26,7 +26,7 @@ function PurchaseLedger.hasProcessed(profile: any, purchaseId: string): boolean
 	return profile.purchases.ids[purchaseId] == true
 end
 
---[[ Enregistre un achat. Renvoie false s'il avait deja ete traite. ]]
+--[[ Records a purchase. Returns false if it had already been handled. ]]
 function PurchaseLedger.record(profile: any, record: Record): boolean
 	if typeof(record.purchaseId) ~= "string" or PurchaseLedger.hasProcessed(profile, record.purchaseId) then
 		return false
