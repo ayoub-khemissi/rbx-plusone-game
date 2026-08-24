@@ -7,7 +7,7 @@
 local Container = require(Server.Composition.Container)
 local Config = require(Config)
 
-local function build()
+local function build(options)
 	local ports = {
 		repository = Fakes.repository(),
 		publisher = Fakes.publisher(),
@@ -18,7 +18,7 @@ local function build()
 		marketplace = Fakes.marketplace(),
 		clock = Fakes.clock(1000),
 	}
-	return Container.new({ ports = ports }), ports
+	return Container.new({ ports = ports, devMode = options and options.devMode }), ports
 end
 
 local function joined(container, userId)
@@ -310,5 +310,38 @@ describe("PerformPrestige", function()
 		expect(session.profile.speed).toBe(0)
 		expect(session.checkpoint).toBeNil()
 		expect(ports.teleporter.last).never.toBeNil()
+	end)
+end)
+
+describe("Dev codes", function()
+	local devCode = Config.Monetization.devCodes[1]
+
+	it("stay unknown on a published server", function()
+		local container = build()
+		local player = joined(container)
+
+		local result = container.useCases.redeemCode:run(player, devCode.code)
+
+		expect(result.ok).toBe(false)
+		expect(result.code).toBe("UNKNOWN_CODE")
+	end)
+
+	it("credit the profile in Studio, as many times as needed", function()
+		local container = build({ devMode = true })
+		local player, session = joined(container)
+
+		container.useCases.redeemCode:run(player, devCode.code)
+		container.useCases.redeemCode:run(player, devCode.code)
+
+		expect(session.profile.coins).toBe(devCode.grant.coins * 2)
+	end)
+
+	it("leaves the published codes working either way", function()
+		local container = build({ devMode = true })
+		local player, session = joined(container)
+
+		container.useCases.redeemCode:run(player, Config.Monetization.codes[1].code)
+
+		expect(session.profile.coins).toBe(Config.Monetization.codes[1].grant.coins)
 	end)
 end)

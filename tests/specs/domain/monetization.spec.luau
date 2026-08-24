@@ -345,6 +345,21 @@ describe("PromoCodes", function()
 	it("refuses an expired code", function()
 		expect(codes:redeem(profile, "EXPIRE", 100).code).toBe("EXPIRED")
 	end)
+
+	it("lets a repeatable code be redeemed again and again", function()
+		codes = PromoCodes.new({ { code = "AGAIN", grant = { coins = 25 }, repeatable = true } })
+		expect(codes:redeem(profile, "AGAIN", 10).ok).toBe(true)
+		expect(codes:redeem(profile, "AGAIN", 20).ok).toBe(true)
+		expect(codes:redeem(profile, "AGAIN", 30).value.grant.coins).toBe(25)
+	end)
+
+	-- Recording it would grow the profile for nothing, and a code turned repeatable
+	-- later would stay blocked for everyone who had already used it once.
+	it("does not record a repeatable code against the profile", function()
+		codes = PromoCodes.new({ { code = "AGAIN", grant = { coins = 25 }, repeatable = true } })
+		codes:redeem(profile, "AGAIN", 10)
+		expect(profile.codes.AGAIN).toBeNil()
+	end)
 end)
 
 describe("OfferEngine", function()

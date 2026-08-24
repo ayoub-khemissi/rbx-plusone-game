@@ -103,6 +103,33 @@ fix(application): stop crediting movement after a wall
 
 `./scripts/check.ps1` doit être vert avant chaque commit.
 
+## Se donner des ressources pour tester
+
+Équilibrer une amélioration en jouant la courbe à la main est une perte de temps.
+Quatre codes existent **uniquement dans Studio** :
+
+| Code | Effet |
+| --- | --- |
+| `DEVCOINS` | +1 000 000 Coins |
+| `DEVSPEED` | +20 000 Speed |
+| `DEVPRESTIGE` | +1 Prestige |
+| `DEVBOOST` | Speed Rush pendant 30 minutes |
+
+Ouvre la fenêtre **Gifts** dans la sidebar, tape le code dans le champ en bas,
+**REDEEM**. Ils sont **répétables** : autant de fois que tu veux, dans la même
+session.
+
+Ils passent par exactement le même chemin qu'un vrai code promo — `RedeemCode` →
+`Grants` → sauvegarde → snapshot — donc ce que tu testes est le vrai pipeline, pas
+un raccourci.
+
+**Ils n'existent pas sur un serveur publié.** `Bootstrap` ne les charge que si
+`RunService:IsStudio()` est vrai, et ils vivent dans une table séparée de
+`Config/Monetization.luau`. Il n'y a rien à penser à retirer avant de publier.
+
+Pour en ajouter un, une ligne dans `devCodes` suffit ; les effets disponibles sont
+ceux de `Grants` : `coins`, `speed`, `boost`, `prestiges`.
+
 ## Mise en production
 
 1. **Créer les gamepasses et produits** sur le site Roblox.

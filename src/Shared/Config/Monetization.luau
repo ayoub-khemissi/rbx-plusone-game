@@ -60,6 +60,26 @@ return table.freeze({
 		{ code = "CHECKPOINT", label = "Tip", grant = { boost = { id = "speedRush", duration = 600 } } },
 	}),
 
+	--[[
+		Codes for balancing the game, redeemed in the Gifts window like any other.
+
+		They are REPEATABLE, so an upgrade curve can be walked as many times as it
+		takes, and they exist only when the server is started with `devMode` — which
+		Bootstrap only does inside Studio. A published server never knows them, so
+		there is nothing to remember to remove before shipping.
+	]]
+	devCodes = table.freeze({
+		{ code = "DEVCOINS", label = "Dev", repeatable = true, grant = { coins = 1000000 } },
+		{ code = "DEVSPEED", label = "Dev", repeatable = true, grant = { speed = 20000 } },
+		{ code = "DEVPRESTIGE", label = "Dev", repeatable = true, grant = { prestiges = 1 } },
+		{
+			code = "DEVBOOST",
+			label = "Dev",
+			repeatable = true,
+			grant = { boost = { id = "speedRush", duration = 1800 } },
+		},
+	}),
+
 	offers = table.freeze({
 		{
 			id = "starterPack",

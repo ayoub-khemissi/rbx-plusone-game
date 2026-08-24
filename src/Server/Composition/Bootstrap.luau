@@ -170,7 +170,8 @@ end
 function Bootstrap.start()
 	local remotes = Net.server()
 	local ports = AdaptersFactory.build(remotes)
-	local container = Container.new({ ports = ports })
+	-- Studio is the only place the dev codes exist. See Config/Monetization.luau.
+	local container = Container.new({ ports = ports, devMode = RunService:IsStudio() })
 
 	-- MapBindings needs the remotes to open a panel from a hub pad.
 	container.remotes = remotes

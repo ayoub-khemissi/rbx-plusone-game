@@ -88,7 +88,30 @@ export type Ports = {
 export type Options = {
 	config: any?,
 	ports: Ports,
+	devMode: boolean?,
 }
+
+--[[
+	The redeemable codes of this server.
+
+	The dev codes are appended, never merged in by default: a published server is
+	built without them, so no flag left on by accident can hand a player a million
+	Coins.
+]]
+local function codesFor(monetization, devMode: boolean?)
+	local list = table.create(#monetization.codes)
+	for _, entry in monetization.codes do
+		table.insert(list, entry)
+	end
+
+	if devMode then
+		for _, entry in monetization.devCodes or {} do
+			table.insert(list, entry)
+		end
+	end
+
+	return list
+end
 
 function Container.new(options: Options)
 	local config = options.config or require(Shared.Config)
@@ -126,7 +149,7 @@ function Container.new(options: Options)
 	local products = ProductCatalog.new(config.Products)
 	local daily = RewardSchedule.new(monetization.daily)
 	local chest = IntervalReward.new(monetization.sessionChest)
-	local codes = PromoCodes.new(monetization.codes)
+	local codes = PromoCodes.new(codesFor(monetization, options.devMode))
 	local offers = OfferEngine.new(monetization.offers)
 
 	local domain = {

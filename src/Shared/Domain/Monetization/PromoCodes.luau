@@ -1,10 +1,14 @@
 --!strict
 --[[
-	PromoCodes — codes promotionnels.
+	PromoCodes — redeemable codes.
 
-	Levier d'ACQUISITION : les codes se diffusent sur les videos et les reseaux, ce
-	qui ramene des joueurs sans cout publicitaire. Un code est utilisable une seule
-	fois par profil et peut avoir une date de peremption.
+	An ACQUISITION lever: a code spreads on videos and social feeds, which brings
+	players in at no advertising cost. A code is redeemable once per profile and may
+	carry an expiry date.
+
+	A code marked `repeatable` is redeemable as often as the player likes and is never
+	recorded against the profile. That is what a recurring code needs — and what
+	makes the dev codes usable while balancing the game.
 ]]
 
 local Result = require(script.Parent.Parent.Support.Result)
@@ -15,6 +19,7 @@ export type Code = {
 	code: string,
 	grant: { [string]: any },
 	expiresAt: number?,
+	repeatable: boolean?,
 	label: string?,
 }
 
@@ -46,16 +51,22 @@ function PromoCodes.redeem(self: PromoCodes, profile: any, rawCode: any, now: nu
 	local entry = if key then self._byCode[key] else nil
 
 	if not key or not entry then
-		return Result.err("UNKNOWN_CODE", "Ce code n'existe pas.")
+		return Result.err("UNKNOWN_CODE", "This code does not exist.")
 	end
 	if entry.expiresAt and now > entry.expiresAt then
-		return Result.err("EXPIRED", "Ce code a expire.")
-	end
-	if profile.codes[key] then
-		return Result.err("ALREADY_REDEEMED", "Tu as deja utilise ce code.")
+		return Result.err("EXPIRED", "This code has expired.")
 	end
 
-	profile.codes[key] = true
+	-- A repeatable code leaves no trace: recording it would grow the profile for
+	-- nothing, and a code made repeatable later would stay blocked for everyone who
+	-- had already used it once.
+	if not entry.repeatable then
+		if profile.codes[key] then
+			return Result.err("ALREADY_REDEEMED", "You have already used this code.")
+		end
+		profile.codes[key] = true
+	end
+
 	return Result.ok({ code = key, grant = entry.grant, label = entry.label })
 end
 
