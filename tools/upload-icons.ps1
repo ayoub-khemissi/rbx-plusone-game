@@ -21,6 +21,7 @@ param(
     [Parameter(Mandatory = $true)][string]$CreatorId,
     [switch]$Group,
     [string[]]$Only,
+    [ValidateSet("Image", "Decal")][string]$AssetType = "Image",
     [int]$DelayMs = 900
 )
 
@@ -69,8 +70,12 @@ foreach ($file in $files) {
         continue
     }
 
+    # "Image", NOT "Decal". Both are accepted by the API and both come back
+    # Approved and Active, but only an Image renders in an ImageLabel. A Decal
+    # uploaded this way leaves the label blank with no error anywhere -- verified
+    # by uploading one PNG twice and putting the two ids side by side.
     $request = @{
-        assetType = "Decal"
+        assetType = $AssetType
         displayName = $slot
         description = "Interface icon"
         creationContext = @{ creator = @{ $creatorField = $CreatorId } }

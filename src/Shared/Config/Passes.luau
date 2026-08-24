@@ -33,7 +33,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "x2 Coins",
 		icon = "🪙",
-		image = "rbxassetid://80554989589898", -- icon:passDoubleCoins
+		image = "rbxassetid://119385317061454", -- icon:passDoubleCoins
 		description = "Doubles every Coin you earn.",
 		effect = { coins = 2 },
 	},
@@ -42,7 +42,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "x2 Speed",
 		icon = "⚡",
-		image = "rbxassetid://81334075973611", -- icon:passDoubleSpeed
+		image = "rbxassetid://92900943906374", -- icon:passDoubleSpeed
 		description = "Doubles the speed gained on every step.",
 		effect = { speed = 2 },
 	},
@@ -51,7 +51,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Swift Boots",
 		icon = "👟",
-		image = "rbxassetid://80021512303589", -- icon:passSwiftBoots
+		image = "rbxassetid://88765668116441", -- icon:passSwiftBoots
 		description = "x1.5 speed and a permanently higher jump.",
 		effect = { speed = 1.5, flat = { jumpPower = 8 } },
 	},
@@ -60,7 +60,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Extra Jump",
 		icon = "🪽",
-		image = "rbxassetid://110336227929289", -- icon:passExtraJump
+		image = "rbxassetid://124132514114803", -- icon:passExtraJump
 		description = "One more air jump than your upgrades allow.",
 		effect = { flat = { jumps = 1 } },
 	},
@@ -69,7 +69,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Coin Magnet",
 		icon = "🧲",
-		image = "rbxassetid://85950705482322", -- icon:passCoinMagnet
+		image = "rbxassetid://77944256720735", -- icon:passCoinMagnet
 		description = "Collect Coins from much further away.",
 		effect = { flat = { magnet = 25 } },
 	},
@@ -78,7 +78,7 @@ local passes: { Pass } = {
 		assetId = 0,
 		name = "Auto Run",
 		icon = "🏃",
-		image = "rbxassetid://100974316912305", -- icon:passAutoRun
+		image = "rbxassetid://123383076541599", -- icon:passAutoRun
 		description = "Your character keeps running on its own.",
 		effect = {},
 		behaviour = "autoRun",
