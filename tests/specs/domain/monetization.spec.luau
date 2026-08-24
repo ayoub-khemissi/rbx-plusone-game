@@ -18,8 +18,8 @@ describe("BoostStack", function()
 		stack = BoostStack.new({
 			definitions = {
 				swiftRush = { name = "Ruee", speed = 2 },
-				goldFever = { name = "Fievre", gold = 3 },
-				serverParty = { name = "Fete", speed = 1.5, gold = 1.5 },
+				coinsFever = { name = "Fievre", coins = 3 },
+				serverParty = { name = "Fete", speed = 1.5, coins = 1.5 },
 			},
 			maxStackedDuration = 4 * HOUR,
 		})
@@ -60,10 +60,10 @@ describe("BoostStack", function()
 
 	it("combines the multipliers of active boosts", function()
 		stack:grant(profile, "swiftRush", 900, 0)
-		stack:grant(profile, "goldFever", 900, 0)
+		stack:grant(profile, "coinsFever", 900, 0)
 		local bonuses = stack:multipliersFor(profile, 100)
 		expect(bonuses.speed).toBe(2)
-		expect(bonuses.gold).toBe(3)
+		expect(bonuses.coins).toBe(3)
 	end)
 
 	it("multiplies overlapping boosts together", function()
@@ -75,7 +75,7 @@ describe("BoostStack", function()
 	it("falls back to 1 with no boost running", function()
 		local bonuses = stack:multipliersFor(profile, 0)
 		expect(bonuses.speed).toBe(1)
-		expect(bonuses.gold).toBe(1)
+		expect(bonuses.coins).toBe(1)
 	end)
 
 	it("prunes expired boosts from the profile", function()
@@ -106,17 +106,11 @@ describe("PurchaseLedger", function()
 
 	it("records a purchase exactly once", function()
 		expect(
-			PurchaseLedger.record(
-				profile,
-				{ purchaseId = "r-1", productId = "bananaBag", robux = 99, at = 10 }
-			)
+			PurchaseLedger.record(profile, { purchaseId = "r-1", productId = "coinBag", robux = 99, at = 10 })
 		).toBe(true)
 		expect(PurchaseLedger.hasProcessed(profile, "r-1")).toBe(true)
 		expect(
-			PurchaseLedger.record(
-				profile,
-				{ purchaseId = "r-1", productId = "bananaBag", robux = 99, at = 20 }
-			)
+			PurchaseLedger.record(profile, { purchaseId = "r-1", productId = "coinBag", robux = 99, at = 20 })
 		).toBe(false)
 	end)
 
@@ -146,11 +140,11 @@ describe("ProductCatalog", function()
 	beforeEach(function()
 		catalog = ProductCatalog.new({
 			{
-				id = "bananaBag",
+				id = "coinBag",
 				productId = 111,
 				name = "Sac de bananes",
 				robux = 99,
-				grant = { gold = 5000 },
+				grant = { coins = 5000 },
 			},
 			{
 				id = "swiftRush",
@@ -159,12 +153,12 @@ describe("ProductCatalog", function()
 				robux = 199,
 				grant = { boost = { id = "swiftRush", duration = 1200 } },
 			},
-			{ id = "desactive", productId = 0, name = "Non configure", robux = 0, grant = { gold = 1 } },
+			{ id = "desactive", productId = 0, name = "Non configure", robux = 0, grant = { coins = 1 } },
 		})
 	end)
 
 	it("finds a product by its business id", function()
-		expect(catalog:get("bananaBag").name).toBe("Sac de bananes")
+		expect(catalog:get("coinBag").name).toBe("Sac de bananes")
 	end)
 
 	it("finds a product by its Roblox id", function()
@@ -175,7 +169,7 @@ describe("ProductCatalog", function()
 	it("ignores unconfigured products (productId = 0)", function()
 		expect(catalog:byProductId(0)).toBeNil()
 		expect(catalog:isConfigured("desactive")).toBe(false)
-		expect(catalog:isConfigured("bananaBag")).toBe(true)
+		expect(catalog:isConfigured("coinBag")).toBe(true)
 	end)
 
 	it("lists sellable products only", function()
@@ -191,10 +185,10 @@ describe("Grants", function()
 		context = { profile = Profile.create(), boosts = stack, now = 100 }
 	end)
 
-	it("credits gold", function()
-		local summary = Grants.apply({ gold = 5000 }, context)
-		expect(context.profile.gold).toBe(5000)
-		expect(summary.gold).toBe(5000)
+	it("credits coins", function()
+		local summary = Grants.apply({ coins = 5000 }, context)
+		expect(context.profile.coins).toBe(5000)
+		expect(summary.coins).toBe(5000)
 	end)
 
 	it("credits speed", function()
@@ -209,20 +203,20 @@ describe("Grants", function()
 
 	it("grants an instant molt without the speed requirement", function()
 		context.profile.speed = 10
-		context.moltPolicy = {
+		context.prestigePolicy = {
 			multiplierFor = function(_self, n)
 				return 1 + n
 			end,
 		}
-		local summary = Grants.apply({ molts = 1 }, context)
-		expect(context.profile.molts).toBe(1)
+		local summary = Grants.apply({ prestiges = 1 }, context)
+		expect(context.profile.prestiges).toBe(1)
 		expect(context.profile.speed).toBe(0)
-		expect(summary.molts).toBe(1)
+		expect(summary.prestiges).toBe(1)
 	end)
 
 	it("combines several rewards", function()
-		local summary = Grants.apply({ gold = 100, speed = 10 }, context)
-		expect(summary.gold).toBe(100)
+		local summary = Grants.apply({ coins = 100, speed = 10 }, context)
+		expect(summary.coins).toBe(100)
 		expect(summary.speed).toBe(10)
 	end)
 
@@ -238,8 +232,8 @@ describe("RewardSchedule (daily reward)", function()
 			dayLength = DAY,
 			graceWindow = 2 * DAY,
 			rewards = {
-				{ day = 1, grant = { gold = 100 } },
-				{ day = 2, grant = { gold = 250 } },
+				{ day = 1, grant = { coins = 100 } },
+				{ day = 2, grant = { coins = 250 } },
 				{ day = 3, grant = { boost = { id = "swiftRush", duration = 600 } } },
 			},
 		})
@@ -294,7 +288,7 @@ end)
 describe("IntervalReward (session chest)", function()
 	local chest, profile
 	beforeEach(function()
-		chest = IntervalReward.new({ interval = 300, grant = { gold = 50 } })
+		chest = IntervalReward.new({ interval = 300, grant = { coins = 50 } })
 		profile = Profile.create()
 	end)
 
@@ -311,7 +305,7 @@ describe("IntervalReward (session chest)", function()
 	it("restarts the timer once claimed", function()
 		local result = chest:claim(profile, "playtimeChest", 400)
 		expect(result.ok).toBe(true)
-		expect(result.value.grant.gold).toBe(50)
+		expect(result.value.grant.coins).toBe(50)
 		expect(chest:statusFor(profile, "playtimeChest", 400).claimable).toBe(false)
 	end)
 
@@ -326,8 +320,8 @@ describe("PromoCodes", function()
 	local codes, profile
 	beforeEach(function()
 		codes = PromoCodes.new({
-			{ code = "SINGE2026", grant = { gold = 500 } },
-			{ code = "EXPIRE", grant = { gold = 100 }, expiresAt = 50 },
+			{ code = "SINGE2026", grant = { coins = 500 } },
+			{ code = "EXPIRE", grant = { coins = 100 }, expiresAt = 50 },
 		})
 		profile = Profile.create()
 	end)
@@ -335,7 +329,7 @@ describe("PromoCodes", function()
 	it("accepts a valid code, whatever the case", function()
 		local result = codes:redeem(profile, "singe2026", 10)
 		expect(result.ok).toBe(true)
-		expect(result.value.grant.gold).toBe(500)
+		expect(result.value.grant.coins).toBe(500)
 	end)
 
 	it("refuses an already redeemed code", function()

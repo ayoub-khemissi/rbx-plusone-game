@@ -15,16 +15,14 @@ local FOLDER_NAME = "Remotes"
 
 local EVENTS = {
 	"Notify", -- server -> client: short message
-	"StartFlight", -- client -> server: take off from the Nest
 	"BuyUpgrade", -- client -> server: buy an upgrade
-	"Molt", -- client -> server: molt
-	"PlaceEgg", -- client -> server: put an egg in the hatchery
-	"CollectHatchling", -- client -> server: collect a hatched egg
+	"Prestige", -- client -> server: reset for a permanent multiplier
 	"RedeemCode", -- client -> server: promo code
 	"ClaimDaily", -- client -> server: daily reward
 	"ClaimChest", -- client -> server: session chest
 	"PromptPurchase", -- client -> server: open a purchase window
-	"CollectRing", -- client -> server: ring caught by the magnet
+	"CollectCoin", -- client -> server: coin caught by the magnet
+	"AirJump", -- client -> server: an air jump was spent
 }
 
 local FUNCTIONS = {

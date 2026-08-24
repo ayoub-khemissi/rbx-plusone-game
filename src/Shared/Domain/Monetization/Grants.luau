@@ -6,36 +6,32 @@
 	reward, chest, promo code, limited offer. Adding a revenue source therefore needs
 	no new logic at all.
 
-		{ gold = 5000 }
-		{ eggs = { rarity = "rare", amount = 3 } }
-		{ boost = { id = "swiftRush", duration = 1200 } }
-		{ molts = 1 }
+		{ coins = 5000 }
+		{ speed = 250 }
+		{ boost = { id = "speedRush", duration = 1200 } }
+		{ prestiges = 1 }
 ]]
 
 export type Grant = {
-	gold: number?,
+	coins: number?,
 	speed: number?,
-	eggs: { rarity: string, amount: number }?,
 	boost: { id: string, duration: number }?,
-	molts: number?,
+	prestiges: number?,
 }
 
 export type Context = {
 	profile: any,
 	boosts: any?,
-	moltPolicy: any?,
+	prestigePolicy: any?,
 	now: number,
 }
 
 export type Summary = {
-	gold: number?,
+	coins: number?,
 	speed: number?,
-	eggs: { rarity: string, amount: number }?,
 	boost: { id: string, duration: number }?,
-	molts: number?,
+	prestiges: number?,
 }
-
-local Profile = require(script.Parent.Parent.Profile.Profile)
 
 local Grants = {}
 
@@ -47,17 +43,12 @@ function Grants.apply(grant: Grant?, context: Context): Summary
 
 	local profile = context.profile
 
-	-- Purchased gold is credited as-is: multipliers reward PLAYING, they must not
+	-- Purchased Coins are credited as-is: multipliers reward PLAYING, they must not
 	-- make a purchase unpredictable.
-	if typeof(grant.gold) == "number" and grant.gold > 0 then
-		profile.gold += grant.gold
-		profile.totals.goldEarned += grant.gold
-		summary.gold = grant.gold
-	end
-
-	if typeof(grant.eggs) == "table" and typeof(grant.eggs.rarity) == "string" then
-		Profile.addEggs(profile, grant.eggs.rarity, grant.eggs.amount or 0)
-		summary.eggs = grant.eggs
+	if typeof(grant.coins) == "number" and grant.coins > 0 then
+		profile.coins += grant.coins
+		profile.totals.coinsEarned += grant.coins
+		summary.coins = grant.coins
 	end
 
 	if typeof(grant.speed) == "number" and grant.speed > 0 then
@@ -71,15 +62,15 @@ function Grants.apply(grant: Grant?, context: Context): Summary
 		end
 	end
 
-	-- A purchased molt skips the speed requirement and, unlike the free one, keeps
-	-- the upgrades: that is exactly what the player is paying for.
-	if typeof(grant.molts) == "number" and grant.molts > 0 then
-		local count = math.floor(grant.molts)
-		profile.molts += count
-		profile.totals.molts += count
+	-- A purchased prestige skips the speed requirement and, unlike the free one,
+	-- keeps the upgrades: that is exactly what the player is paying for.
+	if typeof(grant.prestiges) == "number" and grant.prestiges > 0 then
+		local count = math.floor(grant.prestiges)
+		profile.prestiges += count
+		profile.totals.prestiges += count
 		profile.speed = 0
-		profile.deepestTier = 0
-		summary.molts = count
+		profile.highestStage = 0
+		summary.prestiges = count
 	end
 
 	return summary

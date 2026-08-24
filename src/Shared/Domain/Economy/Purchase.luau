@@ -27,10 +27,10 @@ function Purchase.evaluate(catalog: any, profile: Profile, upgradeId: string): R
 	end
 
 	local cost = catalog:costFor(upgradeId, level)
-	if profile.gold < cost then
-		return Result.err("INSUFFICIENT_FUNDS", "Not enough gold", {
+	if profile.coins < cost then
+		return Result.err("INSUFFICIENT_FUNDS", "Not enough Coins", {
 			cost = cost,
-			missing = cost - profile.gold,
+			missing = cost - profile.coins,
 		})
 	end
 
@@ -44,7 +44,7 @@ function Purchase.apply(catalog: any, profile: Profile, upgradeId: string): Resu
 	end
 
 	local cost = evaluation.value.cost
-	profile.gold -= cost
+	profile.coins -= cost
 	profile.upgrades[upgradeId] = evaluation.value.nextLevel
 
 	return Result.ok({
@@ -62,7 +62,7 @@ function Purchase.planBulk(catalog: any, profile: Profile, upgradeId: string, ma
 	end
 
 	local level = Profile.levelOf(profile, upgradeId)
-	local budget = profile.gold
+	local budget = profile.coins
 
 	for _ = 1, math.max(maxLevels, 0) do
 		if catalog:isMaxed(upgradeId, level) then

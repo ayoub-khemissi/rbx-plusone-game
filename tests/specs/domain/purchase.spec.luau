@@ -6,8 +6,8 @@ local Profile = require(Domain.Profile.Profile)
 local DEFINITIONS = {
 	{
 		id = "speedGain",
-		name = "Wingbeat",
-		icon = "💨",
+		name = "Stride",
+		icon = "👟",
 		maxLevel = 2,
 		baseCost = 100,
 		costGrowth = 2,
@@ -28,49 +28,49 @@ describe("Purchase", function()
 	end)
 
 	it("rejects an insufficient balance", function()
-		profile.gold = 99
+		profile.coins = 99
 		local result = Purchase.evaluate(catalog, profile, "speedGain")
 		expect(result.code).toBe("INSUFFICIENT_FUNDS")
 		expect(result.value.missing).toBe(1)
 	end)
 
 	it("rejects a maxed out upgrade", function()
-		profile.gold = 1e9
+		profile.coins = 1e9
 		profile.upgrades.speedGain = 2
 		expect(Purchase.evaluate(catalog, profile, "speedGain").code).toBe("MAX_LEVEL")
 	end)
 
 	it("accepts an affordable purchase", function()
-		profile.gold = 100
+		profile.coins = 100
 		local result = Purchase.evaluate(catalog, profile, "speedGain")
 		expect(result.ok).toBe(true)
 		expect(result.value.cost).toBe(100)
 		expect(result.value.nextLevel).toBe(1)
 	end)
 
-	it("spends the gold when applied", function()
-		profile.gold = 350
+	it("spends the coins when applied", function()
+		profile.coins = 350
 		Purchase.apply(catalog, profile, "speedGain")
-		expect(profile.gold).toBe(250)
+		expect(profile.coins).toBe(250)
 		expect(profile.upgrades.speedGain).toBe(1)
 
 		Purchase.apply(catalog, profile, "speedGain")
-		expect(profile.gold).toBe(50)
+		expect(profile.coins).toBe(50)
 		expect(profile.upgrades.speedGain).toBe(2)
 	end)
 
 	it("changes nothing when the purchase is refused", function()
-		profile.gold = 10
+		profile.coins = 10
 		Purchase.apply(catalog, profile, "speedGain")
-		expect(profile.gold).toBe(10)
+		expect(profile.coins).toBe(10)
 		expect(profile.upgrades.speedGain).toBeNil()
 	end)
 
 	it("plans a bulk purchase without touching the profile", function()
-		profile.gold = 1000
+		profile.coins = 1000
 		local plan = Purchase.planBulk(catalog, profile, "speedGain", 10)
 		expect(plan.affordableLevels).toBe(2)
 		expect(plan.totalCost).toBe(300)
-		expect(profile.gold).toBe(1000)
+		expect(profile.coins).toBe(1000)
 	end)
 end)

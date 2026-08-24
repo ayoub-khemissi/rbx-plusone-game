@@ -5,57 +5,45 @@
 ]]
 
 local Config = require(Config)
-local TierLadder = require(Domain.Run.TierLadder)
-local SkyLayout = require(Domain.Run.SkyLayout)
+local StageLadder = require(Domain.Run.StageLadder)
 local UpgradeCatalog = require(Domain.Economy.UpgradeCatalog)
-local DragonCatalog = require(Domain.Hatchery.DragonCatalog)
-local RarityTable = require(Domain.Hatchery.RarityTable)
-local MoltPolicy = require(Domain.Molt.MoltPolicy)
+local PrestigePolicy = require(Domain.Prestige.PrestigePolicy)
+local JumpBudget = require(Domain.Movement.JumpBudget)
+local DashPolicy = require(Domain.Movement.DashPolicy)
 local ProductCatalog = require(Domain.Monetization.ProductCatalog)
 
 local KNOWN_EFFECTS = {
 	speedMultiplier = true,
-	goldMultiplier = true,
-	agility = true,
+	coinMultiplier = true,
+	jumpPower = true,
+	jumps = true,
+	dash = true,
 	magnet = true,
-	feathers = true,
-	hatch = true,
 }
 
-describe("Config.Tiers", function()
+describe("Config.Stages", function()
 	it("builds a valid ladder", function()
 		expect(function()
-			TierLadder.new(Config.Tiers)
+			StageLadder.new(Config.Stages)
 		end).never.toThrow()
 	end)
 
-	it("numbers the tiers from 1 to N without a gap", function()
-		for index, tier in Config.Tiers do
-			expect(tier.id).toBe(index)
+	it("numbers the stages from 1 to N without a gap", function()
+		for index, stage in Config.Stages do
+			expect(stage.id).toBe(index)
 		end
 	end)
 
-	it("opens the first tier to a brand new dragon", function()
-		expect(Config.Tiers[1].requiredSpeed).toBe(0)
+	it("opens the first stage to a brand new player", function()
+		expect(Config.Stages[1].requiredSpeed).toBe(0)
 	end)
 
-	it("keeps every guaranteed rarity within its own cap", function()
-		local rarities = RarityTable.new(Config.Monetization.rarities)
-		for _, tier in Config.Tiers do
-			if tier.minRarity then
-				expect(rarities:indexOf(tier.minRarity)).toBeLessThanOrEqual(rarities:indexOf(tier.maxRarity))
-			end
-			expect(rarities:indexOf(tier.maxRarity)).never.toBeNil()
-		end
-	end)
-
-	it("makes climbing one more tier clearly worth it", function()
-		for index = 2, #Config.Tiers do
-			local previous, current = Config.Tiers[index - 1], Config.Tiers[index]
-			local ratio = (current.eggs * current.goldMultiplier) / (previous.eggs * previous.goldMultiplier)
-			-- Sous 1,8 le joueur n'hesite pas ; au-dessus de 6 il n'encaisse jamais.
-			expect(ratio).toBeGreaterThan(1.8)
-			expect(ratio).toBeLessThan(6)
+	it("makes reaching one more stage clearly worth it", function()
+		for index = 2, #Config.Stages do
+			local previous, current = Config.Stages[index - 1], Config.Stages[index]
+			local ratio = current.coinMultiplier / previous.coinMultiplier
+			expect(ratio).toBeGreaterThan(1.2)
+			expect(ratio).toBeLessThan(3)
 		end
 	end)
 end)
@@ -78,37 +66,72 @@ describe("Config.Upgrades", function()
 		for _, id in catalog:ids() do
 			expect(catalog:costFor(id, 0)).toBeGreaterThan(0)
 			expect(catalog:costFor(id, 1)).toBeGreaterThan(catalog:costFor(id, 0))
-			expect(catalog:costFor(id, 60)).toBeLessThan(math.huge)
+			expect(catalog:costFor(id, 20)).toBeLessThan(math.huge)
 		end
 	end)
 
-	it("sells agility, without which speed cannot be steered", function()
+	-- Les deux mecaniques que le joueur vient chercher doivent etre achetables.
+	it("sells both the extra jumps and the dash", function()
 		local catalog = UpgradeCatalog.new(Config.Upgrades)
-		expect(catalog:get("agility")).never.toBeNil()
+		expect(catalog:get("jump")).never.toBeNil()
+		expect(catalog:get("dash")).never.toBeNil()
+	end)
+
+	it("caps the upgrades exactly where the domain caps them", function()
+		local catalog = UpgradeCatalog.new(Config.Upgrades)
+		local jumps = JumpBudget.new(Config.Balance.movement)
+		local dash = DashPolicy.new(Config.Balance.dash)
+
+		-- Acheter le dernier niveau doit donner le niveau maximum, ni plus ni moins.
+		expect(jumps:levelFor({ flat = { jumps = catalog:get("jump").maxLevel } })).toBe(
+			Config.Balance.movement.maxJumpLevel
+		)
+		expect(dash:levelFor({ flat = { dash = catalog:get("dash").maxLevel } })).toBe(
+			Config.Balance.dash.maxLevel
+		)
 	end)
 end)
 
-describe("Config.Dragons", function()
-	it("builds a valid collection", function()
-		expect(function()
-			DragonCatalog.new(Config.Dragons)
-		end).never.toThrow()
+describe("Config.Balance", function()
+	it("keeps walk speed under the physics ceiling", function()
+		local curve = Config.Balance.speedCurve
+		expect(curve.baseWalkSpeed + curve.maxBonusWalkSpeed).toBeLessThanOrEqual(250)
 	end)
 
-	it("offers at least one species per rarity of the table", function()
-		local catalog = DragonCatalog.new(Config.Dragons)
-		for _, entry in Config.Monetization.rarities do
-			expect(#catalog:byRarity(entry.rarity)).toBeGreaterThan(0)
+	it("leaves an anti-cheat margin above 1", function()
+		expect(Config.Balance.movement.toleranceFactor).toBeGreaterThan(1)
+		expect(Config.Balance.movement.sampleInterval).toBeGreaterThan(0)
+	end)
+
+	it("keeps the dash worth upgrading", function()
+		local dash = DashPolicy.new(Config.Balance.dash)
+		expect(dash:powerFor(1)).toBeGreaterThan(0)
+		expect(dash:powerFor(3)).toBeGreaterThan(dash:powerFor(1))
+		expect(Config.Balance.dash.cooldown).toBeGreaterThan(0)
+	end)
+
+	-- Prestige doit vouloir dire "j'ai fini le parcours", pas "j'ai un peu joue".
+	it("asks for the last stage before the first prestige", function()
+		local policy = PrestigePolicy.new(Config.Balance.prestige)
+		expect(policy:requirementFor(0)).toBeGreaterThanOrEqual(Config.Stages[#Config.Stages].requiredSpeed)
+		expect(policy:multiplierFor(1)).toBeGreaterThan(1)
+	end)
+end)
+
+describe("Config.Theme", function()
+	-- Le theme ne porte que de l'affichage : aucun nombre d'equilibrage.
+	it("names every core concept", function()
+		for _, key in { "speed", "coins", "prestige", "stage", "checkpoint", "hub" } do
+			local label = Config.Theme.labels[key]
+			expect(label).never.toBeNil()
+			expect(label.name).toBeA("string")
+			expect(label.icon).toBeA("string")
 		end
 	end)
 
-	it("keeps every bonus modest enough to stay a bonus", function()
-		for _, dragon in Config.Dragons do
-			for _, amount in dragon.bonus do
-				expect(amount).toBeGreaterThan(0)
-				expect(amount).toBeLessThanOrEqual(1)
-			end
-		end
+	it("carries no balancing number", function()
+		expect(Config.Theme.labels.speed.baseWalkSpeed).toBeNil()
+		expect(Config.Theme.requiredSpeed).toBeNil()
 	end)
 end)
 
@@ -141,64 +164,5 @@ describe("Config.Products and Passes", function()
 		for _, offer in Config.Monetization.offers do
 			expect(catalog:get(offer.productKey)).never.toBeNil()
 		end
-	end)
-end)
-
-describe("Config.Balance", function()
-	it("keeps flight velocity under the physics ceiling", function()
-		local curve = Config.Balance.speedCurve
-		expect(curve.baseVelocity + curve.maxBonusVelocity).toBeLessThanOrEqual(300)
-	end)
-
-	it("leaves an anti-cheat margin above 1", function()
-		expect(Config.Balance.flight.toleranceFactor).toBeGreaterThan(1)
-		expect(Config.Balance.flight.sampleInterval).toBeGreaterThan(0)
-	end)
-
-	-- Muer doit vouloir dire "j'ai fini le ciel", pas "j'ai un peu joue".
-	it("asks for the last tier before the first molt", function()
-		local policy = MoltPolicy.new(Config.Balance.molt)
-		expect(policy:requirementFor(0)).toBeGreaterThanOrEqual(Config.Tiers[#Config.Tiers].requiredSpeed)
-		expect(policy:multiplierFor(1)).toBeGreaterThan(1)
-	end)
-
-	it("lays the sky out beyond the Nest", function()
-		local layout = SkyLayout.new(Config.Balance.sky, Config.Tiers)
-		expect(Config.Balance.sky.launchX).toBeGreaterThan(Config.World.nest.size / 2)
-		expect(layout:totalLength()).toBeGreaterThan(4000)
-		expect(layout:tierAt(0)).toBeNil()
-		expect(layout:tierAt(Config.Balance.sky.launchX)).toBe(1)
-	end)
-
-	-- L'Autel doit rester atteignable : hors du couloir, mais pas hors de portee.
-	it("keeps the altar detour off the line yet reachable", function()
-		local sky = Config.Balance.sky
-		expect(sky.altarOffset).toBeGreaterThan(sky.corridorWidth / 2)
-		expect(sky.altarOffset).toBeLessThan(sky.corridorWidth * 1.5)
-	end)
-end)
-
-describe("Config take-off", function()
-	-- Regression : le point de decollage tombait dans le Nest, face au garde-corps.
-	it("launches clear of the Nest platform and above its floor", function()
-		local layout = SkyLayout.new(Config.Balance.sky, Config.Tiers)
-		local launch = layout:launchPoint()
-
-		expect(launch.x).toBeGreaterThan(Config.World.nest.size / 2)
-		expect(launch.y).toBeGreaterThan(Config.World.nest.altitude + Config.World.nest.railHeight)
-	end)
-
-	it("still takes off behind the first barrier", function()
-		local layout = SkyLayout.new(Config.Balance.sky, Config.Tiers)
-		expect(layout:launchPoint().x).toBeLessThan(layout:boundsOf(1).startX)
-	end)
-end)
-
-describe("Config flight feel", function()
-	-- Regression : une agilite de base a 1 rendait le dragon impilotable au depart.
-	it("keeps a brand new dragon steerable", function()
-		local curve = Config.Balance.speedCurve
-		expect(curve.baseAgility).toBeGreaterThanOrEqual(2)
-		expect(curve.maxAgility).toBeGreaterThan(curve.baseAgility)
 	end)
 end)

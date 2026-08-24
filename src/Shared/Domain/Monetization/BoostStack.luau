@@ -13,7 +13,7 @@ export type Definition = {
 	name: string?,
 	icon: string?,
 	speed: number?,
-	gold: number?,
+	coins: number?,
 }
 
 export type Tuning = {
@@ -27,7 +27,7 @@ export type ActiveBoost = {
 	icon: string?,
 	remaining: number,
 	speed: number,
-	gold: number,
+	coins: number,
 }
 
 local BoostStack = {}
@@ -97,7 +97,7 @@ function BoostStack.activeFor(self: BoostStack, profile: any, now: number): { Ac
 				icon = definition.icon,
 				remaining = expiresAt - now,
 				speed = definition.speed or 1,
-				gold = definition.gold or 1,
+				coins = definition.coins or 1,
 			})
 		end
 	end
@@ -114,15 +114,15 @@ function BoostStack.multipliersFor(
 	self: BoostStack,
 	profile: any,
 	now: number
-): { speed: number, gold: number }
-	local speed, gold = 1, 1
+): { speed: number, coins: number }
+	local speed, coins = 1, 1
 
 	for _, boost in self:activeFor(profile, now) do
 		speed *= boost.speed
-		gold *= boost.gold
+		coins *= boost.coins
 	end
 
-	return { speed = speed, gold = gold }
+	return { speed = speed, coins = coins }
 end
 
 return BoostStack

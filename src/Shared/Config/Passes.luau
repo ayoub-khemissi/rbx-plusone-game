@@ -7,6 +7,7 @@
 	the game ships and stays playable before anything is created.
 
 	Nothing here unlocks content: passes buy time and comfort, never access.
+	Nothing here is themed either: a pass is described by its effect.
 ]]
 
 export type Pass = {
@@ -15,10 +16,10 @@ export type Pass = {
 	name: string,
 	icon: string,
 	description: string,
-	-- Numeric effects, aggregated by Domain.Flight.Multipliers.
+	-- Numeric effects, aggregated by Domain.Movement.Multipliers.
 	effect: {
 		speed: number?,
-		gold: number?,
+		coins: number?,
 		flat: { [string]: number }?,
 	},
 	-- Comfort handled by the client or a use case; no impact on balance.
@@ -27,54 +28,53 @@ export type Pass = {
 
 local passes: { Pass } = {
 	{
-		id = "doubleGold",
+		id = "doubleCoins",
 		assetId = 0,
-		name = "x2 Gold",
+		name = "x2 Coins",
 		icon = "🪙",
-		description = "Doubles every piece of gold you carry home.",
-		effect = { gold = 2 },
+		description = "Doubles every Coin you earn.",
+		effect = { coins = 2 },
 	},
 	{
-		id = "doubleEggs",
+		id = "doubleSpeed",
 		assetId = 0,
-		name = "x2 Eggs",
-		icon = "🥚",
-		description = "Doubles the eggs banked at an Altar.",
-		effect = {},
-		behaviour = "doubleEggs",
+		name = "x2 Speed",
+		icon = "⚡",
+		description = "Doubles the speed gained on every step.",
+		effect = { speed = 2 },
 	},
 	{
-		id = "swiftWing",
+		id = "swiftBoots",
 		assetId = 0,
-		name = "Swift Wing",
-		icon = "💨",
-		description = "x1.5 speed gain and a permanently steadier turn.",
-		effect = { speed = 1.5, flat = { agility = 2 } },
+		name = "Swift Boots",
+		icon = "👟",
+		description = "x1.5 speed and a permanently higher jump.",
+		effect = { speed = 1.5, flat = { jumpPower = 8 } },
 	},
 	{
-		id = "phoenixFeather",
+		id = "extraJump",
 		assetId = 0,
-		name = "Phoenix Feather",
-		icon = "🪶",
-		description = "One wall forgiven per flight — your pouch survives.",
-		effect = { flat = { feathers = 1 } },
+		name = "Extra Jump",
+		icon = "🪽",
+		description = "One more air jump than your upgrades allow.",
+		effect = { flat = { jumps = 1 } },
 	},
 	{
-		id = "ringMagnet",
+		id = "coinMagnet",
 		assetId = 0,
-		name = "Ring Magnet",
+		name = "Coin Magnet",
 		icon = "🧲",
-		description = "Catch rings from much further away.",
+		description = "Collect Coins from much further away.",
 		effect = { flat = { magnet = 25 } },
 	},
 	{
-		id = "nestKeeper",
+		id = "autoRun",
 		assetId = 0,
-		name = "Nest Keeper",
-		icon = "🪺",
-		description = "Two extra hatchery slots, forever.",
+		name = "Auto Run",
+		icon = "🏃",
+		description = "Your character keeps running on its own.",
 		effect = {},
-		behaviour = "extraSlots",
+		behaviour = "autoRun",
 	},
 }
 

@@ -1,15 +1,19 @@
 --!strict
 --[[
-	Upgrades — what gold buys.
+	Upgrades — what Coins buy.
 
-	`effect` names the bonus family aggregated by Domain.Flight.Multipliers:
-	  speedMultiplier / goldMultiplier -> additive percentages
-	  agility / magnet / feathers      -> flat bonuses
+	`effect` names the bonus family aggregated by Domain.Movement.Multipliers:
+	  speedMultiplier / coinMultiplier -> additive percentages
+	  jumpPower / airJumps / magnet    -> flat bonuses
 	`maxLevel = 0` means unlimited.
 
-	Speed and agility are deliberately two separate purchases: buying speed alone
-	makes the dragon impossible to steer, so the player has a real arbitrage instead
-	of a slider to push right.
+	`jump` and `dash` are deliberately expensive and capped: they are not stats to
+	grind but milestones. Each level changes which parts of a map are reachable, so
+	they are events, not increments.
+
+	Careful with `jump`: the character starts at jump level 1, so buying level 1 of
+	this upgrade grants the DOUBLE jump and level 2 the triple. The interface shows
+	the real jump level, never the raw upgrade level.
 ]]
 
 local UpgradeCatalog = require(script.Parent.Parent.Domain.Economy.UpgradeCatalog)
@@ -19,58 +23,69 @@ type Definition = UpgradeCatalog.Definition
 local definitions: { Definition } = {
 	{
 		id = "speedGain",
-		name = "Wingbeat",
-		icon = "💨",
-		description = "+15% speed gained on every stretch flown.",
+		name = "Stride",
+		icon = "👟",
+		description = "+15% speed gained on every stretch run.",
 		maxLevel = 0,
-		baseCost = 80,
-		costGrowth = 1.32,
+		baseCost = 60,
+		costGrowth = 1.3,
 		effectPerLevel = 0.15,
 		effect = "speedMultiplier",
 	},
 	{
-		id = "goldGain",
-		name = "Hoard Sense",
+		id = "coinGain",
+		name = "Fortune",
 		icon = "🪙",
-		description = "+20% gold from rings.",
+		description = "+20% Coins from everything.",
 		maxLevel = 0,
-		baseCost = 65,
-		costGrowth = 1.35,
+		baseCost = 50,
+		costGrowth = 1.32,
 		effectPerLevel = 0.2,
-		effect = "goldMultiplier",
+		effect = "coinMultiplier",
 	},
 	{
-		id = "agility",
-		name = "Tailfin",
-		icon = "🪶",
-		description = "Turn tighter — the counterweight to raw speed.",
+		id = "jumpPower",
+		name = "Spring",
+		icon = "🦿",
+		description = "Jump higher.",
 		maxLevel = 30,
-		baseCost = 220,
-		costGrowth = 1.45,
+		baseCost = 200,
+		costGrowth = 1.4,
 		effectPerLevel = 1,
-		effect = "agility",
+		effect = "jumpPower",
+	},
+	{
+		id = "jump",
+		name = "Air Jump",
+		icon = "🪽",
+		description = "Double jump, then triple jump.",
+		maxLevel = 2,
+		baseCost = 2500,
+		costGrowth = 8,
+		effectPerLevel = 1,
+		effect = "jumps",
+	},
+	{
+		id = "dash",
+		name = "Dash",
+		icon = "💨",
+		description = "A burst forward. Each level hits harder.",
+		maxLevel = 3,
+		baseCost = 1200,
+		costGrowth = 6,
+		effectPerLevel = 1,
+		effect = "dash",
 	},
 	{
 		id = "magnet",
-		name = "Ring Pull",
+		name = "Magnet",
 		icon = "🧲",
-		description = "Catch rings from further away.",
+		description = "Collect Coins from further away.",
 		maxLevel = 12,
 		baseCost = 400,
 		costGrowth = 1.6,
 		effectPerLevel = 4,
 		effect = "magnet",
-	},
-	{
-		id = "hatchSpeed",
-		name = "Warm Scales",
-		icon = "🔥",
-		description = "Eggs hatch faster in the Nest.",
-		maxLevel = 10,
-		baseCost = 900,
-		costGrowth = 1.8,
-		effectPerLevel = 0.08,
-		effect = "hatch",
 	},
 }
 

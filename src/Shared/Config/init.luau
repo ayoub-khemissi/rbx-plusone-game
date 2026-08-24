@@ -5,15 +5,19 @@
 	Single entry point: `local Config = require(ReplicatedStorage.Shared.Config)`.
 	Every table is frozen so no module can quietly retune the balance at runtime
 	without going through this folder.
+
+	`Theme` is the only part meant to be swapped per universe: it holds names, icons
+	and colours, never numbers.
 ]]
+
+local ACTIVE_THEME = "Default"
 
 return table.freeze({
 	Balance = require(script.Balance),
-	Tiers = require(script.Tiers),
+	Stages = require(script.Stages),
 	Upgrades = require(script.Upgrades),
-	Dragons = require(script.Dragons),
 	Passes = require(script.Passes),
 	Products = require(script.Products),
 	Monetization = require(script.Monetization),
-	World = require(script.World),
+	Theme = require(script.Themes[ACTIVE_THEME]),
 })
