@@ -28,6 +28,48 @@ comes back, and a slot already listed is skipped. A rate limit or a closed
 terminal costs only the uploads that had not finished — run the same command
 again.
 
+### Image, not Decal
+
+The Assets API accepts both `Image` and `Decal` for a PNG. **Only `Image` renders
+in an `ImageLabel`.** `upload-icons.ps1` sends `Image`; `-AssetType Decal` exists
+for the day that changes, and is otherwise a trap.
+
+A Decal uploaded through Open Cloud fails in the most expensive way available: it
+reports `Approved` and `Active`, appears in the creator dashboard showing the
+right picture, and draws nothing in a label. There is no error, no warning, and
+no console output — the interface simply comes up blank.
+
+Three checks were run before that was found, and none of them could have
+distinguished a broken asset from a working one:
+
+| Looks like a problem | What it actually means |
+| --- | --- |
+| Every asset returns the same placeholder thumbnail | The asset is private. Says nothing about content |
+| Its page on the store is broken | That is the public view of a private asset |
+| The creator dashboard shows it correctly | The dashboard renders any type. Says nothing about labels |
+
+What settled it was a **controlled comparison**: the same PNG uploaded twice,
+once as each type, and both ids put side by side in one place. One rendered, one
+did not, and there was nothing left to interpret.
+
+Keep the recipe for the next silent failure — one file, two uploads, one
+parameter different, both on screen at once:
+
+```lua
+-- Studio command bar. Renders immediately, no Play needed.
+local g = Instance.new("ScreenGui", game.CoreGui) g.Name = "Probe"
+local a = Instance.new("ImageLabel", g)
+a.Size = UDim2.fromOffset(220, 220) a.Position = UDim2.fromOffset(60, 240)
+a.BackgroundColor3 = Color3.new(1, 0, 0) a.Image = "rbxassetid://FIRST"
+local b = a:Clone() b.Position = UDim2.fromOffset(300, 240)
+b.BackgroundColor3 = Color3.new(0, 0, 1) b.Image = "rbxassetid://SECOND" b.Parent = g
+-- Clean up:  game.CoreGui.Probe:Destroy()
+```
+
+The coloured backgrounds are not decoration. A label that loads nothing is
+invisible, so without them a blank result cannot be told apart from a label you
+failed to find.
+
 ### By hand instead
 
 1. Studio → **View → Asset Manager** → **Images** → right-click → *Add Images…*

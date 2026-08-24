@@ -134,6 +134,36 @@ Two engine details worth knowing before laying anything out:
 Together they rule out the two obvious ways of building a rounded progress bar.
 Masking a full-size fill with a gradient works and is worth reaching for first.
 
+A third, for anything that uploads images: the Open Cloud Assets API accepts both
+`Image` and `Decal` for a PNG, and **only `Image` renders in an `ImageLabel`**. A
+Decal uploaded that way reports Approved and Active, shows the right picture in
+the creator dashboard, and draws nothing — with no error anywhere.
+
+### When the engine fails silently
+
+That last one is worth a paragraph of method rather than of fact, because the
+fact will change and the method will not.
+
+Three checks were run before the cause was found, and all three were consistent
+with the bug AND with a healthy asset:
+
+- the public thumbnail endpoint returned the same placeholder for every asset —
+  which only ever meant "this asset is private", never anything about its
+  content;
+- the public store page was broken — which is what the public page of a private
+  asset always looks like;
+- the creator dashboard showed the images perfectly — because it renders them
+  whatever their type.
+
+Each one produced a plausible diagnosis, and each diagnosis was wrong. What
+settled it in one minute was a **controlled comparison**: the same PNG uploaded
+twice, differing in one parameter, with both ids side by side on screen. One
+rendered, one did not.
+
+When an engine fails without saying anything, stop reading indirect signals and
+build the two-sample test. An observation that would look identical whether the
+thing works or not is not evidence, however much of it there is.
+
 ## Development-only affordances
 
 Walking a progression curve by playing it is a waste of an afternoon. The project
