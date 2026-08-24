@@ -1,62 +1,79 @@
 --!nocheck
 --[[
-	Garde-fou sur les donnees d'equilibrage reelles : une erreur de config doit casser
-	la CI, pas la production.
+	Guard rail over the real balancing data: a configuration mistake must break the
+	build, not production.
 ]]
 
 local Config = require(Config)
-local ZoneLadder = require(Domain.Zones.ZoneLadder)
-local TrackLayout = require(Domain.Zones.TrackLayout)
+local TierLadder = require(Domain.Run.TierLadder)
+local SkyLayout = require(Domain.Run.SkyLayout)
 local UpgradeCatalog = require(Domain.Economy.UpgradeCatalog)
-local RebirthPolicy = require(Domain.Rebirth.RebirthPolicy)
+local DragonCatalog = require(Domain.Hatchery.DragonCatalog)
+local RarityTable = require(Domain.Hatchery.RarityTable)
+local MoltPolicy = require(Domain.Molt.MoltPolicy)
+local ProductCatalog = require(Domain.Monetization.ProductCatalog)
 
-local KNOWN_EFFECTS =
-	{ speedMultiplier = true, bananaMultiplier = true, jumpPower = true, wallGrip = true, airDash = true }
+local KNOWN_EFFECTS = {
+	speedMultiplier = true,
+	goldMultiplier = true,
+	agility = true,
+	magnet = true,
+	feathers = true,
+	hatch = true,
+}
 
-describe("Config.Zones", function()
-	it("construit une echelle valide", function()
+describe("Config.Tiers", function()
+	it("builds a valid ladder", function()
 		expect(function()
-			ZoneLadder.new(Config.Zones)
+			TierLadder.new(Config.Tiers)
 		end).never.toThrow()
 	end)
 
-	it("numerote les zones de 1 a N sans trou", function()
-		for index, zone in Config.Zones do
-			expect(zone.id).toBe(index)
+	it("numbers the tiers from 1 to N without a gap", function()
+		for index, tier in Config.Tiers do
+			expect(tier.id).toBe(index)
 		end
 	end)
 
-	it("fait croitre les recompenses avec la difficulte", function()
-		for index = 2, #Config.Zones do
-			local previous, current = Config.Zones[index - 1], Config.Zones[index]
-			expect(current.stepMultiplier).toBeGreaterThan(previous.stepMultiplier)
-			expect(current.bananaMultiplier).toBeGreaterThan(previous.bananaMultiplier)
+	it("opens the first tier to a brand new dragon", function()
+		expect(Config.Tiers[1].requiredSpeed).toBe(0)
+	end)
+
+	it("keeps every guaranteed rarity within its own cap", function()
+		local rarities = RarityTable.new(Config.Monetization.rarities)
+		for _, tier in Config.Tiers do
+			if tier.minRarity then
+				expect(rarities:indexOf(tier.minRarity)).toBeLessThanOrEqual(rarities:indexOf(tier.maxRarity))
+			end
+			expect(rarities:indexOf(tier.maxRarity)).never.toBeNil()
 		end
 	end)
 
-	it("donne un nom, une couleur et une longueur a chaque zone", function()
-		for _, zone in Config.Zones do
-			expect(zone.name).toBeA("string")
-			expect(zone.length).toBeGreaterThan(100)
-			expect(#zone.color).toBe(3)
+	it("makes climbing one more tier clearly worth it", function()
+		for index = 2, #Config.Tiers do
+			local previous, current = Config.Tiers[index - 1], Config.Tiers[index]
+			local ratio = (current.eggs * current.goldMultiplier) / (previous.eggs * previous.goldMultiplier)
+			-- Sous 1,8 le joueur n'hesite pas ; au-dessus de 6 il n'encaisse jamais.
+			expect(ratio).toBeGreaterThan(1.8)
+			expect(ratio).toBeLessThan(6)
 		end
 	end)
 end)
 
 describe("Config.Upgrades", function()
-	it("construit un catalogue valide", function()
+	it("builds a valid catalog", function()
 		expect(function()
 			UpgradeCatalog.new(Config.Upgrades)
 		end).never.toThrow()
 	end)
 
-	it("n'utilise que des familles d'effet connues du domaine", function()
+	it("only uses effect families the domain knows", function()
 		for _, definition in Config.Upgrades do
 			expect(KNOWN_EFFECTS[definition.effect]).toBe(true)
 		end
 	end)
 
-	it("garde des couts croissants et finis", function()
+	it("keeps costs rising and finite", function()
 		local catalog = UpgradeCatalog.new(Config.Upgrades)
 		for _, id in catalog:ids() do
 			expect(catalog:costFor(id, 0)).toBeGreaterThan(0)
@@ -64,10 +81,45 @@ describe("Config.Upgrades", function()
 			expect(catalog:costFor(id, 60)).toBeLessThan(math.huge)
 		end
 	end)
+
+	it("sells agility, without which speed cannot be steered", function()
+		local catalog = UpgradeCatalog.new(Config.Upgrades)
+		expect(catalog:get("agility")).never.toBeNil()
+	end)
 end)
 
-describe("Config.Passes", function()
-	it("expose des identifiants uniques et un assetId numerique", function()
+describe("Config.Dragons", function()
+	it("builds a valid collection", function()
+		expect(function()
+			DragonCatalog.new(Config.Dragons)
+		end).never.toThrow()
+	end)
+
+	it("offers at least one species per rarity of the table", function()
+		local catalog = DragonCatalog.new(Config.Dragons)
+		for _, entry in Config.Monetization.rarities do
+			expect(#catalog:byRarity(entry.rarity)).toBeGreaterThan(0)
+		end
+	end)
+
+	it("keeps every bonus modest enough to stay a bonus", function()
+		for _, dragon in Config.Dragons do
+			for _, amount in dragon.bonus do
+				expect(amount).toBeGreaterThan(0)
+				expect(amount).toBeLessThanOrEqual(1)
+			end
+		end
+	end)
+end)
+
+describe("Config.Products and Passes", function()
+	it("builds a valid product catalog", function()
+		expect(function()
+			ProductCatalog.new(Config.Products)
+		end).never.toThrow()
+	end)
+
+	it("exposes unique pass ids with a numeric assetId", function()
 		local seen = {}
 		for _, pass in Config.Passes do
 			expect(seen[pass.id]).toBeNil()
@@ -76,52 +128,52 @@ describe("Config.Passes", function()
 		end
 	end)
 
-	it("n'accorde que des bonus plats connus", function()
+	it("only grants flat bonuses the domain knows", function()
 		for _, pass in Config.Passes do
 			for key in pass.effect.flat or {} do
 				expect(KNOWN_EFFECTS[key]).toBe(true)
 			end
 		end
 	end)
+
+	it("points every offer at a product that exists", function()
+		local catalog = ProductCatalog.new(Config.Products)
+		for _, offer in Config.Monetization.offers do
+			expect(catalog:get(offer.productKey)).never.toBeNil()
+		end
+	end)
 end)
 
 describe("Config.Balance", function()
-	it("laisse la vitesse sous le seuil d'instabilite physique", function()
+	it("keeps flight velocity under the physics ceiling", function()
 		local curve = Config.Balance.speedCurve
-		expect(curve.baseWalkSpeed + curve.maxBonusWalkSpeed).toBeLessThanOrEqual(250)
+		expect(curve.baseVelocity + curve.maxBonusVelocity).toBeLessThanOrEqual(300)
 	end)
 
-	it("laisse une marge anti-triche superieure a 1", function()
-		expect(Config.Balance.movement.toleranceFactor).toBeGreaterThan(1)
-		expect(Config.Balance.movement.sampleInterval).toBeGreaterThan(0)
+	it("leaves an anti-cheat margin above 1", function()
+		expect(Config.Balance.flight.toleranceFactor).toBeGreaterThan(1)
+		expect(Config.Balance.flight.sampleInterval).toBeGreaterThan(0)
 	end)
 
-	it("propose une premiere renaissance atteignable", function()
-		local policy = RebirthPolicy.new(Config.Balance.rebirth)
-		expect(policy:requirementFor(0)).toBeGreaterThan(0)
-		expect(policy:requirementFor(1)).toBeGreaterThan(policy:requirementFor(0))
+	-- Muer doit vouloir dire "j'ai fini le ciel", pas "j'ai un peu joue".
+	it("asks for the last tier before the first molt", function()
+		local policy = MoltPolicy.new(Config.Balance.molt)
+		expect(policy:requirementFor(0)).toBeGreaterThanOrEqual(Config.Tiers[#Config.Tiers].requiredSpeed)
 		expect(policy:multiplierFor(1)).toBeGreaterThan(1)
 	end)
 
-	it("place la piste au-dela du hub", function()
-		local layout = TrackLayout.new(Config.Balance.layout, Config.Zones)
-		expect(Config.Balance.layout.trackStartX).toBeGreaterThanOrEqual(Config.World.hub.size / 2)
-		expect(layout:totalLength()).toBeGreaterThan(1000)
-		expect(layout:zoneAt(0)).toBeNil()
-		expect(layout:zoneAt(Config.Balance.layout.trackStartX)).toBe(1)
+	it("lays the sky out beyond the Nest", function()
+		local layout = SkyLayout.new(Config.Balance.sky, Config.Tiers)
+		expect(Config.Balance.sky.launchX).toBeGreaterThan(Config.World.nest.size / 2)
+		expect(layout:totalLength()).toBeGreaterThan(4000)
+		expect(layout:tierAt(0)).toBeNil()
+		expect(layout:tierAt(Config.Balance.sky.launchX)).toBe(1)
 	end)
 
-	it("relie le hub a la piste par une passerelle marchable", function()
-		-- Regression : le hub s'arretait a 130 et la piste demarrait a 200, soit
-		-- 70 studs de vide qu'aucun saut ne franchit. Le generateur pose desormais
-		-- une passerelle, mais elle doit rester d'une largeur credible.
-		local gap = Config.Balance.layout.trackStartX - Config.World.hub.size / 2
-		expect(gap).toBeGreaterThanOrEqual(0)
-		expect(Config.World.approach.width).toBeGreaterThan(20)
-		expect(Config.World.approach.width).toBeLessThanOrEqual(Config.Balance.layout.trackWidth)
-	end)
-
-	it("garde une piste plus large que la passerelle qui y mene", function()
-		expect(Config.Balance.layout.trackWidth).toBeGreaterThanOrEqual(Config.World.approach.width)
+	-- L'Autel doit rester atteignable : hors du couloir, mais pas hors de portee.
+	it("keeps the altar detour off the line yet reachable", function()
+		local sky = Config.Balance.sky
+		expect(sky.altarOffset).toBeGreaterThan(sky.corridorWidth / 2)
+		expect(sky.altarOffset).toBeLessThan(sky.corridorWidth * 1.5)
 	end)
 end)

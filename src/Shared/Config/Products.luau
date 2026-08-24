@@ -1,17 +1,16 @@
 --!strict
 --[[
-	Products — produits developpeur (achats repetables en Robux).
+	Products — developer products (repeatable Robux purchases).
 
-	Ce sont eux qui portent l'essentiel du revenu d'un jeu de type "+1" : le joueur
-	revient acheter des bananes et des boosts a chaque palier difficile.
+	These carry most of the revenue of a game like this: the player comes back to buy
+	at every hard step. Three of them are specific to a push-your-luck loop and sell
+	themselves because they are bought in the moment of regret — the feather, the
+	insurance and the instant hatch.
 
-	IMPORTANT : `productId = 0` = produit non configure -> invisible et inachetable.
-	Cree les produits sur create.roblox.com puis colle les identifiants ici. Les prix
-	`robux` ne sont qu'un affichage : le vrai prix est celui defini sur le site.
-
-	Grille de prix volontairement classique (99 / 199 / 499 / 999) : c'est celle a
-	laquelle les joueurs Roblox sont habitues, avec une offre "meilleur rapport"
-	mise en avant pour orienter vers le panier moyen le plus rentable.
+	IMPORTANT: `productId = 0` means "not created on the Roblox site yet" — the product
+	is then invisible and unbuyable, so the game ships without ids and they can be
+	filled in later without touching any code. The `robux` field is display only; the
+	real price is the one set on the site.
 ]]
 
 local ProductCatalog = require(script.Parent.Parent.Domain.Monetization.ProductCatalog)
@@ -20,89 +19,111 @@ type Definition = ProductCatalog.Definition
 
 local products: { Definition } = {
 	{
-		id = "bananaSmall",
+		id = "goldSmall",
 		productId = 0,
-		name = "Poignee de bananes",
-		description = "2 500 bananes tout de suite.",
-		icon = "🍌",
+		name = "Pouch of Gold",
+		description = "2 500 gold, right now.",
+		icon = "🪙",
 		robux = 99,
-		grant = { bananas = 2500 },
+		grant = { gold = 2500 },
 	},
 	{
-		id = "bananaMedium",
+		id = "goldMedium",
 		productId = 0,
-		name = "Regime de bananes",
-		description = "8 000 bananes pour passer le palier.",
-		icon = "🍌",
+		name = "Chest of Gold",
+		description = "8 000 gold to clear the next barrier.",
+		icon = "💰",
 		robux = 199,
-		badge = "populaire",
-		grant = { bananas = 8000 },
+		badge = "popular",
+		grant = { gold = 8000 },
 	},
 	{
-		id = "bananaLarge",
+		id = "goldLarge",
 		productId = 0,
-		name = "Cageot de bananes",
-		description = "30 000 bananes.",
-		icon = "📦",
+		name = "Hoard of Gold",
+		description = "30 000 gold.",
+		icon = "🏆",
 		robux = 499,
-		grant = { bananas = 30000 },
+		grant = { gold = 30000 },
 	},
 	{
-		id = "bananaHuge",
+		id = "goldHuge",
 		productId = 0,
-		name = "Camion de bananes",
-		description = "100 000 bananes : le meilleur rapport.",
-		icon = "🚚",
+		name = "Dragon's Hoard",
+		description = "100 000 gold — the best value.",
+		icon = "👑",
 		robux = 999,
-		badge = "meilleure offre",
-		grant = { bananas = 100000 },
+		badge = "best value",
+		grant = { gold = 100000 },
 	},
 	{
-		id = "speedRush",
+		id = "swiftRush",
 		productId = 0,
-		name = "Ruee du singe",
-		description = "x2 vitesse pendant 20 minutes.",
+		name = "Swift Rush",
+		description = "x2 speed for 20 minutes.",
 		icon = "⚡",
 		robux = 149,
-		grant = { boost = { id = "speedRush", duration = 1200 } },
+		grant = { boost = { id = "swiftRush", duration = 1200 } },
 	},
 	{
-		id = "bananaFever",
+		id = "goldFever",
 		productId = 0,
-		name = "Fievre de la banane",
-		description = "x3 bananes pendant 20 minutes.",
+		name = "Gold Fever",
+		description = "x3 gold for 20 minutes.",
 		icon = "🔥",
 		robux = 149,
-		grant = { boost = { id = "bananaFever", duration = 1200 } },
+		grant = { boost = { id = "goldFever", duration = 1200 } },
 	},
 	{
-		id = "serverParty",
+		id = "skyFestival",
 		productId = 0,
-		name = "Fete du serveur",
-		description = "x1.5 vitesse et bananes pour TOUT le serveur, 10 minutes.",
+		name = "Sky Festival",
+		description = "x1.5 speed and gold for EVERY dragon on the server, 10 minutes.",
 		icon = "🎉",
 		robux = 299,
-		badge = "tout le serveur",
-		grant = { serverBoost = { id = "serverParty", duration = 600 } },
+		badge = "whole server",
+		grant = { serverBoost = { id = "skyFestival", duration = 600 } },
 	},
 	{
-		id = "instantRebirth",
+		id = "instantHatch",
 		productId = 0,
-		name = "Renaissance immediate",
-		description = "Renais tout de suite et garde tes ameliorations.",
-		icon = "🔁",
+		name = "Instant Hatch",
+		description = "Every egg in the Nest hatches at once.",
+		icon = "🥚",
+		robux = 149,
+		grant = { instantHatch = true },
+	},
+	{
+		id = "flightInsurance",
+		productId = 0,
+		name = "Flight Insurance",
+		description = "Hit a wall and keep half your pouch — for your next three flights.",
+		icon = "🛡️",
+		robux = 199,
+		grant = { insurance = { flights = 3 } },
+	},
+	{
+		id = "instantMolt",
+		productId = 0,
+		name = "Instant Molt",
+		description = "Molt now, and keep your upgrades.",
+		icon = "🐉",
 		robux = 399,
-		grant = { rebirths = 1 },
+		grant = { molts = 1 },
 	},
 	{
 		id = "starterPack",
 		productId = 0,
-		name = "Pack du petit singe",
-		description = "5 000 bananes + 30 minutes de x2 vitesse.",
-		icon = "🐒",
+		name = "Hatchling Pack",
+		description = "5 000 gold, a rare egg and 30 minutes of x2 speed.",
+		icon = "🎁",
 		robux = 199,
-		badge = "offre de bienvenue",
-		grant = { bananas = 5000, boost = { id = "speedRush", duration = 1800 } },
+		badge = "welcome offer",
+		grant = {
+			gold = 5000,
+			eggs = { rarity = "rare", amount = 1 },
+			boost = { id = "swiftRush", duration = 1800 },
+		},
 	},
 }
 

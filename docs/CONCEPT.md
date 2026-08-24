@@ -84,18 +84,31 @@ Le contact est fatal : la poche est perdue, retour au Nid, relance immédiate.
 
 Ambiance *fantasy lumineuse* : îles verdoyantes, ruines dorées, brume et aurores.
 
-| # | Palier | Décor | Danger dominant | Œufs | Rareté max |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Les Prairies Suspendues | prairies, brume basse | parois fixes espacées | 1 | commun |
-| 2 | Les Ruines Dorées | arches, colonnes | passages étroits | 3 | commun |
-| 3 | La Cascade Renversée | eau qui monte | colonnes d'eau mouvantes | 6 | rare |
-| 4 | Le Bosquet de Nuages | canopée nuageuse | murs mobiles lents | 12 | rare |
-| 5 | Les Arches d'Ambre | ambre, lumière chaude | herses | 25 | rare garanti |
-| 6 | Le Sanctuaire du Vent | temples ouverts | anneaux rotatifs | 45 | épique |
-| 7 | La Mer de Brume | visibilité réduite | murs surgissants | 80 | épique |
-| 8 | Les Aiguilles de Cristal | pics translucides | couloirs serrés | 140 | épique |
-| 9 | L'Aurore | ciel polaire | murs mobiles rapides | 240 | épique garanti |
-| 10 | La Couronne | vide étoilé | tout combiné | 400 | légendaire garanti |
+| # | Tier | Seuil ⚡ | Décor | Danger dominant | Œufs | Rareté max |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Les Prairies Suspendues | 0 | prairies, brume basse | parois fixes espacées | 1 | commun |
+| 2 | Les Ruines Dorées | 150 | arches, colonnes | passages étroits | 3 | commun |
+| 3 | La Cascade Renversée | 450 | eau qui monte | colonnes d'eau mouvantes | 6 | rare |
+| 4 | Le Bosquet de Nuages | 1 200 | canopée nuageuse | murs mobiles lents | 12 | rare |
+| 5 | Les Arches d'Ambre | 3 000 | ambre, lumière chaude | herses | 25 | rare garanti |
+| 6 | Le Sanctuaire du Vent | 7 500 | temples ouverts | anneaux rotatifs | 45 | épique |
+| 7 | La Mer de Brume | 18 000 | visibilité réduite | murs surgissants | 80 | épique |
+| 8 | Les Aiguilles de Cristal | 42 000 | pics translucides | couloirs serrés | 140 | épique |
+| 9 | L'Aurore | 95 000 | ciel polaire | murs mobiles rapides | 240 | épique garanti |
+| 10 | La Couronne | 200 000 | vide étoilé | tout combiné | 400 | légendaire garanti |
+
+### Pourquoi un seuil de vitesse
+
+Sans lui, le jeu se casse : un joueur tout neuf vole **lentement**, donc il esquive
+**facilement**. Rien ne l'empêcherait de traverser tranquillement les dix tiers dès sa
+première partie et d'empocher 400 œufs légendaires.
+
+L'entrée de chaque tier est donc une **barrière de vent** : seul un dragon assez rapide
+la transperce. La vitesse redevient la vraie progression, et les murs restent l'épreuve
+d'adresse. Les deux ne se font pas concurrence, ils se complètent.
+
+*Piste v2 : remplacer le seuil par une jauge de souffle limitant la distance par vol.
+Plus élégant narrativement, mais c'est un système de plus — hors v1.*
 
 L'or de la poche suit la même montée : multiplicateur de **x1 au palier 1** à **x10 au
 palier 10**.

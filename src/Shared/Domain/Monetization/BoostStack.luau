@@ -1,19 +1,19 @@
 --!strict
 --[[
-	BoostStack — boosts temporaires (x2 vitesse pendant 20 min, fete du serveur...).
+	BoostStack — timed boosts (x2 speed for 20 minutes, server party...).
 
-	Deux proprietes importantes pour le modele economique :
-	  1. les boosts sont PERSISTES dans le profil : un joueur qui achete puis se
-	     deconnecte ne perd pas ce qu'il a paye (confiance = rachat) ;
-	  2. les achats successifs du meme boost s'ADDITIONNENT en duree, avec un
-	     plafond, ce qui encourage l'achat repete sans casser l'equilibrage.
+	Two properties matter to the business model:
+	  1. boosts are PERSISTED in the profile, so a player who buys then disconnects
+	     does not lose what they paid for — trust is what makes them buy again;
+	  2. buying the same boost again ADDS to its duration, up to a cap, which rewards
+	     repeat purchases without breaking the balance.
 ]]
 
 export type Definition = {
 	name: string?,
 	icon: string?,
 	speed: number?,
-	bananas: number?,
+	gold: number?,
 }
 
 export type Tuning = {
@@ -27,7 +27,7 @@ export type ActiveBoost = {
 	icon: string?,
 	remaining: number,
 	speed: number,
-	bananas: number,
+	gold: number,
 }
 
 local BoostStack = {}
@@ -58,7 +58,7 @@ function BoostStack.isActive(self: BoostStack, profile: any, boostId: string, no
 	return self:remainingFor(profile, boostId, now) > 0
 end
 
---[[ Ajoute du temps a un boost. Renvoie false si le boost n'existe pas. ]]
+--[[ Adds time to a boost. Returns false when the boost does not exist. ]]
 function BoostStack.grant(
 	self: BoostStack,
 	profile: any,
@@ -76,7 +76,7 @@ function BoostStack.grant(
 	return true
 end
 
---[[ Retire du profil les boosts arrives a expiration (garde la sauvegarde propre). ]]
+--[[ Drops expired boosts from the profile so the save stays small. ]]
 function BoostStack.prune(_self: BoostStack, profile: any, now: number)
 	for boostId, expiresAt in profile.boosts do
 		if expiresAt <= now then
@@ -97,7 +97,7 @@ function BoostStack.activeFor(self: BoostStack, profile: any, now: number): { Ac
 				icon = definition.icon,
 				remaining = expiresAt - now,
 				speed = definition.speed or 1,
-				bananas = definition.bananas or 1,
+				gold = definition.gold or 1,
 			})
 		end
 	end
@@ -109,20 +109,20 @@ function BoostStack.activeFor(self: BoostStack, profile: any, now: number): { Ac
 	return active
 end
 
---[[ Multiplicateurs cumules des boosts actifs (multiplicatifs entre eux). ]]
+--[[ Combined multipliers of every active boost (they multiply with each other). ]]
 function BoostStack.multipliersFor(
 	self: BoostStack,
 	profile: any,
 	now: number
-): { speed: number, bananas: number }
-	local speed, bananas = 1, 1
+): { speed: number, gold: number }
+	local speed, gold = 1, 1
 
 	for _, boost in self:activeFor(profile, now) do
 		speed *= boost.speed
-		bananas *= boost.bananas
+		gold *= boost.gold
 	end
 
-	return { speed = speed, bananas = bananas }
+	return { speed = speed, gold = gold }
 end
 
 return BoostStack

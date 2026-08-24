@@ -1,36 +1,41 @@
 --!strict
 --[[
-	Grants — application d'une recompense declarative a un profil.
+	Grants — applies a declarative reward to a profile.
 
-	Une recompense est une simple table de donnees, partagee par TOUTES les sources :
-	produit achete, recompense quotidienne, coffre, code promo, offre. Ajouter une
-	source de revenus ne demande donc aucune nouvelle logique.
+	A reward is a plain data table shared by EVERY source: purchased product, daily
+	reward, chest, promo code, limited offer. Adding a revenue source therefore needs
+	no new logic at all.
 
-		{ bananas = 5000 }
-		{ boost = { id = "speedRush", duration = 1200 } }
-		{ rebirths = 1 }
+		{ gold = 5000 }
+		{ eggs = { rarity = "rare", amount = 3 } }
+		{ boost = { id = "swiftRush", duration = 1200 } }
+		{ molts = 1 }
 ]]
 
 export type Grant = {
-	bananas: number?,
+	gold: number?,
 	speed: number?,
+	eggs: { rarity: string, amount: number }?,
 	boost: { id: string, duration: number }?,
-	rebirths: number?,
+	molts: number?,
 }
 
 export type Context = {
 	profile: any,
 	boosts: any?,
-	rebirthPolicy: any?,
+	moltPolicy: any?,
 	now: number,
 }
 
 export type Summary = {
-	bananas: number?,
+	gold: number?,
 	speed: number?,
+	eggs: { rarity: string, amount: number }?,
 	boost: { id: string, duration: number }?,
-	rebirths: number?,
+	molts: number?,
 }
+
+local Profile = require(script.Parent.Parent.Profile.Profile)
 
 local Grants = {}
 
@@ -42,11 +47,17 @@ function Grants.apply(grant: Grant?, context: Context): Summary
 
 	local profile = context.profile
 
-	-- Les bananes achetees sont creditees telles quelles : les multiplicateurs
-	-- servent a recompenser le JEU, pas a rendre les achats imprevisibles.
-	if typeof(grant.bananas) == "number" and grant.bananas > 0 then
-		profile.bananas += grant.bananas
-		summary.bananas = grant.bananas
+	-- Purchased gold is credited as-is: multipliers reward PLAYING, they must not
+	-- make a purchase unpredictable.
+	if typeof(grant.gold) == "number" and grant.gold > 0 then
+		profile.gold += grant.gold
+		profile.totals.goldEarned += grant.gold
+		summary.gold = grant.gold
+	end
+
+	if typeof(grant.eggs) == "table" and typeof(grant.eggs.rarity) == "string" then
+		Profile.addEggs(profile, grant.eggs.rarity, grant.eggs.amount or 0)
+		summary.eggs = grant.eggs
 	end
 
 	if typeof(grant.speed) == "number" and grant.speed > 0 then
@@ -60,15 +71,15 @@ function Grants.apply(grant: Grant?, context: Context): Summary
 		end
 	end
 
-	-- Renaissance achetee : elle ignore le seuil et, contrairement a la renaissance
-	-- gratuite, conserve les ameliorations (c'est la valeur percue du produit).
-	if typeof(grant.rebirths) == "number" and grant.rebirths > 0 then
-		local count = math.floor(grant.rebirths)
-		profile.rebirths += count
-		profile.totals.rebirths += count
+	-- A purchased molt skips the speed requirement and, unlike the free one, keeps
+	-- the upgrades: that is exactly what the player is paying for.
+	if typeof(grant.molts) == "number" and grant.molts > 0 then
+		local count = math.floor(grant.molts)
+		profile.molts += count
+		profile.totals.molts += count
 		profile.speed = 0
-		profile.highestZone = 1
-		summary.rebirths = count
+		profile.deepestTier = 0
+		summary.molts = count
 	end
 
 	return summary

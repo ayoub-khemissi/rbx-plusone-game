@@ -1,9 +1,10 @@
 --!strict
 --[[
-	Purchase — regles d'achat d'une amelioration (fonctions pures sur le profil).
+	Purchase — upgrade buying rules, as pure functions over the profile.
 
-	`evaluate` ne modifie rien et sert aussi bien au serveur (validation) qu'au client
-	(griser un bouton). `apply` n'engage la depense que si `evaluate` accepte.
+	`evaluate` changes nothing and serves both the server (validation) and the client
+	(greying out a button). `apply` only spends when `evaluate` agrees, so the two can
+	never drift apart.
 ]]
 
 local Result = require(script.Parent.Parent.Support.Result)
@@ -17,19 +18,19 @@ local Purchase = {}
 function Purchase.evaluate(catalog: any, profile: Profile, upgradeId: string): Result
 	local definition = catalog:get(upgradeId)
 	if not definition then
-		return Result.err("UNKNOWN_UPGRADE", `Amelioration inconnue : {tostring(upgradeId)}`)
+		return Result.err("UNKNOWN_UPGRADE", `Unknown upgrade: {tostring(upgradeId)}`)
 	end
 
 	local level = Profile.levelOf(profile, upgradeId)
 	if catalog:isMaxed(upgradeId, level) then
-		return Result.err("MAX_LEVEL", "Niveau maximal atteint", { level = level })
+		return Result.err("MAX_LEVEL", "Already at maximum level", { level = level })
 	end
 
 	local cost = catalog:costFor(upgradeId, level)
-	if profile.bananas < cost then
-		return Result.err("INSUFFICIENT_FUNDS", "Pas assez de bananes", {
+	if profile.gold < cost then
+		return Result.err("INSUFFICIENT_FUNDS", "Not enough gold", {
 			cost = cost,
-			missing = cost - profile.bananas,
+			missing = cost - profile.gold,
 		})
 	end
 
@@ -43,7 +44,7 @@ function Purchase.apply(catalog: any, profile: Profile, upgradeId: string): Resu
 	end
 
 	local cost = evaluation.value.cost
-	profile.bananas -= cost
+	profile.gold -= cost
 	profile.upgrades[upgradeId] = evaluation.value.nextLevel
 
 	return Result.ok({
@@ -53,7 +54,7 @@ function Purchase.apply(catalog: any, profile: Profile, upgradeId: string): Resu
 	})
 end
 
---[[ Simule un achat en lot sans toucher au profil : combien de niveaux sont finançables. ]]
+--[[ Simulates a bulk purchase without touching the profile: how many levels are affordable. ]]
 function Purchase.planBulk(catalog: any, profile: Profile, upgradeId: string, maxLevels: number)
 	local plan = { affordableLevels = 0, totalCost = 0, nextCost = nil :: number? }
 	if not catalog:get(upgradeId) then
@@ -61,7 +62,7 @@ function Purchase.planBulk(catalog: any, profile: Profile, upgradeId: string, ma
 	end
 
 	local level = Profile.levelOf(profile, upgradeId)
-	local budget = profile.bananas
+	local budget = profile.gold
 
 	for _ = 1, math.max(maxLevels, 0) do
 		if catalog:isMaxed(upgradeId, level) then

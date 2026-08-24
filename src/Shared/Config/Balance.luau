@@ -1,65 +1,72 @@
 --!strict
 --[[
-	Balance — tous les nombres d'equilibrage du jeu, au meme endroit.
+	Balance — every tuning number of the game, in one place.
 
-	Regle du projet : aucune constante de gameplay ne doit apparaitre ailleurs que
-	dans Config/. Le domaine recoit ces valeurs par injection.
+	Project rule: no gameplay constant may live outside Config/. The domain receives
+	these values by injection, which is what makes rebalancing a data change rather
+	than a code change.
 ]]
 
 return table.freeze({
-	-- Courbe vitesse accumulee -> vitesse de deplacement reelle
+	-- Accumulated speed -> actual flight velocity
 	speedCurve = table.freeze({
-		baseWalkSpeed = 16,
-		maxBonusWalkSpeed = 234, -- plafond a 250 studs/s : au-dela la physique decroche
-		softness = 1200,
-		baseJumpPower = 50,
-		jumpPowerPerLevel = 3,
-		maxJumpPower = 160,
+		baseVelocity = 70,
+		maxBonusVelocity = 230, -- ceiling at 300 studs/s: past that a wall can be crossed between two frames
+		softness = 1500,
+		baseAgility = 1,
+		agilityPerLevel = 0.1,
+		maxAgility = 4,
 	}),
 
-	-- Mesure du deplacement cote serveur (anti-triche)
-	movement = table.freeze({
-		studsPerStep = 4,
-		deadzone = 0.15,
-		toleranceFactor = 1.4, -- marge au-dessus de la vitesse theorique (lag, pentes)
-		minimumSpeedAllowance = 16,
-		sampleInterval = 0.2, -- periode d'echantillonnage serveur, en secondes
+	-- Server-side displacement measurement (anti-cheat)
+	flight = table.freeze({
+		studsPerStep = 8,
+		deadzone = 0.2,
+		toleranceFactor = 1.4, -- headroom over theoretical velocity (lag, dives)
+		minimumSpeedAllowance = 70,
+		sampleInterval = 0.2, -- server sampling period, in seconds
 	}),
 
-	-- Conversion des pas en ressources
+	-- Steps to resources
 	progression = table.freeze({
 		speedPerStep = 1,
-		bananasPerStep = 0.35,
+		goldPerStep = 0.6,
 	}),
 
-	rebirth = table.freeze({
-		baseRequirement = 2500,
-		requirementGrowth = 2.35,
-		multiplierPerRebirth = 0.4,
+	-- The long loop. The requirement matches the last tier: molting is what you do
+	-- once the sky has nothing left to show you.
+	molt = table.freeze({
+		baseRequirement = 200000,
+		requirementGrowth = 2.4,
+		multiplierPerMolt = 0.4,
 		resetsUpgrades = true,
-		keptBananaRatio = 0,
+		keptGoldRatio = 0,
 	}),
 
-	-- Geometrie de la piste (le hub occupe la zone centrale autour de l'origine)
-	layout = table.freeze({
-		trackStartX = 200,
-		trackWidth = 64,
-		groundY = 0,
-		spawnInset = 28,
+	-- Sky geometry (the Nest sits before the first tier, around the origin)
+	sky = table.freeze({
+		launchX = 240,
+		corridorWidth = 140,
+		corridorHeight = 100,
+		baseAltitude = 180,
+		altitudeStep = 110,
+		altarOffset = 95, -- lateral detour needed to bank: banking must cost something
+		ringSpacing = 55,
+		ringWeave = 32,
+	}),
+
+	run = table.freeze({
+		ringValue = 12, -- raw gold per ring, before multipliers
+		insuranceRatio = 0.5, -- share of the pouch rescued by the paid insurance
+		respawnDelay = 0.6,
+		perchInterval = 5, -- how often perched incubation is credited, in seconds
 	}),
 
 	persistence = table.freeze({
-		dataStoreName = "SingeRapide_Profils_v1",
-		leaderboardStoreName = "SingeRapide_Classement_v1",
+		dataStoreName = "SkyDragons_Profiles_v1",
+		leaderboardStoreName = "SkyDragons_Leaderboard_v1",
 		autosaveInterval = 90,
 		maxRetries = 4,
 		retryBackoff = 2,
-	}),
-
-	session = table.freeze({
-		bananaCollectAmount = 25,
-		bananaRespawnDelay = 18,
-		obstacleStunDuration = 1.5,
-		obstacleSpeedPenalty = 0.45, -- vitesse conservee pendant l'etourdissement
 	}),
 })

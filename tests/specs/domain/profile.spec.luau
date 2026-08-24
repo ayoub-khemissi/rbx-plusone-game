@@ -2,108 +2,105 @@
 local Profile = require(Domain.Profile.Profile)
 
 describe("Profile", function()
-	it("cree un profil neuf coherent", function()
+	it("creates a coherent new profile", function()
 		local profile = Profile.create()
-		expect(profile.version).toBe(Profile.SCHEMA_VERSION)
+		expect(profile.version).toBe(3)
 		expect(profile.speed).toBe(0)
-		expect(profile.bananas).toBe(0)
-		expect(profile.rebirths).toBe(0)
-		expect(profile.highestZone).toBe(1)
+		expect(profile.gold).toBe(0)
+		expect(profile.molts).toBe(0)
+		expect(profile.deepestTier).toBe(0)
 		expect(profile.upgrades).toEqual({})
-		expect(profile.totals.steps).toBe(0)
+		expect(profile.eggs).toEqual({})
+		expect(profile.hatchery).toEqual({})
+		expect(profile.dragons).toEqual({})
 	end)
 
-	it("lit un niveau d'amelioration absent comme zero", function()
+	it("reads a missing upgrade level as zero", function()
 		local profile = Profile.create()
 		expect(Profile.levelOf(profile, "speedGain")).toBe(0)
 		profile.upgrades.speedGain = 4
 		expect(Profile.levelOf(profile, "speedGain")).toBe(4)
 	end)
 
-	it("migre une donnee absente vers un profil neuf", function()
+	it("stacks eggs by rarity", function()
+		local profile = Profile.create()
+		Profile.addEggs(profile, "rare", 2)
+		Profile.addEggs(profile, "rare", 3)
+		expect(Profile.eggsOf(profile, "rare")).toBe(5)
+		expect(Profile.eggsOf(profile, "epic")).toBe(0)
+	end)
+
+	it("ignores negative or fractional egg counts", function()
+		local profile = Profile.create()
+		Profile.addEggs(profile, "rare", -5)
+		Profile.addEggs(profile, "rare", 2.7)
+		expect(Profile.eggsOf(profile, "rare")).toBe(2)
+	end)
+
+	it("migrates missing data into a fresh profile", function()
 		local profile = Profile.migrate(nil)
-		expect(profile.version).toBe(Profile.SCHEMA_VERSION)
+		expect(profile.version).toBe(3)
 		expect(profile.speed).toBe(0)
 	end)
 
-	it("complete les champs manquants d'une sauvegarde ancienne", function()
-		local profile = Profile.migrate({ speed = 1200, bananas = 40 })
+	it("fills the gaps of a partial save", function()
+		local profile = Profile.migrate({ speed = 1200, gold = 40 })
 		expect(profile.speed).toBe(1200)
-		expect(profile.bananas).toBe(40)
-		expect(profile.rebirths).toBe(0)
-		expect(profile.highestZone).toBe(1)
+		expect(profile.gold).toBe(40)
+		expect(profile.molts).toBe(0)
 		expect(profile.totals.distance).toBe(0)
 	end)
 
-	it("assainit les valeurs corrompues", function()
+	it("sanitises corrupted values", function()
 		local profile = Profile.migrate({
 			speed = -50,
-			bananas = 0 / 0,
-			rebirths = 2.7,
-			highestZone = 0,
-			upgrades = { speedGain = -3, triche = "beaucoup" },
+			gold = 0 / 0,
+			molts = 2.7,
+			deepestTier = -3,
+			upgrades = { speedGain = -3, cheat = "a lot" },
+			dragons = { emberling = 2.9, ghost = "yes" },
 		})
 		expect(profile.speed).toBe(0)
-		expect(profile.bananas).toBe(0)
-		expect(profile.rebirths).toBe(2)
-		expect(profile.highestZone).toBe(1)
+		expect(profile.gold).toBe(0)
+		expect(profile.molts).toBe(2)
+		expect(profile.deepestTier).toBe(0)
 		expect(profile.upgrades.speedGain).toBe(0)
-		expect(profile.upgrades.triche).toBeNil()
+		expect(profile.upgrades.cheat).toBeNil()
+		expect(profile.dragons.emberling).toBe(2)
+		expect(profile.dragons.ghost).toBeNil()
 	end)
 
-	it("ne partage pas les tables entre deux profils neufs", function()
+	it("restores incubating eggs with their ready time", function()
+		local profile = Profile.migrate({
+			eggs = { rare = 4 },
+			hatchery = { { rarity = "rare", readyAt = 1750 }, { broken = true }, "nope" },
+		})
+		expect(Profile.eggsOf(profile, "rare")).toBe(4)
+		expect(#profile.hatchery).toBe(1)
+		expect(profile.hatchery[1].readyAt).toBe(1750)
+	end)
+
+	it("keeps the monetization data untouched across the migration", function()
+		local profile = Profile.migrate({
+			boosts = { swiftRush = 1750, bogus = "yes" },
+			codes = { LAUNCH = true, fake = false },
+			purchases = { count = 3, spentRobux = 597, order = { "r-1", "r-2", 42 } },
+			daily = { streak = 4, lastClaimAt = 990 },
+			timers = { chest = 120 },
+			offers = { seen = { starterPack = 60 }, purchased = { starterPack = true } },
+		})
+		expect(profile.boosts.swiftRush).toBe(1750)
+		expect(profile.boosts.bogus).toBeNil()
+		expect(profile.codes.LAUNCH).toBe(true)
+		expect(profile.purchases.order).toEqual({ "r-1", "r-2" })
+		expect(profile.purchases.ids["r-2"]).toBe(true)
+		expect(profile.daily.streak).toBe(4)
+		expect(profile.offers.purchased.starterPack).toBe(true)
+	end)
+
+	it("does not share tables between two fresh profiles", function()
 		local first, second = Profile.create(), Profile.create()
 		first.upgrades.speedGain = 3
 		expect(second.upgrades.speedGain).toBeNil()
-	end)
-end)
-
-describe("Profile (schema v2 : monetisation)", function()
-	it("initialise les structures de monetisation", function()
-		local profile = Profile.create()
-		expect(profile.version).toBe(2)
-		expect(profile.boosts).toEqual({})
-		expect(profile.codes).toEqual({})
-		expect(profile.timers).toEqual({})
-		expect(profile.purchases.count).toBe(0)
-		expect(profile.purchases.spentRobux).toBe(0)
-		expect(profile.daily.streak).toBe(0)
-		expect(profile.offers.seen).toEqual({})
-	end)
-
-	it("complete un profil v1 sans perdre la progression", function()
-		local profile = Profile.migrate({
-			version = 1,
-			speed = 8000,
-			bananas = 250,
-			upgrades = { speedGain = 7 },
-		})
-		expect(profile.version).toBe(2)
-		expect(profile.speed).toBe(8000)
-		expect(profile.upgrades.speedGain).toBe(7)
-		expect(profile.purchases.order).toEqual({})
-		expect(profile.daily.lastClaimAt).toBe(0)
-	end)
-
-	it("restaure les boosts, achats et codes deja obtenus", function()
-		local profile = Profile.migrate({
-			boosts = { speedRush = 1750, invalide = "oui" },
-			codes = { SINGE2026 = true, faux = false },
-			purchases = { count = 3, spentRobux = 597, order = { "r-1", "r-2", 42 } },
-			daily = { streak = 4, lastClaimAt = 990 },
-			timers = { playtimeChest = 120 },
-			offers = { seen = { starterPack = 60 }, purchased = { starterPack = true } },
-		})
-
-		expect(profile.boosts.speedRush).toBe(1750)
-		expect(profile.boosts.invalide).toBeNil()
-		expect(profile.codes.SINGE2026).toBe(true)
-		expect(profile.codes.faux).toBeNil()
-		expect(profile.purchases.order).toEqual({ "r-1", "r-2" })
-		expect(profile.purchases.ids["r-2"]).toBe(true)
-		expect(profile.purchases.spentRobux).toBe(597)
-		expect(profile.daily.streak).toBe(4)
-		expect(profile.timers.playtimeChest).toBe(120)
-		expect(profile.offers.purchased.starterPack).toBe(true)
 	end)
 end)

@@ -1,46 +1,55 @@
 --!strict
---[[ World — parametres du generateur de map (aucune logique, uniquement des reglages). ]]
+--[[ World — map generation settings. No logic here, only tuning. ]]
 
 return table.freeze({
-	hub = table.freeze({
-		size = 260, -- cote de la plateforme du hub, centree sur l'origine
-		thickness = 6,
-		color = { 118, 96, 74 },
-		spawnHeight = 6,
+	nest = table.freeze({
+		size = 320, -- side of the Nest platform, centred on the origin
+		thickness = 8,
+		altitude = 180, -- the Nest floats at the altitude of the first tier
+		color = { 138, 116, 92 },
+		railHeight = 6,
 	}),
 
-	-- Passerelle reliant le hub a la premiere zone : sans elle, la piste est
-	-- litteralement hors de portee d'un saut.
-	approach = table.freeze({
-		width = 44,
-		railHeight = 3,
+	corridor = table.freeze({
+		markerThickness = 2, -- translucent guides drawing the flight corridor
+		markerSpacing = 120,
+		floorTransparency = 0.85,
 	}),
 
-	track = table.freeze({
-		thickness = 6,
-		wallHeight = 42, -- murs lateraux : support du wall-run
-		wallThickness = 4,
-		wallSegmentLength = 70,
-		wallGapLength = 34,
-		hurdleSpacing = 95, -- espacement des obstacles au sol
-		hurdleHeight = 5,
-		bananaSpacing = 42,
-		bananaHeight = 4.5,
-		platformChance = 0.35, -- proportion de segments recevant une plateforme haute
+	rings = table.freeze({
+		radius = 11,
+		thickness = 2.2,
+		color = { 250, 214, 120 },
+	}),
+
+	walls = table.freeze({
+		thickness = 4,
+		spacing = 110, -- distance between two obstacles along a tier
+		minGap = 34, -- narrowest passage left for the dragon
+		driftSpeed = 6, -- studs per second for drifting walls
+		rotationSpeed = 0.8, -- radians per second for rotating hazards
+		color = { 214, 96, 88 },
+	}),
+
+	altar = table.freeze({
+		radius = 16,
+		thickness = 3,
+		color = { 250, 236, 150 },
+		beaconHeight = 70, -- light column making the detour visible from far away
 	}),
 
 	gate = table.freeze({
-		height = 34,
+		radius = 34,
 		thickness = 3,
-		transparency = 0.45,
+		transparency = 0.5,
 		lockedColor = { 214, 78, 74 },
-		unlockedColor = { 92, 206, 118 },
+		unlockedColor = { 120, 214, 150 },
 	}),
 
-	decor = table.freeze({
-		treesPerZone = 14,
-		trunkHeight = 26,
-		foliageSize = 22,
-		sideOffset = 26, -- distance entre le bord de piste et les arbres
+	islands = table.freeze({
+		perTier = 10,
+		minSize = 40,
+		maxSize = 120,
+		spread = 320, -- how far islands drift from the corridor
 	}),
 })

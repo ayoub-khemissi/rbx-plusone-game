@@ -1,18 +1,19 @@
 --!strict
 --[[
-	Config — agregat de toute la configuration du jeu.
+	Config — the whole configuration of the game, in one aggregate.
 
-	Point d'entree unique : `local Config = require(ReplicatedStorage.Shared.Config)`.
-	Les tables sont gelees pour qu'aucun module ne puisse modifier l'equilibrage
-	a chaud sans passer par ce dossier.
+	Single entry point: `local Config = require(ReplicatedStorage.Shared.Config)`.
+	Every table is frozen so no module can quietly retune the balance at runtime
+	without going through this folder.
 ]]
 
 return table.freeze({
 	Balance = require(script.Balance),
+	Tiers = require(script.Tiers),
 	Upgrades = require(script.Upgrades),
-	Zones = require(script.Zones),
+	Dragons = require(script.Dragons),
 	Passes = require(script.Passes),
-	World = require(script.World),
 	Products = require(script.Products),
 	Monetization = require(script.Monetization),
+	World = require(script.World),
 })

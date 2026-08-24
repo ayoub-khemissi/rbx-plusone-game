@@ -6,8 +6,8 @@ local Profile = require(Domain.Profile.Profile)
 local DEFINITIONS = {
 	{
 		id = "speedGain",
-		name = "Foulee",
-		icon = "👟",
+		name = "Wingbeat",
+		icon = "💨",
 		maxLevel = 2,
 		baseCost = 100,
 		costGrowth = 2,
@@ -23,59 +23,54 @@ describe("Purchase", function()
 		profile = Profile.create()
 	end)
 
-	it("rejette une amelioration inconnue", function()
-		local result = Purchase.evaluate(catalog, profile, "jetpack")
-		expect(result.ok).toBe(false)
-		expect(result.code).toBe("UNKNOWN_UPGRADE")
+	it("rejects an unknown upgrade", function()
+		expect(Purchase.evaluate(catalog, profile, "jetpack").code).toBe("UNKNOWN_UPGRADE")
 	end)
 
-	it("rejette un solde insuffisant", function()
-		profile.bananas = 99
+	it("rejects an insufficient balance", function()
+		profile.gold = 99
 		local result = Purchase.evaluate(catalog, profile, "speedGain")
-		expect(result.ok).toBe(false)
 		expect(result.code).toBe("INSUFFICIENT_FUNDS")
 		expect(result.value.missing).toBe(1)
 	end)
 
-	it("rejette un niveau deja maximal", function()
-		profile.bananas = 1e9
+	it("rejects a maxed out upgrade", function()
+		profile.gold = 1e9
 		profile.upgrades.speedGain = 2
-		local result = Purchase.evaluate(catalog, profile, "speedGain")
-		expect(result.ok).toBe(false)
-		expect(result.code).toBe("MAX_LEVEL")
+		expect(Purchase.evaluate(catalog, profile, "speedGain").code).toBe("MAX_LEVEL")
 	end)
 
-	it("accepte un achat finançable", function()
-		profile.bananas = 100
+	it("accepts an affordable purchase", function()
+		profile.gold = 100
 		local result = Purchase.evaluate(catalog, profile, "speedGain")
 		expect(result.ok).toBe(true)
 		expect(result.value.cost).toBe(100)
 		expect(result.value.nextLevel).toBe(1)
 	end)
 
-	it("applique l'achat en debitant le solde", function()
-		profile.bananas = 350
-		local result = Purchase.apply(catalog, profile, "speedGain")
-		expect(result.ok).toBe(true)
-		expect(profile.bananas).toBe(250)
+	it("spends the gold when applied", function()
+		profile.gold = 350
+		Purchase.apply(catalog, profile, "speedGain")
+		expect(profile.gold).toBe(250)
 		expect(profile.upgrades.speedGain).toBe(1)
 
 		Purchase.apply(catalog, profile, "speedGain")
-		expect(profile.bananas).toBe(50)
+		expect(profile.gold).toBe(50)
 		expect(profile.upgrades.speedGain).toBe(2)
 	end)
 
-	it("ne modifie rien lorsque l'achat est refuse", function()
-		profile.bananas = 10
+	it("changes nothing when the purchase is refused", function()
+		profile.gold = 10
 		Purchase.apply(catalog, profile, "speedGain")
-		expect(profile.bananas).toBe(10)
+		expect(profile.gold).toBe(10)
 		expect(profile.upgrades.speedGain).toBeNil()
 	end)
 
-	it("calcule le cout d'un achat en lot", function()
-		profile.bananas = 1000
+	it("plans a bulk purchase without touching the profile", function()
+		profile.gold = 1000
 		local plan = Purchase.planBulk(catalog, profile, "speedGain", 10)
-		expect(plan.affordableLevels).toBe(2) -- 100 + 200, puis niveau max atteint
+		expect(plan.affordableLevels).toBe(2)
 		expect(plan.totalCost).toBe(300)
+		expect(profile.gold).toBe(1000)
 	end)
 end)

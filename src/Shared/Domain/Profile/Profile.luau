@@ -1,21 +1,27 @@
 --!strict
 --[[
-	Profile — entite de sauvegarde du joueur.
+	Profile — the player's saved entity.
 
-	Seule source de verite sur la forme des donnees persistees. `migrate` garantit
-	qu'une sauvegarde ancienne, partielle ou corrompue redevient un profil valide :
-	c'est le point d'entree oblige de tout adaptateur de persistance.
+	Single source of truth for the shape of persisted data. `migrate` guarantees that
+	an old, partial or corrupted save becomes a valid profile again: every persistence
+	adapter must go through it.
 
-	Schema v2 : ajout des donnees de monetisation (boosts, achats, quotidien, codes,
-	offres). Les profils v1 sont completes automatiquement.
+	Schema v3 — dragon flight. Speed and gold replace the previous run currencies,
+	eggs and dragons back the collection loop, and the monetization fields from v2 are
+	kept untouched.
+
+	What is NOT stored here: anything that belongs to a single flight (the pouch, the
+	idle counter). A run must never survive a reconnection.
 ]]
 
 export type Totals = {
-	steps: number,
 	distance: number,
+	flights: number,
 	playtime: number,
-	bananasCollected: number,
-	rebirths: number,
+	goldEarned: number,
+	eggsHatched: number,
+	molts: number,
+	walls: number,
 }
 
 export type Purchases = {
@@ -25,25 +31,40 @@ export type Purchases = {
 	ids: { [string]: boolean },
 }
 
+export type Egg = {
+	rarity: string,
+	readyAt: number?, -- nil while still in stock, set once placed in the hatchery
+}
+
 export type Profile = {
 	version: number,
+
+	-- Flight progression
 	speed: number,
-	bananas: number,
-	rebirths: number,
-	highestZone: number,
+	gold: number,
+	molts: number,
+	deepestTier: number,
 	upgrades: { [string]: number },
+
+	-- Collection
+	eggs: { [string]: number }, -- stock waiting for a hatchery slot, keyed by rarity
+	hatchery: { Egg }, -- eggs currently incubating
+	dragons: { [string]: number }, -- owned species and how many of each
+
 	totals: Totals,
-	boosts: { [string]: number }, -- [boostId] = horodatage d'expiration
+
+	-- Monetization (unchanged since v2)
+	boosts: { [string]: number },
 	purchases: Purchases,
 	daily: { streak: number, lastClaimAt: number },
-	timers: { [string]: number }, -- [cle] = derniere reclamation (coffres periodiques)
+	timers: { [string]: number },
 	codes: { [string]: boolean },
 	offers: { seen: { [string]: number }, purchased: { [string]: boolean } },
 }
 
 local Profile = {}
 
-Profile.SCHEMA_VERSION = 2
+Profile.SCHEMA_VERSION = 3
 
 local function positiveNumber(value: any, default: number): number
 	if typeof(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then
@@ -56,13 +77,13 @@ local function positiveInteger(value: any, default: number, minimum: number): nu
 	return math.max(math.floor(positiveNumber(value, default)), minimum)
 end
 
-local function copyNumberMap(raw: any, target: { [string]: number })
+local function copyNumberMap(raw: any, target: { [string]: number }, integer: boolean?)
 	if typeof(raw) ~= "table" then
 		return
 	end
 	for key, value in raw do
 		if typeof(key) == "string" and typeof(value) == "number" then
-			target[key] = positiveNumber(value, 0)
+			target[key] = if integer then positiveInteger(value, 0, 0) else positiveNumber(value, 0)
 		end
 	end
 end
@@ -81,18 +102,27 @@ end
 function Profile.create(): Profile
 	return {
 		version = Profile.SCHEMA_VERSION,
+
 		speed = 0,
-		bananas = 0,
-		rebirths = 0,
-		highestZone = 1,
+		gold = 0,
+		molts = 0,
+		deepestTier = 0,
 		upgrades = {},
+
+		eggs = {},
+		hatchery = {},
+		dragons = {},
+
 		totals = {
-			steps = 0,
 			distance = 0,
+			flights = 0,
 			playtime = 0,
-			bananasCollected = 0,
-			rebirths = 0,
+			goldEarned = 0,
+			eggsHatched = 0,
+			molts = 0,
+			walls = 0,
 		},
+
 		boosts = {},
 		purchases = {
 			count = 0,
@@ -111,7 +141,15 @@ function Profile.levelOf(profile: Profile, upgradeId: string): number
 	return profile.upgrades[upgradeId] or 0
 end
 
---[[ Normalise n'importe quelle donnee brute en profil valide. ]]
+function Profile.eggsOf(profile: Profile, rarity: string): number
+	return profile.eggs[rarity] or 0
+end
+
+function Profile.addEggs(profile: Profile, rarity: string, amount: number)
+	profile.eggs[rarity] = Profile.eggsOf(profile, rarity) + math.max(math.floor(amount), 0)
+end
+
+--[[ Normalises any raw data into a valid profile. ]]
 function Profile.migrate(raw: any): Profile
 	local profile = Profile.create()
 	if typeof(raw) ~= "table" then
@@ -119,14 +157,21 @@ function Profile.migrate(raw: any): Profile
 	end
 
 	profile.speed = positiveNumber(raw.speed, 0)
-	profile.bananas = positiveNumber(raw.bananas, 0)
-	profile.rebirths = positiveInteger(raw.rebirths, 0, 0)
-	profile.highestZone = positiveInteger(raw.highestZone, 1, 1)
+	profile.gold = positiveNumber(raw.gold, 0)
+	profile.molts = positiveInteger(raw.molts, 0, 0)
+	profile.deepestTier = positiveInteger(raw.deepestTier, 0, 0)
 
-	if typeof(raw.upgrades) == "table" then
-		for id, level in raw.upgrades do
-			if typeof(id) == "string" and typeof(level) == "number" then
-				profile.upgrades[id] = positiveInteger(level, 0, 0)
+	copyNumberMap(raw.upgrades, profile.upgrades, true)
+	copyNumberMap(raw.eggs, profile.eggs, true)
+	copyNumberMap(raw.dragons, profile.dragons, true)
+
+	if typeof(raw.hatchery) == "table" then
+		for _, egg in raw.hatchery do
+			if typeof(egg) == "table" and typeof(egg.rarity) == "string" then
+				table.insert(profile.hatchery, {
+					rarity = egg.rarity,
+					readyAt = if typeof(egg.readyAt) == "number" then positiveNumber(egg.readyAt, 0) else nil,
+				})
 			end
 		end
 	end
