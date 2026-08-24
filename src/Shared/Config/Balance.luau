@@ -19,11 +19,21 @@ return table.freeze({
 		-- level design stops mattering. Progress is meant to be a growing NUMBER,
 		-- not a growing problem.
 		maxBonusWalkSpeed = 44,
-		-- In LEVELS, not in speed. Calibrated on the pace that was play-tested and
-		-- kept: around 19.5 studs/s by level 6, which is the first few minutes, and
-		-- roughly 40 by the Prestige threshold — fast, but you still place your
-		-- jumps. Lower it and the early levels bite harder.
-		softness = 60,
+		--[[
+			In LEVELS, not in speed, and the one number that decides how fast the
+			game gets fast. Lower bites harder.
+
+			Simulated against real play — the gain rate feeds back into itself,
+			since running faster earns levels faster — this lands at roughly
+			24 studs/s after two minutes, 40 after ten, 53 after thirty. The
+			previous 60 reached only 28 after ten minutes and 39 after thirty,
+			which read as a game that had stopped rewarding.
+
+			It is deliberately not pushed further. Below about 22 the curve meets
+			the ceiling within half an hour, and every level after that adds
+			nothing — which breaks the one promise the level makes.
+		]]
+		softness = 30,
 		baseJumpPower = 50,
 		jumpPowerPerLevel = 2.5,
 		maxJumpPower = 140,

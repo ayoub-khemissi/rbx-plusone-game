@@ -111,9 +111,11 @@ describe("Config.Balance", function()
 		expect(curve:walkSpeedFor(early)).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
 		expect(curve:walkSpeedFor(early)).toBeLessThan(24)
 
-		-- At the Prestige threshold: fast, but you still place your jumps.
+		-- At the Prestige threshold: fast, and still short of the ceiling, so the
+		-- levels after it still have something to give. The hard limit is the 60
+		-- below; this bound is the headroom.
 		local prestige = PrestigePolicy.new(Config.Balance.prestige):requirementFor(0)
-		expect(curve:walkSpeedFor(levels:levelFor(prestige))).toBeLessThan(50)
+		expect(curve:walkSpeedFor(levels:levelFor(prestige))).toBeLessThan(55)
 
 		-- And the ceiling stays well under what the physics stops tolerating.
 		expect(curve:walkSpeedFor(1e12)).toBeLessThanOrEqual(60)
