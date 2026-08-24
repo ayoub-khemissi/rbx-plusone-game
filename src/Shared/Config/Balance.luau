@@ -13,9 +13,11 @@ return table.freeze({
 		baseVelocity = 70,
 		maxBonusVelocity = 230, -- ceiling at 300 studs/s: past that a wall can be crossed between two frames
 		softness = 1500,
-		baseAgility = 1,
-		agilityPerLevel = 0.1,
-		maxAgility = 4,
+		-- Agility is a lerp rate per second: under ~2 a brand new dragon simply cannot
+		-- steer. It stays the counterweight to speed, but never below playable.
+		baseAgility = 2.5,
+		agilityPerLevel = 0.12,
+		maxAgility = 6,
 	}),
 
 	-- Server-side displacement measurement (anti-cheat)
@@ -53,6 +55,10 @@ return table.freeze({
 		altarOffset = 95, -- lateral detour needed to bank: banking must cost something
 		ringSpacing = 55,
 		ringWeave = 32,
+		-- Take-off happens BEHIND the first barrier but well CLEAR of the Nest:
+		-- 160 studs of platform plus its rail sit between the two.
+		launchSetback = 40,
+		launchAltitudeOffset = 20,
 	}),
 
 	run = table.freeze({

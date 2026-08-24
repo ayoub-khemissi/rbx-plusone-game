@@ -18,6 +18,8 @@ export type Tuning = {
 	altarOffset: number,
 	ringSpacing: number,
 	ringWeave: number,
+	launchSetback: number?,
+	launchAltitudeOffset: number?,
 }
 
 export type Point = { x: number, y: number, z: number }
@@ -40,7 +42,8 @@ export type SkyLayout = typeof(setmetatable(
 ))
 
 local DEFAULT_LENGTH = 500
-local LAUNCH_SETBACK = 120
+local DEFAULT_SETBACK = 40
+local DEFAULT_ALTITUDE_OFFSET = 20
 
 function SkyLayout.new(tuning: Tuning, tiers: { { id: number, length: number? } }): SkyLayout
 	local bounds, order = {}, {}
@@ -75,12 +78,18 @@ function SkyLayout.totalLength(self: SkyLayout): number
 	return total
 end
 
---[[ Where the dragon takes off, just short of the first barrier. ]]
+--[[
+	Where the dragon takes off: short of the first barrier, and above the corridor.
+
+	The setback has to clear the Nest platform, or the dragon spawns inside it and
+	the rail sits right in its face. The altitude offset keeps it off the floor while
+	the flight state reaches the client.
+]]
 function SkyLayout.launchPoint(self: SkyLayout): Point
 	local first = self._bounds[self._order[1]]
 	return {
-		x = first.startX - LAUNCH_SETBACK,
-		y = first.altitude,
+		x = first.startX - (self.tuning.launchSetback or DEFAULT_SETBACK),
+		y = first.altitude + (self.tuning.launchAltitudeOffset or DEFAULT_ALTITUDE_OFFSET),
 		z = 0,
 	}
 end

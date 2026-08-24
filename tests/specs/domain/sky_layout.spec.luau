@@ -16,6 +16,8 @@ local TUNING = {
 	altarOffset = 90,
 	ringSpacing = 50,
 	ringWeave = 30,
+	launchSetback = 40,
+	launchAltitudeOffset = 20,
 }
 
 describe("SkyLayout", function()
@@ -39,8 +41,13 @@ describe("SkyLayout", function()
 
 	it("gives the launch point in front of the first tier", function()
 		local launch = layout:launchPoint()
-		expect(launch.x).toBeLessThan(200)
-		expect(launch.y).toBe(150)
+		expect(launch.x).toBe(160)
+		expect(launch.z).toBe(0)
+	end)
+
+	-- Regression : le decollage se faisait a l'interieur du Nest, garde-corps en face.
+	it("lifts the launch point above the corridor floor", function()
+		expect(layout:launchPoint().y).toBe(170)
 	end)
 
 	it("places the wind barrier at the tier entrance, on the fast line", function()

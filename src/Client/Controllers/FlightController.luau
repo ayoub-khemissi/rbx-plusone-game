@@ -8,9 +8,14 @@
 	the server re-measures the resulting displacement. Tampering with this file
 	changes how it feels, never what it earns.
 
-	Steering reads `Humanoid.MoveDirection`, which is already filled by the keyboard
-	on desktop and by the thumbstick on mobile — one code path for both. Climb and
-	dive are bound through ContextActionService so touch devices get real buttons.
+	Steering reads the PlayerModule control vector rather than `Humanoid.MoveDirection`.
+	That matters: flight sets `PlatformStand`, which stops the humanoid from moving,
+	and MoveDirection then reports zero — the input channel would be dead. Reading the
+	raw control vector keeps one code path for keyboard, gamepad and touch thumbstick.
+
+	The steering model is "point and go": the dragon turns towards where the camera
+	looks while you hold forward. It is the scheme players already know from every
+	flying game, and it needs no extra buttons on mobile.
 ]]
 
 local ContextActionService = game:GetService("ContextActionService")
@@ -21,9 +26,10 @@ FlightController.__index = FlightController
 
 local CLIMB_ACTION = "DragonClimb"
 local DIVE_ACTION = "DragonDive"
-local VERTICAL_WEIGHT = 0.8
+local VERTICAL_WEIGHT = 0.9
 local MIN_PITCH = -0.85
 local MAX_PITCH = 0.85
+local INPUT_DEADZONE = 0.05
 
 function FlightController.new(player: Player, state)
 	local self = setmetatable({
@@ -33,6 +39,8 @@ function FlightController.new(player: Player, state)
 		dive = 0,
 		flying = false,
 	}, FlightController)
+
+	self:_bindControls()
 
 	player.CharacterAdded:Connect(function(character)
 		self:_bind(character)
@@ -54,6 +62,16 @@ function FlightController.new(player: Player, state)
 	return self
 end
 
+--[[ The PlayerModule owns the raw input vector, whatever the device. ]]
+function FlightController._bindControls(self)
+	local ok, controls = pcall(function()
+		local playerScripts = self.player:WaitForChild("PlayerScripts")
+		return require(playerScripts:WaitForChild("PlayerModule")):GetControls()
+	end)
+
+	self.controls = if ok then controls else nil
+end
+
 function FlightController._bind(self, character: Model)
 	self.character = character
 	self.root = character:WaitForChild("HumanoidRootPart") :: BasePart
@@ -69,6 +87,7 @@ function FlightController._bindInput(self)
 		end
 	end
 
+	-- `true` asks Roblox for an on-screen button, so touch devices are covered.
 	ContextActionService:BindAction(CLIMB_ACTION, handle("climb"), true, Enum.KeyCode.Space)
 	ContextActionService:BindAction(DIVE_ACTION, handle("dive"), true, Enum.KeyCode.LeftShift)
 	ContextActionService:SetTitle(CLIMB_ACTION, "▲")
@@ -90,6 +109,37 @@ function FlightController._syncFlyingState(self)
 	end
 end
 
+--[[
+	Turns the raw control vector into a world direction.
+
+	The forward axis follows the camera in full 3D, so looking down dives and looking
+	up climbs; the climb and dive buttons only add to it.
+]]
+function FlightController._steerDirection(self): Vector3
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return Vector3.zero
+	end
+
+	local raw = if self.controls then self.controls:GetMoveVector() else Vector3.zero
+	local direction = Vector3.zero
+
+	-- GetMoveVector uses -Z as forward.
+	if math.abs(raw.Z) > INPUT_DEADZONE then
+		direction += camera.CFrame.LookVector * -raw.Z
+	end
+	if math.abs(raw.X) > INPUT_DEADZONE then
+		direction += camera.CFrame.RightVector * raw.X
+	end
+
+	local vertical = self.climb - self.dive
+	if vertical ~= 0 then
+		direction += Vector3.new(0, vertical * VERTICAL_WEIGHT, 0)
+	end
+
+	return direction
+end
+
 function FlightController._update(self, deltaTime: number)
 	if not self.flying or not self.root or not self.root.Parent then
 		return
@@ -103,11 +153,9 @@ function FlightController._update(self, deltaTime: number)
 	end
 
 	local heading = self.root.CFrame.LookVector
+	local steer = self:_steerDirection()
 
-	-- MoveDirection is horizontal; the vertical axis comes from climb and dive.
-	local steer = self.humanoid.MoveDirection + Vector3.new(0, (self.climb - self.dive) * VERTICAL_WEIGHT, 0)
-
-	if steer.Magnitude > 0.05 then
+	if steer.Magnitude > INPUT_DEADZONE then
 		local blend = math.clamp(agility * deltaTime, 0, 1)
 		heading = heading:Lerp(steer.Unit, blend)
 		if heading.Magnitude > 0 then

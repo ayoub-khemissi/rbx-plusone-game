@@ -177,3 +177,28 @@ describe("Config.Balance", function()
 		expect(sky.altarOffset).toBeLessThan(sky.corridorWidth * 1.5)
 	end)
 end)
+
+describe("Config take-off", function()
+	-- Regression : le point de decollage tombait dans le Nest, face au garde-corps.
+	it("launches clear of the Nest platform and above its floor", function()
+		local layout = SkyLayout.new(Config.Balance.sky, Config.Tiers)
+		local launch = layout:launchPoint()
+
+		expect(launch.x).toBeGreaterThan(Config.World.nest.size / 2)
+		expect(launch.y).toBeGreaterThan(Config.World.nest.altitude + Config.World.nest.railHeight)
+	end)
+
+	it("still takes off behind the first barrier", function()
+		local layout = SkyLayout.new(Config.Balance.sky, Config.Tiers)
+		expect(layout:launchPoint().x).toBeLessThan(layout:boundsOf(1).startX)
+	end)
+end)
+
+describe("Config flight feel", function()
+	-- Regression : une agilite de base a 1 rendait le dragon impilotable au depart.
+	it("keeps a brand new dragon steerable", function()
+		local curve = Config.Balance.speedCurve
+		expect(curve.baseAgility).toBeGreaterThanOrEqual(2)
+		expect(curve.maxAgility).toBeGreaterThan(curve.baseAgility)
+	end)
+end)
