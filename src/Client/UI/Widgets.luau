@@ -270,7 +270,10 @@ function Widgets.bar(parent: Instance, options)
 	track.BorderSizePixel = 0
 	track.Parent = parent
 	Widgets.corner(track, Theme.radius.chip)
-	Widgets.stroke(track, Theme.color.panelEdge, Theme.stroke.button)
+	-- A gauge small enough to sit inside a chip is mostly outline if it keeps one.
+	if options.outline ~= false then
+		Widgets.stroke(track, Theme.color.panelEdge, Theme.stroke.button)
+	end
 
 	-- Inset so the track keeps a visible rim, and so the two rounded edges never
 	-- fight each other over the same pixel.

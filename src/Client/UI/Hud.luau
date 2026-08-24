@@ -16,6 +16,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared.Config)
 local Format = require(Shared.Domain.Support.Format)
@@ -30,6 +31,11 @@ local LABELS = Config.Theme.labels
 local ICONS = Config.Theme.icons
 
 local BAR_INSET = 20
+local GAUGE_HEIGHT = 16
+local GAUGE_WIDTH = 76 -- a single continuous gauge, such as a cooldown
+local SEGMENT_WIDTH = 34 -- one charge, when there are several
+local GAUGE_GAP = 4
+local DASH_COOLDOWN = Config.Balance.dash.cooldown
 
 --[[
 	One readout: a rounded chip carrying an icon and a value.
@@ -82,6 +88,109 @@ local function chip(parent: Instance, options)
 	value.AutomaticSize = Enum.AutomaticSize.X
 
 	return { frame = frame, value = value }
+end
+
+--[[
+	An ability readout: the icon, then a gauge that empties and refills.
+
+	A gauge instead of "1/2" and a countdown because neither is READ during a jump.
+	A bar is a shape the eye takes in without parsing, and both of these are only
+	ever consulted while the hands are busy.
+
+	`segments` is how many discrete charges the gauge holds. One segment is a
+	continuous fill, which is what a cooldown is; several are one charge each, which
+	is what air jumps are — and 1/2 as two boxes needs no reading at all.
+]]
+local function gaugeChip(parent: Instance, options)
+	local frame = Widgets.card(parent, {
+		name = options.name,
+		size = UDim2.fromOffset(0, 46),
+		color = Theme.color.panel,
+		transparency = 0.12,
+		radius = Theme.radius.chip,
+		pattern = false,
+		visible = false,
+	})
+	frame.AutomaticSize = Enum.AutomaticSize.X
+	frame.LayoutOrder = options.layoutOrder or 0
+
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 12)
+	padding.PaddingRight = UDim.new(0, 14)
+	padding.Parent = frame
+
+	Widgets.list(frame, {
+		direction = Enum.FillDirection.Horizontal,
+		padding = 8,
+		verticalAlignment = Enum.VerticalAlignment.Center,
+	})
+
+	Widgets.icon(frame, {
+		image = options.image,
+		fallback = options.fallback,
+		size = UDim2.fromOffset(28, 28),
+		layoutOrder = 1,
+	})
+
+	local track = Instance.new("Frame")
+	track.Name = "Gauge"
+	track.Size = UDim2.fromOffset(0, GAUGE_HEIGHT)
+	track.AutomaticSize = Enum.AutomaticSize.X
+	track.BackgroundTransparency = 1
+	track.LayoutOrder = 2
+	track.Parent = frame
+	Widgets.list(track, {
+		direction = Enum.FillDirection.Horizontal,
+		padding = GAUGE_GAP,
+		verticalAlignment = Enum.VerticalAlignment.Center,
+	})
+
+	local gauge = { frame = frame, segments = {}, container = track, color = options.color }
+
+	--[[
+		Rebuilds the segments when the number of charges changes.
+
+		Buying an air jump has to change the shape of the gauge, and there is no
+		sensible way to animate a box into existence — it simply has one more.
+	]]
+	function gauge.resize(count: number)
+		if #gauge.segments == count then
+			return
+		end
+
+		for _, segment in gauge.segments do
+			segment.instance:Destroy()
+		end
+		gauge.segments = {}
+
+		local width = if count > 1 then SEGMENT_WIDTH else GAUGE_WIDTH
+		for index = 1, count do
+			local bar = Widgets.bar(track, {
+				size = UDim2.fromOffset(width, GAUGE_HEIGHT),
+				color = gauge.color,
+				trackColor = Theme.color.background,
+				outline = false,
+				rim = 2,
+			})
+			bar.instance.LayoutOrder = index
+			table.insert(gauge.segments, bar)
+		end
+	end
+
+	--[[ Spreads a single ratio across however many segments there are. ]]
+	function gauge.set(ratio: number)
+		local count = #gauge.segments
+		if count == 0 then
+			return
+		end
+
+		local filled = math.clamp(ratio, 0, 1) * count
+		for index, segment in gauge.segments do
+			segment.set(math.clamp(filled - (index - 1), 0, 1))
+		end
+	end
+
+	return gauge
 end
 
 function Hud.new(parent: Instance, state)
@@ -183,19 +292,29 @@ function Hud.new(parent: Instance, state)
 		layoutOrder = 1,
 	})
 
-	self.jump = chip(row, {
+	self.jump = gaugeChip(row, {
 		name = "Jump",
 		image = ICONS.jump,
 		fallback = "^",
+		color = Theme.color.info,
 		layoutOrder = 2,
 	})
 
-	self.dash = chip(row, {
+	self.dash = gaugeChip(row, {
 		name = "Dash",
 		image = ICONS.dash,
 		fallback = ">>",
+		color = Theme.color.positive,
 		layoutOrder = 3,
 	})
+
+	-- The server publishes the cooldown every sampling tick, which is far too
+	-- coarse to refill a bar with. The remaining time is counted down locally
+	-- between publishes and resynced by each one.
+	self.dashRemaining = 0
+	RunService.RenderStepped:Connect(function(deltaTime)
+		self:_drainDash(deltaTime)
+	end)
 
 	self.boosts = chip(row, {
 		name = "Boosts",
@@ -236,23 +355,20 @@ function Hud.render(self)
 
 	-- Level 1 is the jump everybody already has: there is no air jump to count.
 	local jumpLevel = math.max(state:get("JumpLevel"), 1)
-	self.jump.frame.Visible = jumpLevel > 1
+	local capacity = jumpLevel - 1
+	self.jump.frame.Visible = capacity > 0
 	if self.jump.frame.Visible then
-		self.jump.value.Text = `{state:get("JumpsLeft")}/{jumpLevel - 1}`
-		self.jump.value.TextColor3 = Theme.color.text
+		self.jump.resize(capacity)
+		self.jump.set(state:get("JumpsLeft") / capacity)
 	end
 
 	local dashLevel = state:get("DashLevel")
-	local cooldown = state:get("DashCooldown")
 	self.dash.frame.Visible = dashLevel > 0
 	if self.dash.frame.Visible then
-		if cooldown > 0 then
-			self.dash.value.Text = string.format("%.1fs", cooldown)
-			self.dash.value.TextColor3 = Theme.color.locked
-		else
-			self.dash.value.Text = `Lv {dashLevel}`
-			self.dash.value.TextColor3 = Theme.color.positive
-		end
+		self.dash.resize(1)
+		-- Resynced from the server, then counted down locally until the next one.
+		self.dashRemaining = state:get("DashCooldown")
+		self:_drainDash(0)
 	end
 
 	local parts = {}
@@ -265,6 +381,22 @@ function Hud.render(self)
 
 	self.boosts.frame.Visible = #parts > 0
 	self.boosts.value.Text = table.concat(parts, " ")
+end
+
+--[[
+	Empties the dash gauge and refills it in real time.
+
+	Full means ready. It drains to nothing the moment the dash is spent and climbs
+	back over the cooldown, so the answer to "can I dash yet" is a shape rather than
+	a number to read and subtract.
+]]
+function Hud._drainDash(self, deltaTime: number)
+	if not self.dash.frame.Visible then
+		return
+	end
+
+	self.dashRemaining = math.max(self.dashRemaining - deltaTime, 0)
+	self.dash.set(1 - self.dashRemaining / DASH_COOLDOWN)
 end
 
 return Hud
