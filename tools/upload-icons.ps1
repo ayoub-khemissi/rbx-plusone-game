@@ -3,7 +3,7 @@
     writes the resulting asset ids into icons/ids.txt.
 
     Needs an API key with the `asset:write` scope, created at
-    create.roblox.com → Settings → Credentials → API Keys, and the id of the
+    create.roblox.com -> Settings -> Credentials -> API Keys, and the id of the
     creator the assets belong to (your user id, or a group id).
 
     The key is read from icons/api-key.txt or the ROBLOX_API_KEY environment
@@ -11,7 +11,7 @@
     for ids.txt.
 
     The run is RESUMABLE. Every id is appended to ids.txt as soon as it comes
-    back, and a slot already in the file is skipped — so a rate limit, a
+    back, and a slot already in the file is skipped -- so a rate limit, a
     moderation hiccup or a closed terminal costs only the uploads that had not
     finished.
 
@@ -78,16 +78,26 @@ foreach ($file in $files) {
 
     # curl rather than Invoke-RestMethod: Windows PowerShell 5.1 has no -Form,
     # and hand-rolling a multipart body is how binary uploads get corrupted.
-    $raw = & curl.exe -s -X POST "https://apis.roblox.com/assets/v1/assets" `
+    # The JSON goes through a FILE, never through the command line. PowerShell
+    # strips the double quotes out of arguments handed to a native executable, so
+    # an inline payload reaches curl as unquoted rubbish and the server rejects it
+    # with an error about the wrong field entirely.
+    $requestFile = Join-Path $env:TEMP "roblox-asset-request.json"
+    [System.IO.File]::WriteAllText($requestFile, $request, (New-Object System.Text.UTF8Encoding $false))
+
+    # Joined: curl pretty-prints its JSON, PowerShell captures it as an array of
+    # lines, and ConvertFrom-Json then silently keeps only the first one -- which
+    # is how an error message turns into a blank one.
+    $raw = (& curl.exe -s -X POST "https://apis.roblox.com/assets/v1/assets" `
         -H "x-api-key: $key" `
-        -F "request=$request;type=application/json" `
-        -F "fileContent=@$($file.FullName);type=image/png"
+        -F "request=<$requestFile;type=application/json" `
+        -F "fileContent=@$($file.FullName);type=image/png") -join "`n"
 
     $response = $null
     try { $response = $raw | ConvertFrom-Json } catch {}
 
     if (-not $response -or -not $response.operationId) {
-        $message = if ($response.message) { $response.message } else { $raw }
+        $message = if ($response.message) { "$($response.code): $($response.message)" } else { $raw }
         Write-Host "  x $slot : $message" -ForegroundColor Red
         $failed += $slot
         Start-Sleep -Milliseconds $DelayMs
@@ -98,8 +108,8 @@ foreach ($file in $files) {
     $assetId = $null
     for ($attempt = 1; $attempt -le 20; $attempt++) {
         Start-Sleep -Milliseconds 700
-        $pollRaw = & curl.exe -s "https://apis.roblox.com/assets/v1/operations/$($response.operationId)" `
-            -H "x-api-key: $key"
+        $pollRaw = (& curl.exe -s "https://apis.roblox.com/assets/v1/operations/$($response.operationId)" `
+            -H "x-api-key: $key") -join "`n"
         $poll = $null
         try { $poll = $pollRaw | ConvertFrom-Json } catch {}
         if ($poll.done -and $poll.response.assetId) {
@@ -124,6 +134,6 @@ foreach ($file in $files) {
 Write-Host "`n$uploaded uploaded" -ForegroundColor Green
 if ($failed.Count -gt 0) {
     Write-Host "$($failed.Count) to retry: $($failed -join ', ')" -ForegroundColor Yellow
-    Write-Host "Run the same command again — what succeeded is skipped."
+    Write-Host "Run the same command again -- what succeeded is skipped."
 }
 Write-Host "`nThen: ./tools/apply-icon-ids.ps1"

@@ -7,7 +7,7 @@
     ids back becomes lookup instead of detective work.
 
     Usage:  ./tools/stage-icons.ps1
-    Then:   Studio -> Asset Manager -> Images -> right-click -> Add Images…
+    Then:   Studio -> Asset Manager -> Images -> right-click -> Add Images...
 #>
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -65,7 +65,7 @@ if ($missing.Count -gt 0) {
 Write-Host @"
 
 Next:
-  1. Studio -> View -> Asset Manager -> Images -> right-click -> Add Images…
+  1. Studio -> View -> Asset Manager -> Images -> right-click -> Add Images...
   2. Select everything in icons/ and upload
   3. Wait for moderation, then right-click each -> Copy Asset ID
   4. Write them into icons/ids.txt as  slot=id  (one per line)

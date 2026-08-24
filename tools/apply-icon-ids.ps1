@@ -78,8 +78,10 @@ foreach ($relative in $targets) {
     }
 
     if ($changed -and -not $DryRun) {
+        # WriteAllLines would use the platform newline; the repository is LF and
+        # StyLua enforces it, so a CRLF rewrite shows up as every line changed.
         $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-        [System.IO.File]::WriteAllLines($path, $lines, $utf8NoBom)
+        [System.IO.File]::WriteAllText($path, ($lines -join "`n") + "`n", $utf8NoBom)
     }
 }
 
