@@ -186,7 +186,7 @@ local theme: Theme = {
 		panelOpacity = 0.18,
 		panelTile = 64,
 		buttonPattern = "rbxassetid://4549727994", -- metal
-		buttonOpacity = 0.28,
+		buttonOpacity = 0.22,
 		buttonTile = 96,
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's

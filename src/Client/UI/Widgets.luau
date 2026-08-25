@@ -71,6 +71,10 @@ local HOVER_LIFT = 0.16
 local PRESS_DROP = 0.14
 -- How much darker than its fill a button's outline sits.
 local EDGE_DROP = 0.45
+-- How far the gloss falls from top to bottom, and how dark the grain shades. Both
+-- are deliberately light: they stack, and each one is drawn over the whole face.
+local BUTTON_GLOSS = 0.14
+local GRAIN_DEPTH = 0.3
 local HOVER_TWEEN = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 -- How wide the transparency jump of a progress bar is, and how fast the bar chases
@@ -376,11 +380,19 @@ function Widgets.button(parent: Instance, options): TextButton
 			tile = Theme.texture.buttonTile,
 			transparency = 1 - Theme.texture.buttonOpacity,
 			-- Tinted by `paint` below, which owns every colour the button wears.
-			tint = deepen(button.BackgroundColor3, 0.6),
+			tint = deepen(button.BackgroundColor3, GRAIN_DEPTH),
 		})
 	end
+	--[[
+		Gloss, and gentler on a button than on a card.
+
+		The grain below already darkens the surface, and the gradient darkens it
+		again towards the bottom: at full strength the two together left every button
+		reading as a dark object with a bright edge, whatever colour it was given.
+		Two shadings on one small surface have to share the room.
+	]]
 	if options.gradient ~= false then
-		Widgets.gradient(button)
+		Widgets.gradient(button, BUTTON_GLOSS)
 	end
 
 	--[[
@@ -427,7 +439,7 @@ function Widgets.button(parent: Instance, options): TextButton
 		-- The grain is shading in the button's own hue, so it follows the hue.
 		local grain = button:FindFirstChild("Surface")
 		if grain and grain:IsA("ImageLabel") then
-			TweenService:Create(grain, HOVER_TWEEN, { ImageColor3 = deepen(base, 0.6) }):Play()
+			TweenService:Create(grain, HOVER_TWEEN, { ImageColor3 = deepen(base, GRAIN_DEPTH) }):Play()
 		end
 	end
 
