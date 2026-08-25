@@ -269,7 +269,7 @@ function ShopPanel.render(self)
 				agrees — switching it off would hide a number that is still true.
 			]]
 			Widgets.setEnabled(row.buy, true)
-			row.buy.BackgroundColor3 = if affordable then Theme.color.positive else Theme.color.locked
+			Widgets.setButtonColor(row.buy, if affordable then Theme.color.positive else Theme.color.locked)
 		end
 	end
 end

@@ -154,9 +154,10 @@ function RewardsPanel.refresh(self)
 		self.dailyButton.Text = if daily.claimable
 			then "CLAIM"
 			else `NEXT IN {Format.duration(daily.secondsRemaining)}`
-		self.dailyButton.BackgroundColor3 = if daily.claimable
-			then Theme.color.positive
-			else Theme.color.locked
+		Widgets.setButtonColor(
+			self.dailyButton,
+			if daily.claimable then Theme.color.positive else Theme.color.locked
+		)
 	end
 
 	local chest = status.chest
@@ -165,9 +166,10 @@ function RewardsPanel.refresh(self)
 		self.chestButton.Text = if chest.claimable
 			then "OPEN"
 			else `READY IN {Format.duration(chest.secondsRemaining)}`
-		self.chestButton.BackgroundColor3 = if chest.claimable
-			then Theme.color.positive
-			else Theme.color.locked
+		Widgets.setButtonColor(
+			self.chestButton,
+			if chest.claimable then Theme.color.positive else Theme.color.locked
+		)
 	end
 end
 

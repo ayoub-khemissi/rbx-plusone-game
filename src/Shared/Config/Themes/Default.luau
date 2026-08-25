@@ -110,10 +110,11 @@ local theme: Theme = {
 			calls to action and therefore none. Spending the colour on the one under
 			the pointer is what makes it mean "this one".
 
-			A lighter gold than `accent`, which is the Coin colour: near it, not the
-			same as it.
+			Pale rather than saturated: it has to read as light catching the rim, and a
+			deep gold reads as paint. It is well clear of `accent`, the Coin colour,
+			for the same reason — a rim that matches the currency looks like a price.
 		]]
-		hoverEdge = { 250, 208, 82 },
+		hoverEdge = { 255, 230, 140 },
 		text = { 52, 56, 78 },
 		textMuted = { 122, 128, 150 },
 		textOnColor = { 255, 255, 255 },

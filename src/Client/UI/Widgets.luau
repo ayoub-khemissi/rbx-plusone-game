@@ -28,6 +28,25 @@ local function lift(color: Color3, amount: number): Color3
 	return color:Lerp(Color3.new(1, 1, 1), amount)
 end
 
+--[[ And the other way, which is what a shadow is made of. ]]
+local function deepen(color: Color3, amount: number): Color3
+	return color:Lerp(Color3.new(0, 0, 0), amount)
+end
+
+--[[
+	How each button repaints itself, kept where the functions that change a button
+	can reach it.
+
+	A button's look is decided by four things at once — its colour, whether it is
+	disabled, whether the pointer is on it and whether it is held down — and three of
+	those live in a closure while the colour is set from outside. Handing every caller
+	a repaint they must remember to call is how the four drift apart; this way any of
+	them can ask the button to work itself out.
+
+	Weak keys, so a destroyed button is not kept alive by the table that draws it.
+]]
+local painters: { [TextButton]: () -> () } = setmetatable({}, { __mode = "k" }) :: any
+
 --[[
 	How a button answers the pointer, and it answers WITHOUT CHANGING SIZE.
 
@@ -50,6 +69,8 @@ end
 ]]
 local HOVER_LIFT = 0.16
 local PRESS_DROP = 0.14
+-- How much darker than its fill a button's outline sits.
+local EDGE_DROP = 0.45
 local HOVER_TWEEN = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 -- How wide the transparency jump of a progress bar is, and how fast the bar chases
@@ -354,9 +375,8 @@ function Widgets.button(parent: Instance, options): TextButton
 			inset = inset,
 			tile = Theme.texture.buttonTile,
 			transparency = 1 - Theme.texture.buttonOpacity,
-			-- Shading in the button's own hue: it deepens the fill instead of
-			-- bleaching it, which is what the white text on top needs.
-			tint = button.BackgroundColor3:Lerp(Color3.new(0, 0, 0), 0.6),
+			-- Tinted by `paint` below, which owns every colour the button wears.
+			tint = deepen(button.BackgroundColor3, 0.6),
 		})
 	end
 	if options.gradient ~= false then
@@ -364,37 +384,55 @@ function Widgets.button(parent: Instance, options): TextButton
 	end
 
 	--[[
-		The resting colour, remembered from the start.
+		The resting colour, remembered rather than read back.
 
-		Read by the hover, the press and `setEnabled` alike, so none of them can
-		capture a colour one of the others was in the middle of applying — which is
+		Everything else is derived from it: the hover, the press, the disabled grey
+		and the rim. Reading the button's CURRENT colour instead would mean each
+		effect capturing whatever another one was in the middle of applying, which is
 		how a button ends up permanently stuck in its hover tint.
 	]]
 	button:SetAttribute("RestingColor", button.BackgroundColor3)
 
 	local rim = Widgets.stroke(button, options.edge or Theme.color.panelEdge, Theme.stroke.button)
-	local edge = rim.Color
-	button:SetAttribute("RestingEdge", edge)
 	local hovered, pressed = false, false
 
 	local function paint()
-		if button:GetAttribute("Disabled") == true then
-			return
-		end
-
+		local disabled = button:GetAttribute("Disabled") == true
 		local resting = button:GetAttribute("RestingColor") :: Color3
-		local target = resting
-		if pressed then
-			target = resting:Lerp(Color3.new(0, 0, 0), PRESS_DROP)
-		elseif hovered then
-			target = lift(resting, HOVER_LIFT)
+		local base = if disabled then Theme.color.locked else resting
+
+		local fill = base
+		if not disabled then
+			if pressed then
+				fill = deepen(base, PRESS_DROP)
+			elseif hovered then
+				fill = lift(base, HOVER_LIFT)
+			end
 		end
 
-		TweenService:Create(button, HOVER_TWEEN, { BackgroundColor3 = target }):Play()
-		TweenService:Create(rim, HOVER_TWEEN, {
-			Color = if hovered then Theme.color.hoverEdge else edge,
-		}):Play()
+		--[[
+			THE RIM IS THE FILL'S OWN SHADOW, so a button is outlined in itself and
+			reads as one moulded object rather than a colour sitting in a frame
+			somebody else chose. Gold is what the pointer paints on top of that, and
+			the only thing in the game wearing it.
+		]]
+		local edge = options.edge or deepen(base, EDGE_DROP)
+		if hovered and not disabled then
+			edge = Theme.color.hoverEdge
+		end
+
+		TweenService:Create(button, HOVER_TWEEN, { BackgroundColor3 = fill }):Play()
+		TweenService:Create(rim, HOVER_TWEEN, { Color = edge }):Play()
+
+		-- The grain is shading in the button's own hue, so it follows the hue.
+		local grain = button:FindFirstChild("Surface")
+		if grain and grain:IsA("ImageLabel") then
+			TweenService:Create(grain, HOVER_TWEEN, { ImageColor3 = deepen(base, 0.6) }):Play()
+		end
 	end
+
+	painters[button] = paint
+	paint()
 
 	--[[
 		A dead button must not answer: lighting under the pointer is a promise that
@@ -445,24 +483,31 @@ end
 	hand it back to re-enable one.
 ]]
 function Widgets.setEnabled(button: TextButton, enabled: boolean)
-	local resting = button:GetAttribute("RestingColor")
-	if typeof(resting) ~= "Color3" then
-		resting = button.BackgroundColor3
-		button:SetAttribute("RestingColor", resting)
-	end
-
 	button:SetAttribute("Disabled", not enabled)
 	button.Active = enabled
 	button.Selectable = enabled
-	button.BackgroundColor3 = if enabled then resting else Theme.color.locked
 	button.TextTransparency = if enabled then 0 else 0.25
 
-	-- A button switched off while the pointer is on it would otherwise keep the
-	-- bright rim the hover gave it, and go on advertising itself.
-	local rim = button:FindFirstChildOfClass("UIStroke")
-	local edge = button:GetAttribute("RestingEdge")
-	if rim and typeof(edge) == "Color3" then
-		rim.Color = edge
+	local paint = painters[button]
+	if paint then
+		paint()
+	end
+end
+
+--[[
+	Repaints a button in a new colour.
+
+	The colour a caller wants is the RESTING one; the hover, the press, the rim and
+	the grain are all derived from it and must not be set by hand. Assigning
+	BackgroundColor3 directly works until the next time the pointer crosses the
+	button, at which point the derived colours snap back to the old hue.
+]]
+function Widgets.setButtonColor(button: TextButton, color: Color3)
+	button:SetAttribute("RestingColor", color)
+
+	local paint = painters[button]
+	if paint then
+		paint()
 	end
 end
 

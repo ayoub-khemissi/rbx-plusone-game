@@ -148,8 +148,7 @@ function StorePanel.render(self)
 	for passId, row in self.passRows do
 		if self.state:owns(passId) then
 			row.button.Text = "OWNED"
-			row.button.BackgroundColor3 = Theme.color.locked
-			row.button.Active = false
+			Widgets.setEnabled(row.button, false)
 		end
 	end
 end
