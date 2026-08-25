@@ -285,14 +285,14 @@ function PrestigePanel.new(parent: Instance, state, remotes)
 			anchorPoint = Vector2.new(1, 0),
 			color = Theme.color.accentDark,
 			textSize = Theme.text.body,
+			-- The name sits high so the price line underneath has room of its own.
+			alignY = Enum.TextYAlignment.Top,
 			padding = 12,
 			onClick = function()
 				self.remotes.events.PromptPurchase:FireServer("product", product.id)
 			end,
 		})
 		self.skip.ZIndex = 7
-		-- The name sits high so the price line underneath has room of its own.
-		self.skip.TextYAlignment = Enum.TextYAlignment.Top
 
 		local note = Widgets.label(self.skip, {
 			name = "Note",
@@ -347,9 +347,10 @@ function PrestigePanel.render(self)
 	]]
 	local ready = progress >= 1
 	Widgets.setEnabled(self.action, ready)
-	self.action.Text = if ready
-		then string.upper(LABELS.prestige.verb or LABELS.prestige.name)
-		else Format.percent(progress)
+	Widgets.setButtonText(
+		self.action,
+		if ready then string.upper(LABELS.prestige.verb or LABELS.prestige.name) else Format.percent(progress)
+	)
 end
 
 function PrestigePanel.toggle(self)

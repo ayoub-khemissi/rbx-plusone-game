@@ -258,8 +258,12 @@ Set either to `nil` and that surface goes smooth again. Other clean candidates:
 An interface pattern must be **seamless and low contrast**. A brick or wood texture
 works badly here: the motif shows through, and the text sits on top of it.
 
-One consequence worth knowing: a button draws its own text, and no child can get
-underneath that, and a TextButton already spends its single UIStroke on its border —
-so button text cannot wear an outline of its own. If you ever want a grain heavy
-enough to trouble the glyphs, moving a button's text into a child label is the fix,
-and the outline comes with it.
+A button writes its words in a child label rather than in itself, which is what keeps
+the grain **under** them — and it is not only the grain: a UIGradient tints the glyphs
+of the object it is on, so the gloss on a button used to dim its own white text
+towards the bottom. A gradient does not reach descendants. The label also carries the
+dark outline every big number in the game wears, which a TextButton could never have
+had: it spends its single UIStroke on its border.
+
+Set a button's words through `Widgets.setButtonText`, never by assigning `.Text` —
+that writes into a string nothing draws.

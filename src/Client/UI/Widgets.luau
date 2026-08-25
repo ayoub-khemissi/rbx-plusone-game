@@ -48,6 +48,21 @@ end
 local painters: { [TextButton]: () -> () } = setmetatable({}, { __mode = "k" }) :: any
 
 --[[
+	The label a button writes its words in, rather than the button itself.
+
+	A UIGradient tints the GLYPHS of the object it is on as well as its background,
+	so the gloss on a button was dimming its own text towards the bottom — white text
+	that came out grey. A gradient does not reach descendants, so a label inside the
+	button escapes it.
+
+	Two things fall out of that, and both were wanted anyway: a TextButton spends its
+	single UIStroke on its border and can never outline its text, while a label has
+	one of its own; and the grain, which lies over everything the button draws, ends
+	up UNDER the words instead of over them.
+]]
+local captions: { [TextButton]: TextLabel } = setmetatable({}, { __mode = "k" }) :: any
+
+--[[
 	How a button answers the pointer, and it answers WITHOUT CHANGING SIZE.
 
 	It used to grow, and growing is the wrong tool: a button that swells takes room
@@ -334,18 +349,8 @@ function Widgets.button(parent: Instance, options): TextButton
 	button.BackgroundColor3 = options.color or Theme.color.positive
 	button.AutoButtonColor = false
 	button.BorderSizePixel = 0
-	button.Font = options.font or Theme.font.title
-	button.Text = options.text or ""
-	button.TextColor3 = options.textColor or Theme.color.textOnColor
+	button.Text = ""
 	button.LayoutOrder = options.layoutOrder or 0
-
-	if options.textSize then
-		button.TextScaled = false
-		button.TextSize = options.textSize
-	else
-		button.TextScaled = true
-	end
-
 	button.Parent = parent
 
 	--[[
@@ -446,6 +451,22 @@ function Widgets.button(parent: Instance, options): TextButton
 	painters[button] = paint
 	paint()
 
+	local caption = Widgets.label(button, {
+		name = "Caption",
+		size = UDim2.fromScale(1, 1),
+		font = options.font or Theme.font.title,
+		textSize = options.textSize,
+		textScaled = options.textSize == nil,
+		align = options.align or Enum.TextXAlignment.Center,
+		color = options.textColor or Theme.color.textOnColor,
+		outline = if options.outline == false then nil else Theme.stroke.text,
+		text = options.text or "",
+	})
+	caption.TextYAlignment = options.alignY or Enum.TextYAlignment.Center
+	caption.ZIndex = button.ZIndex + 1
+	caption.Active = false
+	captions[button] = caption
+
 	--[[
 		A dead button must not answer: lighting under the pointer is a promise that
 		pressing will do something.
@@ -498,11 +519,34 @@ function Widgets.setEnabled(button: TextButton, enabled: boolean)
 	button:SetAttribute("Disabled", not enabled)
 	button.Active = enabled
 	button.Selectable = enabled
-	button.TextTransparency = if enabled then 0 else 0.25
+
+	local caption = captions[button]
+	if caption then
+		caption.TextTransparency = if enabled then 0 else 0.25
+	end
 
 	local paint = painters[button]
 	if paint then
 		paint()
+	end
+end
+
+--[[
+	What a button says, and where in the button it says it.
+
+	Through here rather than by assigning `.Text`, because the words live in a child
+	label — see `captions`. Setting the button's own text writes into a string
+	nothing draws.
+]]
+function Widgets.setButtonText(button: TextButton, text: string, align: Enum.TextXAlignment?)
+	local caption = captions[button]
+	if not caption then
+		return
+	end
+
+	caption.Text = text
+	if align then
+		caption.TextXAlignment = align
 	end
 end
 

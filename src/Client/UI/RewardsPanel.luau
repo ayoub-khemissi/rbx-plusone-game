@@ -151,9 +151,10 @@ function RewardsPanel.refresh(self)
 	local daily = status.daily
 	if daily then
 		self.dailyDetail.Text = `Day {daily.day} — streak of {daily.streak}`
-		self.dailyButton.Text = if daily.claimable
-			then "CLAIM"
-			else `NEXT IN {Format.duration(daily.secondsRemaining)}`
+		Widgets.setButtonText(
+			self.dailyButton,
+			if daily.claimable then "CLAIM" else `NEXT IN {Format.duration(daily.secondsRemaining)}`
+		)
 		Widgets.setButtonColor(
 			self.dailyButton,
 			if daily.claimable then Theme.color.positive else Theme.color.locked
@@ -163,9 +164,10 @@ function RewardsPanel.refresh(self)
 	local chest = status.chest
 	if chest then
 		self.chestDetail.Text = `+{Format.abbreviate((chest.grant and chest.grant.coins) or 0)} Coins`
-		self.chestButton.Text = if chest.claimable
-			then "OPEN"
-			else `READY IN {Format.duration(chest.secondsRemaining)}`
+		Widgets.setButtonText(
+			self.chestButton,
+			if chest.claimable then "OPEN" else `READY IN {Format.duration(chest.secondsRemaining)}`
+		)
 		Widgets.setButtonColor(
 			self.chestButton,
 			if chest.claimable then Theme.color.positive else Theme.color.locked

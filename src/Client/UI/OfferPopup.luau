@@ -98,7 +98,7 @@ function OfferPopup.refresh(self)
 	self.current = offer
 	self.title.Text = `{offer.icon or "🎁"} {offer.title}`
 	self.description.Text = offer.description or ""
-	self.action.Text = if offer.robux then `R$ {offer.robux}` else "VIEW"
+	Widgets.setButtonText(self.action, if offer.robux then `R$ {offer.robux}` else "VIEW")
 	self.card.Visible = true
 end
 

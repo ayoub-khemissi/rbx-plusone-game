@@ -243,7 +243,7 @@ function ShopPanel.render(self)
 			row.level.Text = self:_explain(gate.unmet[1])
 			row.level.TextColor3 = Theme.color.negative
 			-- The padlock says it; the row already says why.
-			row.buy.Text = ""
+			Widgets.setButtonText(row.buy, "")
 			row.lock.Visible = true
 			row.price.Visible = false
 			Widgets.setEnabled(row.buy, false)
@@ -253,15 +253,13 @@ function ShopPanel.render(self)
 		row.lock.Visible = false
 
 		if self.catalog:isMaxed(definition.id, currentLevel) then
-			row.buy.Text = "MAX"
-			row.buy.TextXAlignment = Enum.TextXAlignment.Center
+			Widgets.setButtonText(row.buy, "MAX", Enum.TextXAlignment.Center)
 			row.price.Visible = false
 			Widgets.setEnabled(row.buy, false)
 		else
 			local cost = self.catalog:costFor(definition.id, currentLevel, self.state:get("Prestiges"))
 			local affordable = coins >= cost
-			row.buy.Text = Format.abbreviate(cost)
-			row.buy.TextXAlignment = Enum.TextXAlignment.Right
+			Widgets.setButtonText(row.buy, Format.abbreviate(cost), Enum.TextXAlignment.Right)
 			row.price.Visible = true
 			--[[
 				A row you cannot pay for is left ON. The price is the answer, the
