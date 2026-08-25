@@ -24,6 +24,16 @@ local REQUIREMENTS = Requirements.new()
 local ROW_HEIGHT = 100
 local ROW_PADDING = 16
 local TEXT_LEFT = 68 -- clear of the 52px icon, with air between the two
+--[[
+	How the width of a row is divided.
+
+	The button holds a price and nothing else — four or five characters and a coin —
+	so it is sized for that rather than given a third of the row out of habit. What
+	it gives back goes to the description, which is the part of a row that has
+	something to say and was being cut off to make room for whitespace.
+]]
+local BUY_WIDTH = 0.24
+local TEXT_WIDTH = 0.72
 
 local ShopPanel = {}
 ShopPanel.__index = ShopPanel
@@ -80,7 +90,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	})
 
 	local name = Widgets.label(row, {
-		size = UDim2.new(0.58, -TEXT_LEFT, 0, 26),
+		size = UDim2.new(TEXT_WIDTH, -TEXT_LEFT, 0, 26),
 		position = UDim2.fromOffset(TEXT_LEFT, 0),
 		font = Theme.font.title,
 		textSize = Theme.text.big,
@@ -88,7 +98,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	})
 
 	Widgets.label(row, {
-		size = UDim2.new(0.58, -TEXT_LEFT, 0, 20),
+		size = UDim2.new(TEXT_WIDTH, -TEXT_LEFT, 0, 20),
 		position = UDim2.fromOffset(TEXT_LEFT, 28),
 		font = Theme.font.body,
 		textSize = Theme.text.small,
@@ -97,7 +107,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	})
 
 	local level = Widgets.label(row, {
-		size = UDim2.new(0.58, -TEXT_LEFT, 0, 18),
+		size = UDim2.new(TEXT_WIDTH, -TEXT_LEFT, 0, 18),
 		position = UDim2.fromOffset(TEXT_LEFT, 48),
 		font = Theme.font.number,
 		textSize = Theme.text.body,
@@ -107,7 +117,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 
 	local buy = Widgets.button(row, {
 		text = "-",
-		size = UDim2.new(0.34, 0, 0, 56),
+		size = UDim2.new(BUY_WIDTH, 0, 0, 56),
 		position = UDim2.fromScale(1, 0.5),
 		anchorPoint = Vector2.new(1, 0.5),
 		textSize = Theme.text.big,
