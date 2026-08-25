@@ -287,7 +287,9 @@ local function gaugeChip(parent: Instance, options)
 		end
 
 		for _, segment in gauge.segments do
-			segment.instance:Destroy()
+			-- Through the bar's own teardown: it has a stepper to let go of, and a
+			-- gauge is rebuilt every time an air jump is bought.
+			segment.destroy()
 		end
 		gauge.segments = {}
 
@@ -331,6 +333,7 @@ function Hud.new(parent: Instance, state)
 		position = UDim2.new(0.5, 0, 1, -18),
 		anchorPoint = Vector2.new(0.5, 1),
 		color = Theme.color.info,
+		sheen = true,
 	})
 
 	self.stageLabel = Widgets.label(self.stageBar.instance, {

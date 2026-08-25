@@ -27,6 +27,20 @@ local Widgets = {}
 local BAR_EDGE = 0.002
 local BAR_SPEED = 12
 
+--[[
+	The sheen: how a filled bar keeps looking filled rather than painted.
+
+	A highlight crosses it, then the bar rests. The rest is the point — a shimmer
+	that never stops is wallpaper within a minute, and it also means writing a
+	ColorSequence on every frame forever. This writes during the sweep and once
+	when it ends, which is a fifth of the time.
+]]
+local SHEEN_PERIOD = 3.4 -- seconds between one sweep and the next
+local SHEEN_SWEEP = 0.75 -- how long a sweep takes to cross
+local SHEEN_WIDTH = 0.18 -- how wide the highlight is, as a share of the bar
+local SHEEN_LIFT = 0.22 -- how much lighter the left end rests than the right
+local SHEEN_GLOW = 0.55 -- how much lighter the highlight is at its centre
+
 function Widgets.corner(parent: Instance, radius: UDim?)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = radius or Theme.radius.button
@@ -269,6 +283,66 @@ end
 	The cost is that a NumberSequence cannot be tweened, so the bar animates itself
 	on Heartbeat while it is moving and disconnects the moment it settles.
 ]]
+--[[ A colour lifted towards white, which is what a highlight is made of. ]]
+local function lift(color: Color3, amount: number): Color3
+	return color:Lerp(Color3.new(1, 1, 1), amount)
+end
+
+--[[
+	The colour ramp along a bar: a resting gradient, plus a highlight centred on
+	`phase`.
+
+	It has to be ONE ColorSequence on ONE UIGradient, because that gradient is
+	already the transparency mask that gives the fill its cut edge — a second
+	gradient cannot be added to the same frame, and a child carrying it would not be
+	masked and would spill past the cut. Colour and mask therefore share an object,
+	which works because they are separate properties of it.
+
+	`phase` runs from below zero to above one so the highlight enters and leaves
+	rather than appearing in place. Keypoints must be strictly increasing and must
+	start at 0 and end at 1, so they are pushed through a filter rather than
+	assumed.
+]]
+local function sheenRamp(base: Color3, phase: number): ColorSequence
+	local resting = lift(base, SHEEN_LIFT)
+
+	local function at(position: number): Color3
+		local ground = resting:Lerp(base, position)
+		local distance = math.abs(position - phase) / SHEEN_WIDTH
+		if distance >= 1 then
+			return ground
+		end
+		-- Squared, so the band has no edge to catch the eye on.
+		return ground:Lerp(lift(base, SHEEN_GLOW), (1 - distance) ^ 2)
+	end
+
+	local points = {}
+	local function push(position: number)
+		local clamped = math.clamp(position, 0, 1)
+		local previous = points[#points]
+		if previous and clamped <= previous.Time + 0.01 then
+			return
+		end
+		table.insert(points, ColorSequenceKeypoint.new(clamped, at(clamped)))
+	end
+
+	push(0)
+	for _, offset in { -1, -0.5, 0, 0.5, 1 } do
+		push(phase + offset * SHEEN_WIDTH)
+	end
+
+	local last = points[#points]
+	if last.Time < 1 then
+		if last.Time > 0.99 then
+			points[#points] = ColorSequenceKeypoint.new(1, last.Color)
+		else
+			table.insert(points, ColorSequenceKeypoint.new(1, at(1)))
+		end
+	end
+
+	return ColorSequence.new(points)
+end
+
 function Widgets.bar(parent: Instance, options)
 	local track = Instance.new("Frame")
 	track.Name = options.name or "Bar"
@@ -302,6 +376,7 @@ function Widgets.bar(parent: Instance, options)
 
 	local shown, target = 0, 0
 	local stepper: RBXScriptConnection? = nil
+	local sheen: RBXScriptConnection? = nil
 
 	local function paint(ratio: number)
 		if ratio <= 0 then
@@ -344,8 +419,44 @@ function Widgets.bar(parent: Instance, options)
 
 	paint(0)
 
+	--[[
+		The sheen, opt-in. It is worth its frames on the one bar a player watches
+		fill; on a dash cooldown the size of a thumbnail it would be a twitch.
+	]]
+	if options.sheen == true then
+		local fillColor = fill.BackgroundColor3
+		local resting = ColorSequence.new(lift(fillColor, SHEEN_LIFT), fillColor)
+		local sweeping = false
+
+		mask.Color = resting
+		sheen = RunService.Heartbeat:Connect(function()
+			local cycle = os.clock() % SHEEN_PERIOD
+			if cycle < SHEEN_SWEEP then
+				-- Entering from off one end and leaving past the other.
+				local travel = cycle / SHEEN_SWEEP
+				mask.Color = sheenRamp(fillColor, -SHEEN_WIDTH + travel * (1 + SHEEN_WIDTH * 2))
+				sweeping = true
+			elseif sweeping then
+				-- Written once, then nothing until the next sweep.
+				mask.Color = resting
+				sweeping = false
+			end
+		end)
+	end
+
 	return {
 		instance = track,
+		destroy = function()
+			if sheen then
+				sheen:Disconnect()
+				sheen = nil
+			end
+			if stepper then
+				stepper:Disconnect()
+				stepper = nil
+			end
+			track:Destroy()
+		end,
 		set = function(ratio: number)
 			target = math.clamp(ratio, 0, 1)
 			if not stepper and shown ~= target then
