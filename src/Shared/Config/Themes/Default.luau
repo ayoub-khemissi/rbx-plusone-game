@@ -140,10 +140,21 @@ local theme: Theme = {
 	-- Optional decoration. Leave a field out and the surface stays flat, which is
 	-- perfectly readable: a texture is polish, never a requirement.
 	textures = {
-		-- A seamless tile laid faintly over every panel, at 8% opacity: it gives the
-		-- surface a grain instead of a colour. Any seamless texture works — see
-		-- docs/TEXTURES.md for the ones already available.
-		panelPattern = "rbxassetid://4621488899",
+		--[[
+			Two seamless tiles, laid faintly over the flat fills: colour alone renders
+			as vinyl, and a grain under it reads as a moulded object.
+
+			They are chosen for what they sit on. The panels wear a grid of large
+			squares, which is the plate a simulator window is built from and reads
+			well across a wide surface. The buttons wear a fine rough plaster, because
+			a grid on something the size of a button becomes a motif competing with
+			the word written across it.
+
+			Any seamless, low-contrast texture works — see docs/TEXTURES.md. Set
+			either to nil and that surface goes smooth again.
+		]]
+		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
+		buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's
 			own sparkle texture is used, which ships with every Roblox install — so the

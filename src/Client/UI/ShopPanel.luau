@@ -112,13 +112,18 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 		anchorPoint = Vector2.new(1, 0.5),
 		textSize = Theme.text.big,
 		color = Theme.color.positive,
+		-- Given to the button rather than added afterwards: a padding added later
+		-- shrinks the grain it carries and leaves a bare margin around it.
+		paddingRight = 14,
 		onClick = function()
 			self.remotes.events.BuyUpgrade:FireServer(definition.id)
 		end,
 	})
 
 	-- The currency is shown, not spelled: an emoji would need a font the button does
-	-- not have, and the pack already has the very icon the counter uses.
+	-- not have, and the pack already has the very icon the counter uses. Only the
+	-- RIGHT side is padded: padding the left would push this icon along with the
+	-- text, and it reads as a price tag exactly where it was put.
 	local price = Widgets.icon(buy, {
 		name = "Currency",
 		image = LABELS.coins.image,
@@ -128,13 +133,6 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 		anchorPoint = Vector2.new(0, 0.5),
 	});
 	(price :: any).Active = false
-
-	-- Padding on the LEFT would push the icon along with the text, since it insets
-	-- every child. The price is pushed to the right edge instead, which leaves the
-	-- icon where it was put and reads as a price tag.
-	local pad = Instance.new("UIPadding")
-	pad.PaddingRight = UDim.new(0, 14)
-	pad.Parent = buy
 
 	return { row = row, name = name, icon = icon, level = level, buy = buy, price = price }
 end

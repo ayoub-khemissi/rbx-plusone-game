@@ -74,6 +74,7 @@ return table.freeze({
 
 	texture = table.freeze({
 		panelPattern = Config.Theme.textures and Config.Theme.textures.panelPattern,
+		buttonPattern = Config.Theme.textures and Config.Theme.textures.buttonPattern,
 	}),
 
 	--[[

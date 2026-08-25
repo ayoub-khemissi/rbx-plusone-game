@@ -166,6 +166,46 @@ function Widgets.scaled(screen: ScreenGui): Frame
 	return root
 end
 
+--[[
+	A seamless tile laid over a surface, to keep a flat fill from reading as paint.
+
+	Colour alone renders as vinyl at this size; a grain under it reads as a moulded
+	object, which is the look every simulator interface is after. It has to be low
+	contrast and seamless — a motif with an edge in it becomes a pattern the eye
+	follows instead of a texture it ignores, and text has to sit on top of it.
+
+	`inset` CANCELS THE PARENT'S PADDING. The grain is a child, so a UIPadding on the
+	surface shrinks it too, and what shows is a textured box floating inside a bare
+	margin of flat colour. Giving the padding to the widget that owns the surface is
+	what makes the compensation exact.
+
+	On a button it lies over the glyphs as well, because a TextButton draws its own
+	text and no child can get underneath that. At this opacity the veil is nothing;
+	at a heavier one it would be the reason to move the text into a child.
+]]
+function Widgets.surface(parent: GuiObject, options): ImageLabel?
+	if not options.image then
+		return nil
+	end
+
+	local inset = options.inset or { left = 0, right = 0, top = 0, bottom = 0 }
+	local grain = Instance.new("ImageLabel")
+	grain.Name = "Surface"
+	grain.BackgroundTransparency = 1
+	grain.Image = options.image
+	grain.ScaleType = Enum.ScaleType.Tile
+	grain.TileSize = UDim2.fromOffset(options.tile or 64, options.tile or 64)
+	grain.ImageTransparency = options.transparency or 0.92
+	grain.Position = UDim2.fromOffset(-inset.left, -inset.top)
+	grain.Size = UDim2.new(1, inset.left + inset.right, 1, inset.top + inset.bottom)
+	grain.ZIndex = options.zIndex or 0
+	grain.Active = false
+	grain.Parent = parent
+
+	Widgets.corner(grain, options.radius)
+	return grain
+end
+
 function Widgets.card(parent: Instance, options): Frame
 	local card = Instance.new("Frame")
 	card.Name = options.name or "Card"
@@ -185,23 +225,17 @@ function Widgets.card(parent: Instance, options): Frame
 	--[[
 		The tile is OPT-IN, and only windows ask for it.
 
-		It is a child like any other, so a UIPadding on the card shrinks it too: the
-		grain then covers the inner box only, leaving a bare margin around it, and
-		everything inside looks glued to the edge of a smaller box. On a window,
-		whose padding is on an inner content frame, it fills correctly.
+		A card's padding lives on an inner content frame rather than on the card, so
+		there is nothing here for the grain to compensate for; a chip that padded
+		itself would have to say so.
 	]]
-	if Theme.texture.panelPattern and options.pattern == true then
-		local pattern = Instance.new("ImageLabel")
-		pattern.Name = "Pattern"
-		pattern.Size = UDim2.fromScale(1, 1)
-		pattern.BackgroundTransparency = 1
-		pattern.Image = Theme.texture.panelPattern
-		pattern.ScaleType = Enum.ScaleType.Tile
-		pattern.TileSize = UDim2.fromOffset(64, 64)
-		pattern.ImageTransparency = 0.92
-		pattern.ZIndex = 0
-		pattern.Parent = card
-		Widgets.corner(pattern, radius)
+	if options.pattern == true then
+		Widgets.surface(card, {
+			image = Theme.texture.panelPattern,
+			radius = radius,
+			tile = 64,
+			transparency = 0.92,
+		})
 	end
 
 	return card
@@ -270,7 +304,39 @@ function Widgets.button(parent: Instance, options): TextButton
 
 	button.Parent = parent
 
+	--[[
+		A button owns its padding rather than being given one afterwards.
+
+		Not a preference: the grain below is a child, so a UIPadding added later
+		shrinks it and leaves a bare margin of flat colour around a textured box.
+		Owning the padding is what lets the compensation be exact.
+	]]
+	local inset = {
+		left = options.padding or 0,
+		right = options.paddingRight or options.padding or 0,
+		top = options.padding or 0,
+		bottom = options.padding or 0,
+	}
+	if inset.left > 0 or inset.right > 0 then
+		local padding = Instance.new("UIPadding")
+		padding.PaddingLeft = UDim.new(0, inset.left)
+		padding.PaddingRight = UDim.new(0, inset.right)
+		padding.PaddingTop = UDim.new(0, inset.top)
+		padding.PaddingBottom = UDim.new(0, inset.bottom)
+		padding.Parent = button
+	end
+
 	Widgets.corner(button, options.radius)
+	-- Grain, then gloss: a flat fill at this size reads as vinyl without both.
+	if options.pattern ~= false then
+		Widgets.surface(button, {
+			image = Theme.texture.buttonPattern,
+			radius = options.radius or Theme.radius.button,
+			inset = inset,
+			tile = 48,
+			transparency = 0.9,
+		})
+	end
 	if options.gradient ~= false then
 		Widgets.gradient(button)
 	end

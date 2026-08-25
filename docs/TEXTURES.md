@@ -212,18 +212,31 @@ rule.
 
 ## Textures in the interface
 
-The theme lays one of these textures over the menu panels at 8% opacity: it gives the
-surface some grain without ever getting in the way of reading. It is one line in
+The theme lays two of these textures faintly over the interface, at 8 to 10% opacity.
+Colour alone renders as vinyl; a grain under it reads as a moulded object, which is
+the look every simulator interface is after. Two lines in
 `src/Shared/Config/Themes/Default.luau`:
 
 ```lua
 textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
+	buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
 },
 ```
 
-Set it to `nil` and the panels go smooth again. The other clean candidates for this
-use: `marble`, `white_plaster_rough`, `plaster_grey`, `large_floor_tiles`.
+**They are chosen for what they sit on.** The panels wear a grid of large squares —
+the plate a simulator window is built from, and a motif that reads well across a wide
+surface. The buttons wear a fine rough plaster, because a grid on something the size
+of a button becomes a pattern competing with the word written across it.
 
-A menu pattern must be **seamless and low contrast**. A brick or wood texture works
-badly here: the motif shows through, and the text sits on top of it.
+Set either to `nil` and that surface goes smooth again. Other clean candidates:
+`marble`, `plaster_grey`, `large_floor_tiles` for panels; `metal`, `plaster_grey` for
+buttons.
+
+An interface pattern must be **seamless and low contrast**. A brick or wood texture
+works badly here: the motif shows through, and the text sits on top of it.
+
+One consequence worth knowing: a button draws its own text, and no child can get
+underneath that — so the grain lies over the glyphs as well. At this opacity the veil
+is nothing. Anything heavier would be the reason to move a button's text into a child
+label of its own.

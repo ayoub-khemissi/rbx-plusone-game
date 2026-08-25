@@ -400,6 +400,21 @@ describe("Config.Theme", function()
 		end
 	end)
 
+	--[[
+		A texture the theme names has to be a texture, not an empty string — which is
+		what a half-finished copy from the catalogue leaves behind, and it draws as a
+		blank grey sheet over the surface it was meant to grain.
+	]]
+	it("names a real texture, or none at all", function()
+		for _, key in { "panelPattern", "buttonPattern" } do
+			local texture = Config.Theme.textures[key]
+			if texture ~= nil then
+				expect(texture).toBeA("string")
+				expect(string.match(texture, "^rbxassetid://%d+$")).never.toBeNil()
+			end
+		end
+	end)
+
 	it("carries no balancing number", function()
 		expect(Config.Theme.labels.speed.baseWalkSpeed).toBeNil()
 		expect(Config.Theme.requiredSpeed).toBeNil()

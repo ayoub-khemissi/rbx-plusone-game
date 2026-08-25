@@ -285,6 +285,7 @@ function PrestigePanel.new(parent: Instance, state, remotes)
 			anchorPoint = Vector2.new(1, 0),
 			color = Theme.color.accentDark,
 			textSize = Theme.text.body,
+			padding = 12,
 			onClick = function()
 				self.remotes.events.PromptPurchase:FireServer("product", product.id)
 			end,
@@ -292,7 +293,6 @@ function PrestigePanel.new(parent: Instance, state, remotes)
 		self.skip.ZIndex = 7
 		-- The name sits high so the price line underneath has room of its own.
 		self.skip.TextYAlignment = Enum.TextYAlignment.Top
-		Widgets.padding(self.skip, 12)
 
 		local note = Widgets.label(self.skip, {
 			name = "Note",
