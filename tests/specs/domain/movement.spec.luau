@@ -158,8 +158,9 @@ describe("DashPolicy", function()
 	local dash, state
 
 	local TUNING = {
-		multipliers = { 1.5, 2, 3, 4, 5, 6 },
-		duration = 0.28,
+		multipliers = { 1.5, 2, 2.75, 3.5, 4.25, 5 },
+		duration = 0.35,
+		floorSpeed = 26,
 		maxSpeed = 200,
 		cooldown = 2,
 	}
@@ -202,8 +203,18 @@ describe("DashPolicy", function()
 		once the character is quick — the same button stops meaning the same thing.
 	]]
 	it("scales the speed with the character's run speed", function()
-		expect(dash:powerFor(1, SLOW)).toBe(SLOW * 2)
+		expect(dash:powerFor(1, FAST)).toBe(FAST * 2)
 		expect(dash:powerFor(1, FAST)).toBeGreaterThan(dash:powerFor(1, SLOW))
+	end)
+
+	--[[
+		The floor, and the reason it exists: a multiple of a slow run speed is a slow
+		dash, so a starting player bought an upgrade that did nothing they could see.
+		A dash has to outrun running from the first minute.
+	]]
+	it("stays a burst even for a character that runs slowly", function()
+		expect(dash:powerFor(0, SLOW)).toBe(TUNING.floorSpeed * TUNING.multipliers[1])
+		expect(dash:powerFor(0, SLOW)).toBeGreaterThan(SLOW * 2)
 	end)
 
 	--[[
@@ -374,8 +385,9 @@ describe("Progression", function()
 			multipliers = buildMultipliers(),
 			jumpBudget = JumpBudget.new({ maxJumpLevel = 3 }),
 			dashPolicy = DashPolicy.new({
-				multipliers = { 1.5, 2, 3, 4, 5, 6 },
-				duration = 0.28,
+				multipliers = { 1.5, 2, 2.75, 3.5, 4.25, 5 },
+				duration = 0.35,
+				floorSpeed = 26,
 				maxSpeed = 200,
 				cooldown = 2,
 			}),

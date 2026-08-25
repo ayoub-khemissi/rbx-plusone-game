@@ -143,10 +143,14 @@ describe("Config.Balance", function()
 		local dash = DashPolicy.new(Config.Balance.dash)
 		local levels = UpgradeCatalog.new(Config.Upgrades):get("dashPower").maxLevel
 
-		expect(dash:multiplierFor(0)).toBeLessThan(2)
-		expect(dash:multiplierFor(levels)).toBe(6)
-		expect(dash:powerFor(1, 20)).toBeGreaterThan(20)
-		expect(dash:powerFor(levels, 20)).toBeGreaterThan(dash:powerFor(1, 20))
+		expect(dash:multiplierFor(0)).toBeLessThan(dash:multiplierFor(1))
+		expect(dash:multiplierFor(levels)).toBe(Config.Balance.dash.multipliers[levels + 1])
+
+		-- A dash has to beat running at the speed a starting player runs at, or the
+		-- first purchase buys nothing anybody can see.
+		local starting = Config.Balance.speedCurve.baseWalkSpeed
+		expect(dash:powerFor(0, starting)).toBeGreaterThan(starting * 2)
+		expect(dash:powerFor(levels, starting)).toBeGreaterThan(dash:powerFor(1, starting))
 		expect(Config.Balance.dash.cooldown).toBeGreaterThan(0)
 	end)
 

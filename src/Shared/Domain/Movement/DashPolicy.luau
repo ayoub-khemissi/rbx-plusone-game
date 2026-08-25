@@ -32,6 +32,8 @@ export type Tuning = {
 	multipliers: { number },
 	-- Seconds the dash is HELD. See powerFor for why this matters more than speed.
 	duration: number,
+	-- The slowest run speed the multiplier is allowed to apply to. See powerFor.
+	floorSpeed: number,
 	maxSpeed: number,
 	cooldown: number,
 }
@@ -54,6 +56,7 @@ function DashPolicy.new(tuning: Tuning): DashPolicy
 		multipliers = tuning.multipliers,
 		maxLevel = #tuning.multipliers - 1,
 		duration = tuning.duration,
+		floorSpeed = tuning.floorSpeed,
 		maxSpeed = tuning.maxSpeed,
 		cooldown = tuning.cooldown,
 	}, DashPolicy)
@@ -90,15 +93,22 @@ end
 	a modest speed for a fraction of a second travels much further, at a velocity
 	the collision solver can still see.
 
-	Capped for that reason and no other: past the ceiling the character skips
-	between two frames. A map built from thin walls will want it lower.
+	IT ALSO HAS A FLOOR. A multiple of the run speed is a small number while the run
+	speed is small, so a level 1 character got a dash barely quicker than walking —
+	the upgrade they had just bought did nothing they could see. The multiplier
+	applies to whichever is greater, the run speed or the floor, so a dash is a
+	burst from the first minute and only starts scaling once running has caught up.
+
+	Capped at the other end for physics and no other reason: past the ceiling the
+	character skips between two frames. A map built from thin walls will want it
+	lower.
 ]]
 function DashPolicy.powerFor(self: DashPolicy, powerLevel: number, walkSpeed: number?): number
 	local speed = if typeof(walkSpeed) == "number" and walkSpeed > 0 then walkSpeed else 0
 	if speed <= 0 then
 		return 0
 	end
-	return math.min(speed * self:multiplierFor(powerLevel), self.maxSpeed)
+	return math.min(math.max(speed, self.floorSpeed) * self:multiplierFor(powerLevel), self.maxSpeed)
 end
 
 function DashPolicy.remainingCooldown(self: DashPolicy, state: State, now: number): number

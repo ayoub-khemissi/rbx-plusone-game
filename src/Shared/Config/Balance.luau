@@ -67,29 +67,29 @@ return table.freeze({
 
 		A single write to the velocity is undone by the Humanoid within two or three
 		frames, so it took absurd numbers to be felt and then crossed walls. Held for
-		0.28s, a modest speed covers real ground at a velocity the collision solver
-		can still see.
+		a third of a second, a modest speed covers real ground at a velocity the
+		collision solver can still see.
 
-		The multipliers are a list, not a curve: they are chosen numbers, and reading
-		the list tells you exactly what the shop sells. Index 1 is the dash with
-		nothing bought; the five after it are the levels of Dash Power.
+		`floorSpeed` is what stops the dash being pointless early. A multiple of the
+		run speed is a small number while the run speed is small: at 16 the dash was
+		barely quicker than walking, so the upgrade did nothing the player could see.
+		The multiplier applies to whichever is greater, the run speed or this floor.
 
-		Distance covered, at the starting run speed of 16:
-		    unimproved  1.5x   6.7 studs
-		    level 1     2x       9
-		    level 2     3x      13
-		    level 3     4x      18
-		    level 4     5x      22
-		    level 5     6x      27
+		Distance covered, against what running covers in the same time:
+
+		    run speed 16   running  6      1.5x 14   2x 18   3.5x 32   5x 46
+		    run speed 40   running 14      1.5x 21   2x 28   3.5x 49   5x 70
+		    run speed 53   running 19      1.5x 28   2x 37   3.5x 65   5x 70
 
 		`maxSpeed` is a physics limit, not a balance one: 200 studs/s is about 3.3
-		studs between two frames, so walls thinner than that can be crossed. Past a
-		run speed of roughly 35 the top levels meet it and stop separating — that is
-		the honest cost of not going through the level design.
+		studs between two frames, so walls thinner than that can be crossed. It only
+		meets the top levels once running is quick, which is late enough to be worth
+		the trade.
 	]]
 	dash = table.freeze({
-		multipliers = table.freeze({ 1.5, 2, 3, 4, 5, 6 }),
-		duration = 0.28,
+		multipliers = table.freeze({ 1.5, 2, 2.75, 3.5, 4.25, 5 }),
+		duration = 0.35,
+		floorSpeed = 26,
 		maxSpeed = 200,
 		cooldown = 2, -- seconds; a dash is a decision, not a resource to dump
 	}),
