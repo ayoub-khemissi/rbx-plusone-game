@@ -19,6 +19,7 @@ local Widgets = require(script.Parent.Widgets)
 local Requirements = require(Shared.Domain.Progression.Requirements)
 
 local LABELS = Config.Theme.labels
+local ICONS = Config.Theme.icons
 local REQUIREMENTS = Requirements.new()
 
 local ROW_HEIGHT = 100
@@ -144,7 +145,25 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	});
 	(price :: any).Active = false
 
-	return { row = row, name = name, icon = icon, level = level, buy = buy, price = price }
+	--[[
+		The shut padlock, shown in place of the price when a row is not open yet.
+
+		A word had to be read and then thought about; the padlock is recognised
+		before it is read, which is all a button needs to say when the reason is
+		already written in red on the row beside it.
+	]]
+	local lock = Widgets.icon(buy, {
+		name = "Locked",
+		image = ICONS.locked,
+		fallback = "X",
+		size = UDim2.fromOffset(30, 30),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchorPoint = Vector2.new(0.5, 0.5),
+		visible = false,
+	});
+	(lock :: any).Active = false
+
+	return { row = row, name = name, icon = icon, level = level, buy = buy, price = price, lock = lock }
 end
 
 --[[
@@ -214,24 +233,34 @@ function ShopPanel.render(self)
 		if not gate.met then
 			row.level.Text = self:_explain(gate.unmet[1])
 			row.level.TextColor3 = Theme.color.negative
-			row.buy.Text = "LOCKED"
-			row.buy.BackgroundColor3 = Theme.color.locked
-			row.buy.TextXAlignment = Enum.TextXAlignment.Center
+			-- The padlock says it; the row already says why.
+			row.buy.Text = ""
+			row.lock.Visible = true
 			row.price.Visible = false
+			Widgets.setEnabled(row.buy, false)
 			continue
 		end
 
+		row.lock.Visible = false
+
 		if self.catalog:isMaxed(definition.id, currentLevel) then
 			row.buy.Text = "MAX"
-			row.buy.BackgroundColor3 = Theme.color.locked
 			row.buy.TextXAlignment = Enum.TextXAlignment.Center
 			row.price.Visible = false
+			Widgets.setEnabled(row.buy, false)
 		else
 			local cost = self.catalog:costFor(definition.id, currentLevel, self.state:get("Prestiges"))
+			local affordable = coins >= cost
 			row.buy.Text = Format.abbreviate(cost)
-			row.buy.BackgroundColor3 = if coins >= cost then Theme.color.positive else Theme.color.locked
 			row.buy.TextXAlignment = Enum.TextXAlignment.Right
 			row.price.Visible = true
+			--[[
+				A row you cannot pay for is left ON. The price is the answer, the
+				player can see it, and pressing it is how they find out the server
+				agrees — switching it off would hide a number that is still true.
+			]]
+			Widgets.setEnabled(row.buy, true)
+			row.buy.BackgroundColor3 = if affordable then Theme.color.positive else Theme.color.locked
 		end
 	end
 end

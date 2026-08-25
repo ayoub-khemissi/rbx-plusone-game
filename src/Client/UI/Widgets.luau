@@ -660,11 +660,12 @@ function Widgets.icon(parent: Instance, options): GuiObject
 		image.ScaleType = Enum.ScaleType.Fit
 		image.ImageColor3 = options.color or Color3.new(1, 1, 1)
 		image.LayoutOrder = options.layoutOrder or 0
+		image.Visible = if options.visible == nil then true else options.visible
 		image.Parent = parent
 		return image
 	end
 
-	return Widgets.label(parent, {
+	local fallback = Widgets.label(parent, {
 		name = options.name or "Icon",
 		size = options.size or UDim2.fromOffset(32, 32),
 		position = options.position,
@@ -674,6 +675,8 @@ function Widgets.icon(parent: Instance, options): GuiObject
 		layoutOrder = options.layoutOrder,
 		outline = options.outline,
 	})
+	fallback.Visible = if options.visible == nil then true else options.visible
+	return fallback
 end
 
 --[[ An icon followed by a value: the shape every stat takes. ]]
