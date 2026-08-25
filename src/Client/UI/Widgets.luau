@@ -368,7 +368,7 @@ function Widgets.button(parent: Instance, options): TextButton
 	]]
 	button:SetAttribute("RestingColor", button.BackgroundColor3)
 
-	local rim = Widgets.stroke(button, options.edge or Theme.color.panelEdge, Theme.stroke.button)
+	local rim = Widgets.stroke(button, options.edge or Theme.color.buttonEdge, Theme.stroke.button)
 	local edge = rim.Color
 	button:SetAttribute("RestingEdge", edge)
 	local hovered, pressed = false, false

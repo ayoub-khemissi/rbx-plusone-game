@@ -80,6 +80,8 @@ return table.freeze({
 		textMuted = color("textMuted", Color3.fromRGB(122, 128, 150)),
 		textOnColor = color("textOnColor", Color3.fromRGB(255, 255, 255)),
 
+		buttonEdge = color("buttonEdge", Color3.fromRGB(250, 208, 82)),
+
 		accent = color("accent", Color3.fromRGB(247, 197, 37)),
 		accentDark = color("accentDark", Color3.fromRGB(206, 152, 16)),
 		info = color("info", Color3.fromRGB(59, 178, 240)),

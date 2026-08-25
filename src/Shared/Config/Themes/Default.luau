@@ -100,6 +100,21 @@ local theme: Theme = {
 		-- `outline` is the black worn by every big number so it survives being read
 		-- over a bright sky, a lava pit or a white wall.
 		outline = { 20, 22, 34 },
+
+		--[[
+			The rim around a BUTTON, and the one place the interface wears gold on
+			purpose.
+
+			Panels keep the dark edge: they are large, pale and full of text, and a
+			bright outline around one would frame the reading rather than the card.
+			A button is small, saturated and meant to be pressed — a warm rim lifts
+			it off the panel where the dark edge only sank it into the outline of
+			everything else.
+
+			It is a lighter gold than `accent`, which is the Coin colour: near it,
+			not the same as it.
+		]]
+		buttonEdge = { 250, 208, 82 },
 		text = { 52, 56, 78 },
 		textMuted = { 122, 128, 150 },
 		textOnColor = { 255, 255, 255 },
