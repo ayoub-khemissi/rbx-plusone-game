@@ -49,7 +49,12 @@ local ShopPanel = {}
 ShopPanel.__index = ShopPanel
 
 function ShopPanel.new(parent: Instance, state, remotes)
-	local panel = Panel.new(parent, { name = "Shop", title = "UPGRADES", size = UDim2.fromOffset(600, 480) })
+	local panel = Panel.new(parent, {
+		name = "Shop",
+		title = "UPGRADES",
+		icon = ICONS.shop,
+		size = UDim2.fromOffset(600, 480),
+	})
 
 	local self = setmetatable({
 		panel = panel,

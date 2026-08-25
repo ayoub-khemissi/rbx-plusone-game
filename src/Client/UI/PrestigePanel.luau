@@ -173,6 +173,7 @@ function PrestigePanel.new(parent: Instance, state, remotes)
 		name = "Prestige",
 		title = string.upper(LABELS.prestige.name),
 		titleSize = Theme.text.hero,
+		icon = LABELS.prestige.image,
 		size = UDim2.fromOffset(WIDTH, CONTENT_H + 82),
 	})
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes }, PrestigePanel)

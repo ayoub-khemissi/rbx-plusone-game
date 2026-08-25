@@ -5,6 +5,12 @@
 	A window is a bright card laid over the world with a heavy outline, a title big
 	enough to read across the room, and a close button no one has to hunt for. Views
 	fill `content` and never draw their own frame.
+
+	EACH ONE WEARS ITS OWN ICON, straddling the top edge. It is the same badge the
+	sidebar button that opened the window carries, which is the whole point: the
+	window is recognised as the thing that was pressed before its title has been
+	read. Half in and half out is what makes it read as pinned to the window rather
+	than drawn inside it.
 ]]
 
 local Motion = require(script.Parent.Motion)
@@ -15,6 +21,9 @@ local Panel = {}
 Panel.__index = Panel
 
 local HEADER = 62
+-- Big enough to be the first thing seen, and centred on the top edge so half of it
+-- hangs over the world.
+local BADGE = 68
 
 function Panel.new(parent: Instance, options)
 	local frame = Widgets.card(parent, {
@@ -40,6 +49,17 @@ function Panel.new(parent: Instance, options)
 		text = options.title or "",
 	})
 	header.ZIndex = 6
+
+	if options.icon then
+		local badge = Widgets.icon(frame, {
+			name = "Badge",
+			image = options.icon,
+			size = UDim2.fromOffset(BADGE, BADGE),
+			position = UDim2.fromScale(0.5, 0),
+			anchorPoint = Vector2.new(0.5, 0.5),
+		})
+		badge.ZIndex = 8
+	end
 
 	-- Straddling the corner is deliberate: it is the one control a player looks for
 	-- without reading, and it must never hide behind the content.

@@ -18,7 +18,12 @@ local StorePanel = {}
 StorePanel.__index = StorePanel
 
 function StorePanel.new(parent: Instance, state, remotes)
-	local panel = Panel.new(parent, { name = "Store", title = "STORE", size = UDim2.fromOffset(620, 500) })
+	local panel = Panel.new(parent, {
+		name = "Store",
+		title = "STORE",
+		icon = Config.Theme.icons.store,
+		size = UDim2.fromOffset(620, 500),
+	})
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes, passRows = {} }, StorePanel)
 
 	local list = Widgets.scroll(panel.content, { name = "Items", inset = 8 })

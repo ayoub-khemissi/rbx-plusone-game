@@ -20,7 +20,12 @@ RewardsPanel.__index = RewardsPanel
 local REFRESH_INTERVAL = 5
 
 function RewardsPanel.new(parent: Instance, state, remotes)
-	local panel = Panel.new(parent, { name = "Gifts", title = "GIFTS", size = UDim2.fromOffset(540, 440) })
+	local panel = Panel.new(parent, {
+		name = "Gifts",
+		title = "GIFTS",
+		icon = Config.Theme.icons.gifts,
+		size = UDim2.fromOffset(540, 440),
+	})
 	local self = setmetatable({ panel = panel, state = state, remotes = remotes }, RewardsPanel)
 
 	self.dailyTitle = Widgets.label(panel.content, {
