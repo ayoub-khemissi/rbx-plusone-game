@@ -34,6 +34,24 @@ function Snapshot.new(dependencies: Dependencies): SnapshotFactory
 	return setmetatable(table.clone(dependencies), Snapshot)
 end
 
+--[[
+	Every upgrade the catalogue knows, with the level the player holds — INCLUDING
+	the ones they hold none of.
+
+	Cloning the profile's own table instead reports only what was bought, which is
+	the same thing right up until something is un-bought. A rebirth empties that
+	table, the snapshot then mentions no upgrades at all, and every reader is left
+	holding the last levels it was told about: the shop went on offering level 12 of
+	a row the player no longer owned. A readout has to be able to say zero.
+]]
+function Snapshot._upgrades(self: SnapshotFactory, profile: any)
+	local levels = {}
+	for _, id in self.catalog:ids() do
+		levels[id] = profile.upgrades[id] or 0
+	end
+	return levels
+end
+
 function Snapshot.build(self: SnapshotFactory, session: Session)
 	local profile = session.profile
 	local now = self.clock.now()
@@ -57,7 +75,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 		prestiges = profile.prestiges,
 		highestStage = profile.highestStage,
 		reachedStage = reachedStage,
-		upgrades = table.clone(profile.upgrades),
+		upgrades = self:_upgrades(profile),
 		passes = table.clone(session.passes),
 
 		-- Current run

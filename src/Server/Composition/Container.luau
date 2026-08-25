@@ -194,6 +194,7 @@ function Container.new(options: Options)
 
 	local sessions = SessionRegistry.new()
 	local snapshots = Snapshot.new({
+		catalog = catalog,
 		ladder = ladder,
 		levels = levels,
 		progression = progression,

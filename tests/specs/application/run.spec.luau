@@ -387,6 +387,24 @@ describe("PerformPrestige", function()
 		which is why it goes through a port the server owns rather than a client
 		drawing something for itself.
 	]]
+	--[[
+		A snapshot has to be able to say ZERO. It used to clone the profile's own
+		upgrade table, which reports only what was bought — the same thing right up
+		until something is un-bought. A rebirth empties that table, the snapshot then
+		mentioned no upgrades at all, and every reader kept the last levels it had
+		been told about: the shop went on offering level 12 of a row the player no
+		longer owned.
+	]]
+	it("reports every upgrade as gone after a rebirth", function()
+		session.profile.upgrades.speedGain = 12
+		expect(container.snapshots:build(session).upgrades.speedGain).toBe(12)
+
+		session.profile.speed = container.domain.prestigePolicy:requirementFor(0)
+		container.useCases.performPrestige:run(player)
+
+		expect(container.snapshots:build(session).upgrades.speedGain).toBe(0)
+	end)
+
 	it("celebrates where everyone can see it", function()
 		session.profile.speed = container.domain.prestigePolicy:requirementFor(0)
 		container.useCases.performPrestige:run(player)
