@@ -156,6 +156,28 @@ function Sandbox.build(logger)
 	-- Taken aside before the wipe: see `taggedCoin`.
 	local template = taggedCoin()
 
+	--[[
+		Counted before it is destroyed, and said out loud.
+
+		A map that declares tags is a map somebody BUILT. Wiping one and laying a
+		test platform over it is what this is for, but it is also the last thing its
+		author expected — and from the inside it looks like their work vanished and
+		grew eight cylinders. The attribute that turns this on is easy to set once
+		and forget for a fortnight.
+	]]
+	local tagged = 0
+	for _, name in MapBindings.TAGS do
+		for _, tag in (if typeof(name) == "table" then name else { name }) do
+			tagged += #CollectionService:GetTagged(tag)
+		end
+	end
+	if tagged > 0 then
+		logger:warn(
+			`Sandbox cleared a map that declared {tagged} tagged objects. `
+				.. `Remove the Sandbox attribute from the Workspace to keep your own map.`
+		)
+	end
+
 	-- Everything the previous map left behind, including a previous sandbox.
 	for _, child in workspace:GetChildren() do
 		if not child:IsA("Terrain") and not child:IsA("Camera") then

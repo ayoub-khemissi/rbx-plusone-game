@@ -29,6 +29,12 @@ tags count.
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
 lets a decorated pad be tagged once instead of six times.
 
+> ⚠️ **The test platform wipes the map.** It only runs in Studio, and only while
+> the Workspace carries a `Sandbox` attribute set to `true` — but while it does, it
+> clears the Workspace at every launch and lays its own platform over it. Once you
+> are building a real map, remove that attribute. It warns in the console when it
+> has just destroyed a map that declared tags.
+
 > ⚠️ **A tag is not a name.** The server reads tags and nothing else — a part called
 > `Coin` sitting in the map does nothing at all. Select it in Studio and add the tag
 > in the **Tags** section of the Properties panel, or through the Tag Editor plugin.
