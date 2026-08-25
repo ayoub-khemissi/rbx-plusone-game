@@ -126,12 +126,16 @@ local theme: Theme = {
 			in, and it says it without a word: the number on the chip counts the
 			rebirths, the colour says what they bought.
 
-			They climb the way a player expects rarity to climb — blue, green,
-			violet, crimson — and the last one is the only two-colour pair, because
-			the end of the game should not look like another rung.
+			They climb the way a player expects rarity to climb — sky, green, violet,
+			crimson — and the last one is the only two-colour pair, because the end of
+			the game should not look like another rung.
+
+			The first is deliberately the LIGHTEST of the five. It is the one every
+			player sees first and most, and a dark plate under white glyphs is heavy
+			in the corner of a screen somebody is running across.
 		]]
 		worlds = {
-			{ { 59, 178, 240 }, { 22, 112, 200 } },
+			{ { 110, 205, 255 }, { 45, 145, 230 } },
 			{ { 92, 201, 74 }, { 38, 148, 60 } },
 			{ { 168, 88, 232 }, { 104, 40, 190 } },
 			{ { 240, 88, 96 }, { 188, 32, 58 } },
