@@ -34,7 +34,7 @@ function Panel.new(parent: Instance, options)
 		size = UDim2.new(1, -80, 0, HEADER - 14),
 		position = UDim2.fromOffset(24, 12),
 		font = Theme.font.title,
-		textSize = Theme.text.title,
+		textSize = options.titleSize or Theme.text.title,
 		color = Theme.color.textOnColor,
 		outline = Theme.stroke.textHeavy,
 		text = options.title or "",

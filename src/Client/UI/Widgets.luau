@@ -268,6 +268,11 @@ function Widgets.button(parent: Instance, options): TextButton
 	hover.Parent = button
 
 	button.MouseEnter:Connect(function()
+		-- A dead button must not answer. Growing under the pointer is a promise that
+		-- pressing will do something.
+		if button:GetAttribute("Disabled") == true then
+			return
+		end
 		TweenService:Create(hover, HOVER_TWEEN, { Scale = HOVER_SCALE }):Play()
 	end)
 	button.MouseLeave:Connect(function()
@@ -275,10 +280,46 @@ function Widgets.button(parent: Instance, options): TextButton
 	end)
 
 	if options.onClick then
-		button.Activated:Connect(options.onClick)
+		button.Activated:Connect(function()
+			if button:GetAttribute("Disabled") == true then
+				return
+			end
+			options.onClick()
+		end)
 	end
 
 	return button
+end
+
+--[[
+	Turns a button off, and back on.
+
+	OFF MEANS OFF, everywhere at once: it stops answering the pointer, stops
+	darkening under a press, stops firing, and goes grey. Half of that — a grey
+	button that still grows and still clicks — is worse than no state at all,
+	because the player learns to distrust the colour.
+
+	The resting colour is remembered on the button itself, so a caller never has to
+	hand it back to re-enable one.
+]]
+function Widgets.setEnabled(button: TextButton, enabled: boolean)
+	local resting = button:GetAttribute("RestingColor")
+	if typeof(resting) ~= "Color3" then
+		resting = button.BackgroundColor3
+		button:SetAttribute("RestingColor", resting)
+	end
+
+	button:SetAttribute("Disabled", not enabled)
+	button.AutoButtonColor = enabled
+	button.Active = enabled
+	button.Selectable = enabled
+	button.BackgroundColor3 = if enabled then resting else Theme.color.locked
+	button.TextTransparency = if enabled then 0 else 0.25
+
+	local scale = button:FindFirstChildOfClass("UIScale")
+	if scale and not enabled then
+		scale.Scale = 1
+	end
 end
 
 --[[
