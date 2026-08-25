@@ -39,13 +39,30 @@ otherwise surfaces as a puzzling runtime error much later.
 ## Opening the project in Studio
 
 1. Install the **Rojo** plugin (Plugins → Manage Plugins).
-2. Create an empty place and save it.
+2. Open the place you are building, or create an empty one and save it.
 3. Run `./scripts/serve.ps1` from the project root.
 4. In Studio: *Rojo → Connect*.
 5. Start a **server + client** session (Play, or Test → Start with one player).
 
 In Studio without API access, persistence falls back to memory automatically, so
 the game still runs; nothing is written and nothing is lost.
+
+### What syncs when
+
+Live sync covers **edits to files that already existed when the server started**.
+Two things it does not cover, and both look exactly like "my change did nothing":
+
+| What changed | What it takes |
+| --- | --- |
+| A file's contents | Nothing — saving is enough |
+| A file **added, deleted or renamed** | Restart `serve.ps1`, then *Rojo → Disconnect / Connect* |
+| Anything **server-side** | Stop the session and Play again |
+
+The last one catches everybody. Server scripts run once, at server start: a use
+case, a map binding or the test platform will keep behaving the way it did when
+the session began, however many times the file is saved underneath it. The client
+half of the same change syncs immediately, so half the game updates and half does
+not — which reads as a bug in the code rather than in the workflow.
 
 ## Writing code
 
