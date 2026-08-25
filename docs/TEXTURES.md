@@ -223,9 +223,9 @@ textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
 	panelOpacity = 0.3,
 	panelTile = 64,
-	buttonPattern = "rbxassetid://4621460944", -- Snow2
+	buttonPattern = "rbxassetid://136722711731253", -- ButtonStuds, ours
 	buttonOpacity = 0.55,
-	buttonTile = 64,
+	buttonTile = 96,
 },
 ```
 
@@ -258,11 +258,15 @@ spends the texture's contrast before it is drawn.
 the plate a simulator window is built from, and a motif that reads well across a wide
 surface.
 
-The buttons wear a fine speckle. What it is a photograph *of* does not matter at
-this size — it is chosen for having **no direction and no motif**. A streak has a
-direction, every button gets the same one, and a row of them reads as brushed steel
-panels rather than as moulded pieces, which is why `metal` was dropped from here. A
-grid is worse again: it becomes a pattern competing with the word written across it.
+The buttons wear **studs**, and that tile is not from the pack — it is drawn by
+`tools/make-stud-texture.py` and uploaded as an ordinary Image asset.
+
+Everything in the pack is a photograph of a real material, and at the size of a
+button a photograph of anything reads as grime: plaster, metal and snow were each
+tried here and each looked like dirt on a toy. A moulded plate is what a plastic
+button is made of, and nothing photographic says that. Run the script, upload
+`textures/studs.png`, put the id in the theme — the geometry is four constants at
+the top of the file.
 
 Set either to `nil` and that surface goes smooth again. Other clean candidates:
 `marble`, `plaster_grey`, `large_floor_tiles` for panels; `white_plaster_rough`,

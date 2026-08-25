@@ -176,12 +176,16 @@ local theme: Theme = {
 			squares, which is the plate a simulator window is built from and reads
 			well across a wide surface.
 
-			The buttons wear a fine speckle. What it is a photograph OF does not
-			matter at this size — it is chosen for having no direction and no motif,
-			which is what a small saturated face can carry. A streak has a direction,
-			every button gets the same one, and a row of them reads as brushed steel
-			panels rather than as moulded pieces; a grid becomes a pattern competing
-			with the word written across it. Both were tried here first.
+			The buttons wear STUDS, and that tile is drawn rather than photographed —
+			see tools/make-stud-texture.py. Everything in the imported pack is a
+			photograph of a real material, and at the size of a button a photograph of
+			anything reads as grime: plaster, metal and snow were each tried here and
+			each looked like dirt on a toy. A moulded plate is what a plastic button
+			is made of, and nothing photographic says that.
+
+			The studs are staggered rather than squared, because a square lattice
+			grows visible lines the moment it is tiled and the eye follows them
+			instead of the word on the button.
 
 			The opacities are the dial, and the tiles are how big one repeat is drawn.
 			Too faint and the grain is a rumour nobody sees; too strong and it becomes
@@ -208,9 +212,9 @@ local theme: Theme = {
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
 		panelOpacity = 0.3,
 		panelTile = 64,
-		buttonPattern = "rbxassetid://4621460944", -- Snow2
+		buttonPattern = "rbxassetid://136722711731253", -- ButtonStuds, ours
 		buttonOpacity = 0.55,
-		buttonTile = 64,
+		buttonTile = 96,
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's
 			own sparkle texture is used, which ships with every Roblox install — so the
