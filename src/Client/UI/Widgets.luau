@@ -17,10 +17,16 @@
 ]]
 
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Theme = require(script.Parent.Theme)
 
 local Widgets = {}
+
+-- How much a button grows under the pointer, and how fast. Small: the button has
+-- to answer, not jump. It is a hint that the thing is alive, not an animation.
+local HOVER_SCALE = 1.05
+local HOVER_TWEEN = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 -- How wide the transparency jump of a progress bar is, and how fast the bar chases
 -- a new value. Both are shared by every bar, so they move together.
@@ -249,6 +255,24 @@ function Widgets.button(parent: Instance, options): TextButton
 	if options.gradient ~= false then
 		Widgets.gradient(button)
 	end
+
+	--[[
+		Grows under the pointer.
+
+		A UIScale rather than a size change, so a button inside a list does not shove
+		its neighbours aside every time the mouse crosses it: scaling is drawn, not
+		laid out. Touch devices never fire these, which is correct — there is no
+		hovering with a finger, and the press already answers on its own.
+	]]
+	local hover = Instance.new("UIScale")
+	hover.Parent = button
+
+	button.MouseEnter:Connect(function()
+		TweenService:Create(hover, HOVER_TWEEN, { Scale = HOVER_SCALE }):Play()
+	end)
+	button.MouseLeave:Connect(function()
+		TweenService:Create(hover, HOVER_TWEEN, { Scale = 1 }):Play()
+	end)
 
 	if options.onClick then
 		button.Activated:Connect(options.onClick)

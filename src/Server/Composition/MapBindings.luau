@@ -231,10 +231,17 @@ function MapBindings.bind(container)
 		end)
 	)
 
+	--[[
+		The pad OPENS the window; it does not take the rebirth.
+
+		Standing on a plate is not consent to lose everything the player has earned,
+		and a pad that acts on contact turns a wrong step into a reset. The window
+		states the trade and asks; this only puts it in front of them.
+	]]
 	onTagged(
 		TAGS.prestigePad,
 		padHandler(function(player)
-			useCases.performPrestige:run(player)
+			container.remotes.events.OpenPanel:FireClient(player, "prestige")
 		end)
 	)
 
