@@ -11,6 +11,14 @@
 	grind but milestones. Each level changes which parts of a map are reachable, so
 	they are events, not increments.
 
+	Unlocking and strengthening are separate rows, for both of them. `dash` grants
+	the move, `dashPower` buys how hard it hits; `jump` grants the extra jumps,
+	`jumpPower` buys the height. A row that both unlocked and upgraded would read as
+	neither.
+
+	`requires` gates a row behind anything Domain.Progression.Requirements can ask:
+	another upgrade, a level, a prestige count, a stage, a pass.
+
 	Careful with `jump`: the character starts at jump level 1, so buying level 1 of
 	this upgrade grants the DOUBLE jump and level 2 the triple. The interface shows
 	the real jump level, never the raw upgrade level.
@@ -73,13 +81,27 @@ local definitions: { Definition } = {
 		id = "dash",
 		name = "Dash",
 		icon = "💨",
-		image = "rbxassetid://77760753339626", -- icon:upgradeDash
-		description = "A burst forward. Each level hits harder.",
-		maxLevel = 3,
+		image = "rbxassetid://120516011568071", -- icon:upgradeDash
+		description = "A burst forward, on a cooldown.",
+		maxLevel = 1,
 		baseCost = 1200,
-		costGrowth = 6,
+		costGrowth = 1,
 		effectPerLevel = 1,
 		effect = "dash",
+	},
+	{
+		id = "dashPower",
+		name = "Dash Power",
+		icon = "🚀",
+		image = "rbxassetid://120516011568071", -- icon:upgradeDashPower
+		description = "x2 to x6 your speed, instead of x1.",
+		maxLevel = 5,
+		baseCost = 2000,
+		costGrowth = 3.2,
+		effectPerLevel = 1,
+		effect = "dashPower",
+		-- Buying strength for a dash you do not have would be money for nothing.
+		requires = { { kind = "upgrade", id = "dash", level = 1 } },
 	},
 	{
 		id = "magnet",

@@ -16,7 +16,10 @@ local Panel = require(script.Parent.Panel)
 local Theme = require(script.Parent.Theme)
 local Widgets = require(script.Parent.Widgets)
 
+local Requirements = require(Shared.Domain.Progression.Requirements)
+
 local LABELS = Config.Theme.labels
+local REQUIREMENTS = Requirements.new()
 
 local ShopPanel = {}
 ShopPanel.__index = ShopPanel
@@ -125,16 +128,79 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	return { row = row, level = level, buy = buy, price = price }
 end
 
+--[[
+	Turns an unmet condition into something a player can act on.
+
+	"Locked" is a dead end; "Needs Dash" is a next step. The catalogue is consulted
+	for names so a renamed upgrade renames itself here too.
+]]
+function ShopPanel._explain(self, condition): string
+	if condition.kind == "upgrade" then
+		local needed = self.catalog:get(condition.id)
+		local name = (needed and needed.name) or condition.id
+		return if (condition.level or 1) > 1 then `Needs {name} {condition.level}` else `Needs {name}`
+	elseif condition.kind == "level" then
+		return `Needs {LABELS.level.name} {condition.value}`
+	elseif condition.kind == "prestiges" then
+		return `Needs {condition.value} {LABELS.prestige.name}`
+	elseif condition.kind == "stage" then
+		return `Needs {LABELS.stage.name} {condition.value}`
+	elseif condition.kind == "pass" then
+		return `Needs the {condition.id} pass`
+	end
+	return "Locked"
+end
+
+--[[
+	The same requirement rule the server enforces, run locally to draw the row.
+
+	The profile is rebuilt from the replicated state rather than sent whole: the
+	client never sees the save, and the three fields a condition can ask about are
+	already on screen.
+]]
+function ShopPanel._gateFor(self, definition)
+	return REQUIREMENTS:evaluate(definition.requires, {
+		profile = {
+			upgrades = self.state.upgrades,
+			prestiges = self.state:get("Prestiges"),
+			highestStage = self.state:get("HighestStage"),
+		},
+		level = self.state:get("Level"),
+		passes = self.state.passes,
+	})
+end
+
 function ShopPanel.render(self)
 	local coins = self.state:get("Coins")
 
 	for _, definition in Config.Upgrades do
 		local row = self.rows[definition.id]
 		local currentLevel = self.state:levelOf(definition.id)
+		local gate = self:_gateFor(definition)
 
 		row.level.Text = if definition.maxLevel > 0
 			then `Level {currentLevel} / {definition.maxLevel}`
 			else `Level {currentLevel}`
+		row.level.TextColor3 = Theme.color.accentDark
+
+		-- A locked row keeps its price hidden: what it costs is not the question
+		-- being asked yet.
+		row.row.BackgroundColor3 = if gate.met then Theme.color.panelSoft else Theme.color.panel
+		for _, child in row.row:GetChildren() do
+			if child:IsA("ImageLabel") then
+				child.ImageTransparency = if gate.met then 0 else 0.6
+			end
+		end
+
+		if not gate.met then
+			row.level.Text = self:_explain(gate.unmet[1])
+			row.level.TextColor3 = Theme.color.negative
+			row.buy.Text = "LOCKED"
+			row.buy.BackgroundColor3 = Theme.color.locked
+			row.buy.TextXAlignment = Enum.TextXAlignment.Center
+			row.price.Visible = false
+			continue
+		end
 
 		if self.catalog:isMaxed(definition.id, currentLevel) then
 			row.buy.Text = "MAX"

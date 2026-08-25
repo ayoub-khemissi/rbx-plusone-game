@@ -20,6 +20,7 @@ local KNOWN_EFFECTS = {
 	jumpPower = true,
 	jumps = true,
 	dash = true,
+	dashPower = true,
 	magnet = true,
 }
 
@@ -67,8 +68,13 @@ describe("Config.Upgrades", function()
 		local catalog = UpgradeCatalog.new(Config.Upgrades)
 		for _, id in catalog:ids() do
 			expect(catalog:costFor(id, 0)).toBeGreaterThan(0)
-			expect(catalog:costFor(id, 1)).toBeGreaterThan(catalog:costFor(id, 0))
 			expect(catalog:costFor(id, 20)).toBeLessThan(math.huge)
+
+			-- A one-level upgrade is a switch, not a curve: there is no second
+			-- price for it to rise to.
+			if catalog:get(id).maxLevel ~= 1 then
+				expect(catalog:costFor(id, 1)).toBeGreaterThan(catalog:costFor(id, 0))
+			end
 		end
 	end)
 
@@ -88,7 +94,7 @@ describe("Config.Upgrades", function()
 		expect(jumps:levelFor({ flat = { jumps = catalog:get("jump").maxLevel } })).toBe(
 			Config.Balance.movement.maxJumpLevel
 		)
-		expect(dash:levelFor({ flat = { dash = catalog:get("dash").maxLevel } })).toBe(
+		expect(dash:powerLevelFor({ flat = { dashPower = catalog:get("dashPower").maxLevel } })).toBe(
 			Config.Balance.dash.maxLevel
 		)
 	end)
@@ -126,14 +132,23 @@ describe("Config.Balance", function()
 		expect(Config.Balance.movement.sampleInterval).toBeGreaterThan(0)
 	end)
 
-	it("keeps the dash worth upgrading", function()
+	--[[
+		The multiples the shop row promises have to be the ones the domain grants.
+		A description saying x6 and a policy granting x4 is the kind of drift nobody
+		notices until a player counts.
+	]]
+	it("keeps the dash worth upgrading, at the multiples it advertises", function()
 		local dash = DashPolicy.new(Config.Balance.dash)
-		expect(dash:powerFor(1)).toBeGreaterThan(0)
-		expect(dash:powerFor(3)).toBeGreaterThan(dash:powerFor(1))
+		local levels = UpgradeCatalog.new(Config.Upgrades):get("dashPower").maxLevel
+
+		expect(dash:multiplierFor(0)).toBe(1)
+		expect(dash:multiplierFor(levels)).toBe(6)
+		expect(dash:powerFor(1, 20)).toBeGreaterThan(20)
+		expect(dash:powerFor(levels, 20)).toBeGreaterThan(dash:powerFor(1, 20))
 		expect(Config.Balance.dash.cooldown).toBeGreaterThan(0)
 	end)
 
-	-- Prestige doit vouloir dire "j'ai fini le parcours", pas "j'ai un peu joue".
+	-- Prestige must mean "I finished the course", not "I played a bit".
 	it("asks for the last stage before the first prestige", function()
 		local policy = PrestigePolicy.new(Config.Balance.prestige)
 		expect(policy:requirementFor(0)).toBeGreaterThanOrEqual(Config.Stages[#Config.Stages].requiredSpeed)

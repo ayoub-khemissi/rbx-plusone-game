@@ -60,7 +60,7 @@ function Multipliers.compute(self: Multipliers, profile: Profile, context: Conte
 	local boosts = context.boosts or {}
 
 	local speedBonus, coinBonus = 0, 0
-	local flat: { [string]: number } = { jumpPower = 0, jumps = 0, dash = 0, magnet = 0 }
+	local flat: { [string]: number } = { jumpPower = 0, jumps = 0, dash = 0, dashPower = 0, magnet = 0 }
 
 	for _, upgradeId in self.catalog:ids() do
 		local level = Profile.levelOf(profile, upgradeId)

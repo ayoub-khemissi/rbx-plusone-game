@@ -32,6 +32,7 @@ local NUMBERS = {
 	"JumpLevel",
 	"JumpsLeft",
 	"DashLevel",
+	"DashMultiplier",
 	"DashPower",
 	"DashCooldown",
 	"Magnet",
@@ -48,7 +49,7 @@ local NUMBERS = {
 	"IdleRemaining",
 }
 
-local FLAGS = { "HasCheckpoint", "IdleActive" }
+local FLAGS = { "HasCheckpoint", "IdleActive", "DashUnlocked" }
 
 local TABLES = { "ActiveBoosts" }
 

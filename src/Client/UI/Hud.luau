@@ -362,8 +362,7 @@ function Hud.render(self)
 		self.jump.set(state:get("JumpsLeft") / capacity)
 	end
 
-	local dashLevel = state:get("DashLevel")
-	self.dash.frame.Visible = dashLevel > 0
+	self.dash.frame.Visible = state:flag("DashUnlocked")
 	if self.dash.frame.Visible then
 		self.dash.resize(1)
 		-- Resynced from the server, then counted down locally until the next one.

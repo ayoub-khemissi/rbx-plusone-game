@@ -2,8 +2,15 @@
 --[[
 	DashPolicy — the burst of speed, and how hard it hits.
 
-	Here the LEVEL IS THE POWER: that is what the player buys. Level 0 means no dash
-	at all, and each level adds a fixed amount of impulse.
+	UNLOCKING AND POWER ARE TWO PURCHASES, like the jump: one upgrade grants the
+	dash at all, another buys how hard it hits. Selling them together makes the
+	first level of a milestone carry a stat increase, and neither reads clearly.
+
+	POWER IS A MULTIPLE OF THE RUN SPEED, not a fixed impulse. A fixed one is a
+	rocket at walking pace and a nudge once the character is quick: the same button
+	stops meaning the same thing halfway through the game. A multiple keeps a dash a
+	dash from the first minute to the last, and the levels are stated in the terms
+	the player reads on the shop row — x2 through x6.
 
 	A cooldown, not a charge count, is what keeps it in check: a dash has to be a
 	decision made at the right moment, not a resource to dump. It also means the
@@ -15,8 +22,10 @@
 
 export type Tuning = {
 	maxLevel: number,
-	basePower: number,
-	powerPerLevel: number,
+	-- Multiple of the walk speed with the dash unlocked and no power bought.
+	baseMultiplier: number,
+	multiplierPerLevel: number,
+	maxPower: number,
 	cooldown: number,
 }
 
@@ -36,8 +45,9 @@ end
 function DashPolicy.new(tuning: Tuning): DashPolicy
 	return setmetatable({
 		maxLevel = tuning.maxLevel,
-		basePower = tuning.basePower,
-		powerPerLevel = tuning.powerPerLevel,
+		baseMultiplier = tuning.baseMultiplier,
+		multiplierPerLevel = tuning.multiplierPerLevel,
+		maxPower = tuning.maxPower,
 		cooldown = tuning.cooldown,
 	}, DashPolicy)
 end
@@ -46,18 +56,37 @@ function DashPolicy.newState(): State
 	return { lastDashAt = -math.huge }
 end
 
---[[ Dash level actually granted, capped by the design limit. ]]
-function DashPolicy.levelFor(self: DashPolicy, bonuses: any): number
+--[[ Whether the dash exists for this player at all. ]]
+function DashPolicy.isUnlocked(_self: DashPolicy, bonuses: any): boolean
 	local bought = (bonuses and bonuses.flat and bonuses.flat.dash) or 0
+	return bought >= 1
+end
+
+--[[ How many power levels have been bought, capped by the design limit. ]]
+function DashPolicy.powerLevelFor(self: DashPolicy, bonuses: any): number
+	local bought = (bonuses and bonuses.flat and bonuses.flat.dashPower) or 0
 	return math.clamp(math.floor(bought), 0, self.maxLevel)
 end
 
---[[ Impulse of a dash at that level. Level 0 has no dash at all. ]]
-function DashPolicy.powerFor(self: DashPolicy, level: number): number
-	if level <= 0 then
+--[[ The multiple of the run speed a dash is worth. This is what the shop sells. ]]
+function DashPolicy.multiplierFor(self: DashPolicy, powerLevel: number): number
+	local level = math.clamp(math.floor(powerLevel or 0), 0, self.maxLevel)
+	return self.baseMultiplier + level * self.multiplierPerLevel
+end
+
+--[[
+	Impulse of a dash for a character running at that speed.
+
+	Capped, for the reason the walk speed is capped rather than for balance: a body
+	moving fast enough crosses a thin platform between two frames. The ceiling is
+	generous, and a map with walls thinner than a few studs will want it lower.
+]]
+function DashPolicy.powerFor(self: DashPolicy, powerLevel: number, walkSpeed: number?): number
+	local speed = if typeof(walkSpeed) == "number" and walkSpeed > 0 then walkSpeed else 0
+	if speed <= 0 then
 		return 0
 	end
-	return self.basePower + (math.min(level, self.maxLevel) - 1) * self.powerPerLevel
+	return math.min(speed * self:multiplierFor(powerLevel), self.maxPower)
 end
 
 function DashPolicy.remainingCooldown(self: DashPolicy, state: State, now: number): number
@@ -68,16 +97,27 @@ function DashPolicy.remainingCooldown(self: DashPolicy, state: State, now: numbe
 end
 
 --[[ Spends a dash. Returns the power granted, or 0 when it is refused. ]]
-function DashPolicy.tryConsume(self: DashPolicy, state: State, level: number, now: number): number
-	if level <= 0 or not isUsableTime(now) then
+function DashPolicy.tryConsume(
+	self: DashPolicy,
+	state: State,
+	powerLevel: number,
+	walkSpeed: number,
+	now: number
+): number
+	if not isUsableTime(now) then
 		return 0
 	end
 	if self:remainingCooldown(state, now) > 0 then
 		return 0
 	end
 
+	local power = self:powerFor(powerLevel, walkSpeed)
+	if power <= 0 then
+		return 0
+	end
+
 	state.lastDashAt = now
-	return self:powerFor(level)
+	return power
 end
 
 return DashPolicy

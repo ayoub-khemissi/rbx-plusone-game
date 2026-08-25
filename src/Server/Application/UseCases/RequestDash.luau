@@ -32,13 +32,17 @@ function RequestDash.run(self, player)
 		boosts = self.boosts:multipliersFor(profile, self.clock.now()),
 	})
 
-	local level = self.dashPolicy:levelFor(bonuses)
-	if level <= 0 then
+	if not self.dashPolicy:isUnlocked(bonuses) then
 		return Result.err("NO_DASH", "Dash not unlocked yet")
 	end
 
+	-- Scaled against the speed the character actually runs at right now, which is
+	-- what keeps a dash worth using once the game is fast.
+	local movement = self.progression:movementFor(profile, bonuses)
+	local level = self.dashPolicy:powerLevelFor(bonuses)
+
 	local now = self.clock.monotonic()
-	local power = self.dashPolicy:tryConsume(session.dash, level, now)
+	local power = self.dashPolicy:tryConsume(session.dash, level, movement.walkSpeed, now)
 	if power <= 0 then
 		return Result.err("DASH_COOLDOWN", "Dash still recharging", {
 			remaining = self.dashPolicy:remainingCooldown(session.dash, now),

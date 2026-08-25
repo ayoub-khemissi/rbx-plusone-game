@@ -31,6 +31,7 @@ local NUMBERS = {
 	JumpLevel = "jumpLevel",
 	JumpsLeft = "jumpsLeft",
 	DashLevel = "dashLevel",
+	DashMultiplier = "dashMultiplier",
 	DashPower = "dashPower",
 	DashCooldown = "dashCooldown",
 	Magnet = "magnet",
@@ -48,6 +49,7 @@ local NUMBERS = {
 }
 
 local FLAGS = {
+	DashUnlocked = "dashUnlocked",
 	HasCheckpoint = "hasCheckpoint",
 	IdleActive = "idleActive",
 }

@@ -52,10 +52,21 @@ return table.freeze({
 	}),
 
 	-- The dash: its level IS its power, which is what the player buys.
+	--[[
+		A dash is a MULTIPLE of the speed the character already runs at, so it keeps
+		meaning the same thing all game. Unlocked and unimproved it is worth x1 —
+		a burst in a chosen direction, no faster than running, which is exactly what
+		makes Dash Power worth buying. Each level of that adds a multiple, up to x6.
+
+		`maxPower` is a physics limit, not a balance one: past it the character
+		crosses thin platforms between two frames. It is set generously, and a map
+		built out of walls a few studs thick will want it lower.
+	]]
 	dash = table.freeze({
-		maxLevel = 3,
-		basePower = 60,
-		powerPerLevel = 30,
+		maxLevel = 5,
+		baseMultiplier = 1,
+		multiplierPerLevel = 1,
+		maxPower = 250,
 		cooldown = 2, -- seconds; a dash is a decision, not a resource to dump
 	}),
 

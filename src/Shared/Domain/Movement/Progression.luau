@@ -83,15 +83,18 @@ end
 
 --[[ Movement state to apply to the character for the current profile. ]]
 function Progression.movementFor(self: Progression, profile: Profile, bonuses: any): MovementState
-	local dashLevel = self.dashPolicy:levelFor(bonuses)
 	local level = self.levels:levelFor(profile.speed)
+	local walkSpeed = self.curve:walkSpeedFor(level)
+	local dashPowerLevel = self.dashPolicy:powerLevelFor(bonuses)
 
 	return {
-		walkSpeed = self.curve:walkSpeedFor(level),
+		walkSpeed = walkSpeed,
 		jumpPower = self.curve:jumpPowerFor(bonuses.flat.jumpPower or 0),
 		jumpLevel = self.jumpBudget:levelFor(bonuses),
-		dashLevel = dashLevel,
-		dashPower = self.dashPolicy:powerFor(dashLevel),
+		dashUnlocked = self.dashPolicy:isUnlocked(bonuses),
+		dashLevel = dashPowerLevel,
+		dashMultiplier = self.dashPolicy:multiplierFor(dashPowerLevel),
+		dashPower = self.dashPolicy:powerFor(dashPowerLevel, walkSpeed),
 		magnet = bonuses.flat.magnet or 0,
 		saturation = self.curve:saturationFor(level),
 	}

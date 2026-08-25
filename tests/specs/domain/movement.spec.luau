@@ -158,52 +158,93 @@ describe("DashPolicy", function()
 	local dash, state
 
 	local TUNING = {
-		maxLevel = 3,
-		basePower = 60,
-		powerPerLevel = 30,
+		maxLevel = 5,
+		baseMultiplier = 1,
+		multiplierPerLevel = 1,
+		maxPower = 250,
 		cooldown = 2,
 	}
+	local SLOW, FAST = 16, 53
 
 	beforeEach(function()
 		dash = DashPolicy.new(TUNING)
 		state = DashPolicy.newState()
 	end)
 
-	it("gives no dash before it is bought", function()
-		expect(dash:levelFor({ flat = {} })).toBe(0)
-		expect(dash:powerFor(0)).toBe(0)
-		expect(dash:tryConsume(state, 0, 100)).toBe(0)
+	-- Unlocking and strengthening are two purchases: one grants the move, the other
+	-- buys how hard it hits.
+	it("stays locked until the dash itself is bought", function()
+		expect(dash:isUnlocked({ flat = {} })).toBe(false)
+		expect(dash:isUnlocked({ flat = { dash = 1 } })).toBe(true)
 	end)
 
-	-- The dash level IS its power: that is what the player is buying.
-	it("turns the level into raw power", function()
-		expect(dash:powerFor(1)).toBe(60)
-		expect(dash:powerFor(2)).toBe(90)
-		expect(dash:powerFor(3)).toBe(120)
+	it("reads the power level from its own upgrade", function()
+		expect(dash:powerLevelFor({ flat = { dash = 1 } })).toBe(0)
+		expect(dash:powerLevelFor({ flat = { dash = 1, dashPower = 3 } })).toBe(3)
 	end)
 
-	it("caps the level whatever the upgrades say", function()
-		expect(dash:levelFor({ flat = { dash = 99 } })).toBe(3)
+	it("caps the power level whatever the upgrades say", function()
+		expect(dash:powerLevelFor({ flat = { dashPower = 99 } })).toBe(5)
+	end)
+
+	--[[
+		The multiples the shop row promises, in the terms the player reads there:
+		unimproved is x1, and the five levels are x2 through x6.
+	]]
+	it("sells the multiples it advertises", function()
+		expect(dash:multiplierFor(0)).toBe(1)
+		for level = 1, 5 do
+			expect(dash:multiplierFor(level)).toBe(level + 1)
+		end
+	end)
+
+	--[[
+		THE POINT OF SCALING. A fixed impulse is a rocket at walking pace and a nudge
+		once the character is quick — the same button stops meaning the same thing.
+	]]
+	it("scales the impulse with the character's run speed", function()
+		expect(dash:powerFor(1, SLOW)).toBe(SLOW * 2)
+		expect(dash:powerFor(1, FAST)).toBe(FAST * 2)
+		expect(dash:powerFor(1, FAST)).toBeGreaterThan(dash:powerFor(1, SLOW))
+	end)
+
+	it("gives nothing to a character that is not moving under its own power", function()
+		expect(dash:powerFor(3, 0)).toBe(0)
+		expect(dash:powerFor(3, -10)).toBe(0)
+	end)
+
+	--[[
+		Capped for the same reason the walk speed is: a body moving fast enough
+		crosses a thin platform between two frames.
+	]]
+	it("never breaks the ceiling, whatever the speed or the level", function()
+		expect(dash:powerFor(5, 1e6)).toBe(TUNING.maxPower)
 	end)
 
 	it("returns the power spent on a successful dash", function()
-		expect(dash:tryConsume(state, 2, 100)).toBe(90)
+		expect(dash:tryConsume(state, 2, SLOW, 100)).toBe(dash:powerFor(2, SLOW))
 	end)
 
 	it("refuses a second dash before the cooldown", function()
-		dash:tryConsume(state, 1, 100)
-		expect(dash:tryConsume(state, 1, 101)).toBe(0)
-		expect(dash:tryConsume(state, 1, 102)).toBe(60)
+		dash:tryConsume(state, 1, SLOW, 100)
+		expect(dash:tryConsume(state, 1, SLOW, 101)).toBe(0)
+		expect(dash:tryConsume(state, 1, SLOW, 102)).toBe(dash:powerFor(1, SLOW))
+	end)
+
+	-- A refused dash must not start a cooldown: it never happened.
+	it("does not spend the cooldown on a dash worth nothing", function()
+		expect(dash:tryConsume(state, 1, 0, 100)).toBe(0)
+		expect(dash:remainingCooldown(state, 100)).toBe(0)
 	end)
 
 	it("reports the cooldown left, for the interface", function()
-		dash:tryConsume(state, 1, 100)
+		dash:tryConsume(state, 1, SLOW, 100)
 		expect(dash:remainingCooldown(state, 100.5)).toBeCloseTo(1.5, 1e-9)
 		expect(dash:remainingCooldown(state, 999)).toBe(0)
 	end)
 
 	it("ignores a nonsensical clock", function()
-		expect(dash:tryConsume(state, 1, 0 / 0)).toBe(0)
+		expect(dash:tryConsume(state, 1, SLOW, 0 / 0)).toBe(0)
 	end)
 end)
 
@@ -324,7 +365,13 @@ describe("Progression", function()
 			accounting = MovementAccounting.new(ACCOUNTING_TUNING),
 			multipliers = buildMultipliers(),
 			jumpBudget = JumpBudget.new({ maxJumpLevel = 3 }),
-			dashPolicy = DashPolicy.new({ maxLevel = 3, basePower = 60, powerPerLevel = 30, cooldown = 2 }),
+			dashPolicy = DashPolicy.new({
+				maxLevel = 5,
+				baseMultiplier = 1,
+				multiplierPerLevel = 1,
+				maxPower = 250,
+				cooldown = 2,
+			}),
 			tuning = { speedPerStep = 1, coinsPerStep = 0.5 },
 		})
 		profile = Profile.create()

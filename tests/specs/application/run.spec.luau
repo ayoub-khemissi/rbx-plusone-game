@@ -249,16 +249,34 @@ describe("RequestDash", function()
 		expect(container.useCases.requestDash:run(player).code).toBe("NO_DASH")
 	end)
 
-	-- The level IS the power: that is what the player is buying.
-	it("returns more power on a higher level", function()
+	-- Dash Power is what the player is buying: the dash itself only unlocks it.
+	it("returns more power on a higher power level", function()
 		session.profile.upgrades.dash = 1
 		local weak = container.useCases.requestDash:run(player).value.power
 
 		local other, otherSession = joined(container, 2)
-		otherSession.profile.upgrades.dash = 3
+		otherSession.profile.upgrades.dash = 1
+		otherSession.profile.upgrades.dashPower = 3
 		local strong = container.useCases.requestDash:run(other).value.power
 
 		expect(strong).toBeGreaterThan(weak)
+	end)
+
+	--[[
+		And it grows with the character. Two players at the same Dash Power but
+		different speeds must not get the same burst — that is the whole reason the
+		impulse is a multiple rather than a number.
+	]]
+	it("returns more power to a faster character", function()
+		session.profile.upgrades.dash = 1
+		local slow = container.useCases.requestDash:run(player).value.power
+
+		local other, otherSession = joined(container, 2)
+		otherSession.profile.upgrades.dash = 1
+		otherSession.profile.speed = 20000
+		local fast = container.useCases.requestDash:run(other).value.power
+
+		expect(fast).toBeGreaterThan(slow)
 	end)
 
 	it("refuses a second dash during the cooldown", function()
@@ -413,5 +431,44 @@ describe("Sound cues", function()
 		container.useCases.fallToCheckpoint:run(player)
 
 		expect(#ports.notifier:cues()).toBe(2)
+	end)
+end)
+
+--[[
+	The gate the whole game will hang off: an upgrade, an idle pad, the next map.
+	These cover the seam rather than the conditions themselves, which have their own
+	spec — what matters here is that a use case cannot buy past it.
+]]
+describe("Requirements", function()
+	it("refuses an upgrade whose prerequisite is missing", function()
+		local container, ports = build()
+		local player, session = joined(container)
+		session.profile.coins = 1000000
+
+		local result = container.useCases.buyUpgrade:run(player, "dashPower")
+
+		expect(result.ok).toBe(false)
+		expect(result.code).toBe("LOCKED")
+		expect(session.profile.upgrades.dashPower).toBeNil()
+		expect(ports.notifier:lastMessage()).never.toBeNil()
+	end)
+
+	-- And it must not be mistaken for a money problem: the player has plenty.
+	it("says locked rather than too expensive", function()
+		local container = build()
+		local player, session = joined(container)
+		session.profile.coins = 1000000
+
+		expect(container.useCases.buyUpgrade:run(player, "dashPower").code).never.toBe("INSUFFICIENT_FUNDS")
+	end)
+
+	it("opens once the prerequisite is owned", function()
+		local container = build()
+		local player, session = joined(container)
+		session.profile.coins = 1000000
+		session.profile.upgrades.dash = 1
+
+		expect(container.useCases.buyUpgrade:run(player, "dashPower").ok).toBe(true)
+		expect(session.profile.upgrades.dashPower).toBe(1)
 	end)
 end)
