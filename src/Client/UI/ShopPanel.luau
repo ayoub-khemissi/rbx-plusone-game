@@ -21,6 +21,10 @@ local Requirements = require(Shared.Domain.Progression.Requirements)
 local LABELS = Config.Theme.labels
 local REQUIREMENTS = Requirements.new()
 
+local ROW_HEIGHT = 100
+local ROW_PADDING = 16
+local TEXT_LEFT = 68 -- clear of the 52px icon, with air between the two
+
 local ShopPanel = {}
 ShopPanel.__index = ShopPanel
 
@@ -51,16 +55,21 @@ function ShopPanel.new(parent: Instance, state, remotes)
 end
 
 function ShopPanel._row(self, parent: Instance, definition, order: number)
+	--[[
+		A near-white card on a near-white panel, separated by its outline rather
+		than by a shade. Tinting the card grey to tell it apart dims everything
+		printed on it, and the icons and the price are the whole point of the row.
+	]]
 	local row = Widgets.card(parent, {
 		name = definition.id,
-		size = UDim2.new(1, -8, 0, 88),
-		color = Theme.color.panelSoft,
+		size = UDim2.new(1, -8, 0, ROW_HEIGHT),
+		color = Theme.color.panel,
 		radius = Theme.radius.button,
 	})
 	row.LayoutOrder = order
-	Widgets.padding(row, 12)
+	Widgets.padding(row, ROW_PADDING)
 
-	Widgets.icon(row, {
+	local icon = Widgets.icon(row, {
 		image = definition.image,
 		fallback = definition.icon,
 		size = UDim2.fromOffset(52, 52),
@@ -68,17 +77,17 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 		anchorPoint = Vector2.new(0, 0.5),
 	})
 
-	Widgets.label(row, {
-		size = UDim2.new(0.58, -64, 0, 26),
-		position = UDim2.fromOffset(64, 0),
+	local name = Widgets.label(row, {
+		size = UDim2.new(0.58, -TEXT_LEFT, 0, 26),
+		position = UDim2.fromOffset(TEXT_LEFT, 0),
 		font = Theme.font.title,
 		textSize = Theme.text.big,
 		text = definition.name,
 	})
 
 	Widgets.label(row, {
-		size = UDim2.new(0.58, -64, 0, 20),
-		position = UDim2.fromOffset(64, 26),
+		size = UDim2.new(0.58, -TEXT_LEFT, 0, 20),
+		position = UDim2.fromOffset(TEXT_LEFT, 28),
 		font = Theme.font.body,
 		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
@@ -86,8 +95,8 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	})
 
 	local level = Widgets.label(row, {
-		size = UDim2.new(0.58, -64, 0, 20),
-		position = UDim2.fromOffset(64, 46),
+		size = UDim2.new(0.58, -TEXT_LEFT, 0, 18),
+		position = UDim2.fromOffset(TEXT_LEFT, 48),
 		font = Theme.font.number,
 		textSize = Theme.text.body,
 		color = Theme.color.accentDark,
@@ -125,7 +134,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 	pad.PaddingRight = UDim.new(0, 14)
 	pad.Parent = buy
 
-	return { row = row, level = level, buy = buy, price = price }
+	return { row = row, name = name, icon = icon, level = level, buy = buy, price = price }
 end
 
 --[[
@@ -183,14 +192,14 @@ function ShopPanel.render(self)
 			else `Level {currentLevel}`
 		row.level.TextColor3 = Theme.color.accentDark
 
-		-- A locked row keeps its price hidden: what it costs is not the question
-		-- being asked yet.
-		row.row.BackgroundColor3 = if gate.met then Theme.color.panelSoft else Theme.color.panel
-		for _, child in row.row:GetChildren() do
-			if child:IsA("ImageLabel") then
-				child.ImageTransparency = if gate.met then 0 else 0.6
-			end
+		-- A locked row dims its CONTENT, never its card. Repainting the card was
+		-- the wrong lever and it came out backwards: locked rows read brighter than
+		-- the ones you could actually buy.
+		local dimmed = if gate.met then 0 else 0.55
+		if row.icon:IsA("ImageLabel") then
+			row.icon.ImageTransparency = dimmed
 		end
+		row.name.TextTransparency = dimmed
 
 		if not gate.met then
 			row.level.Text = self:_explain(gate.unmet[1])

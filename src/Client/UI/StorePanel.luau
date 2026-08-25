@@ -83,31 +83,33 @@ end
 function StorePanel._row(_self, parent: Instance, options)
 	local row = Widgets.card(parent, {
 		name = options.name,
-		size = UDim2.new(1, -8, 0, 88),
-		color = Theme.color.panelSoft,
+		size = UDim2.new(1, -8, 0, 100),
+		-- Near-white on near-white, separated by the outline: a grey card dims
+		-- everything printed on it, and the icon and the price are the row.
+		color = Theme.color.panel,
 		radius = Theme.radius.button,
 	})
 	row.LayoutOrder = options.order
-	Widgets.padding(row, 12)
+	Widgets.padding(row, 16)
 
 	Widgets.icon(row, {
 		image = options.image,
 		fallback = options.icon or "💠",
-		size = UDim2.fromOffset(48, 48),
+		size = UDim2.fromOffset(52, 52),
 		position = UDim2.fromScale(0, 0),
 	})
 
 	Widgets.label(row, {
-		size = UDim2.new(0.62, -58, 0, 26),
-		position = UDim2.fromOffset(58, 0),
+		size = UDim2.new(0.62, -68, 0, 26),
+		position = UDim2.fromOffset(68, 0),
 		font = Theme.font.number,
 		textSize = Theme.text.big,
 		text = options.name,
 	})
 
 	Widgets.label(row, {
-		size = UDim2.new(0.62, -58, 0, 38),
-		position = UDim2.fromOffset(58, 28),
+		size = UDim2.new(0.62, -68, 0, 40),
+		position = UDim2.fromOffset(68, 28),
 		font = Theme.font.body,
 		textSize = Theme.text.small,
 		color = Theme.color.textMuted,
