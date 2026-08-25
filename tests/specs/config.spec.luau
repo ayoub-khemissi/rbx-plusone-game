@@ -302,6 +302,20 @@ describe("Config.Products and Passes", function()
 		expect(curve:levelFor(lastStage.requiredSpeed)).toBeGreaterThan(20)
 	end)
 
+	--[[
+		Every noun the interface speaks has to exist in the theme, because the views
+		read them and a missing one shows up as an empty string in a message rather
+		than as an error anybody notices.
+	]]
+	it("names every concept the interface speaks", function()
+		for _, key in { "level", "stage", "coins", "prestige", "checkpoint", "hub" } do
+			local label = Config.Theme.labels[key]
+			expect(label).never.toBeNil()
+			expect(label.name).toBeA("string")
+			expect(#label.name).toBeGreaterThan(0)
+		end
+	end)
+
 	it("points every offer at a product that exists", function()
 		local catalog = ProductCatalog.new(Config.Products)
 		for _, offer in Config.Monetization.offers do

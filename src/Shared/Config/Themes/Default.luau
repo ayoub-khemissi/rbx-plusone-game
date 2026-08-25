@@ -46,10 +46,16 @@ local theme: Theme = {
 		-- The soft currency, spent on upgrades.
 		coins = { name = "Coin", plural = "Coins", icon = "🪙", image = "rbxassetid://121223833708562" }, -- icon:coins
 		-- The reset that multiplies everything.
+		--[[
+			The word for the reset. "Rebirth" is what Roblox players expect and what
+			the platform's own translation turns into "Renaissance" in French — which
+			is the word this game wants and the one on every reference screenshot.
+			The code keeps calling the mechanic Prestige; only this is read.
+		]]
 		prestige = {
-			name = "Prestige",
-			plural = "Prestiges",
-			verb = "PRESTIGE",
+			name = "Rebirth",
+			plural = "Rebirths",
+			verb = "REBIRTH",
 			icon = "🔁",
 			image = "rbxassetid://79810123991740", -- icon:prestige
 		},

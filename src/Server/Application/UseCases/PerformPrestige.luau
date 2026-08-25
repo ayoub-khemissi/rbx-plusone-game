@@ -23,7 +23,7 @@ function PerformPrestige.run(self, player)
 		local missing = result.value and result.value.missing or 0
 		self.notifier:notify(
 			player,
-			`{Format.abbreviate(missing)} more speed before you can prestige.`,
+			`{Format.abbreviate(missing)} more {self.labels.level.name} before your next {self.labels.prestige.name}.`,
 			"error"
 		)
 		return result
@@ -36,7 +36,9 @@ function PerformPrestige.run(self, player)
 	self.publisher:publish(player, self.snapshots:build(session))
 	self.notifier:notify(
 		player,
-		`Prestige {result.value.prestiges}! All gains {Format.multiplier(result.value.multiplier)}`,
+		`{self.labels.prestige.name} {result.value.prestiges}! All gains {Format.multiplier(
+			result.value.multiplier
+		)}`,
 		"success"
 	)
 

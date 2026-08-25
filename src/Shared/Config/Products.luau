@@ -104,8 +104,8 @@ local products: { Definition } = {
 	{
 		id = "instantPrestige",
 		productId = 0,
-		name = "Instant Prestige",
-		description = "Prestige now, and keep your upgrades.",
+		name = "Instant Rebirth",
+		description = "Rebirth now, and keep your upgrades.",
 		icon = "🔁",
 		image = "rbxassetid://113928136231604", -- icon:productInstantPrestige
 		robux = 399,
