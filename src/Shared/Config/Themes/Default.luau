@@ -154,6 +154,19 @@ local theme: Theme = {
 
 	-- Optional decoration. Leave a field out and the surface stays flat, which is
 	-- perfectly readable: a texture is polish, never a requirement.
+	--[[
+		Built assets the game inserts rather than draws: a Coin is a model somebody
+		modelled, not a cylinder the server can make.
+
+		The id is a theme decision like every other asset here — a theme may point at
+		its own Coin, or at none, and the map keeps working either way. Nothing is
+		inserted if a map already contains its own tagged Coins; this is only what
+		the test platform builds with.
+	]]
+	models = {
+		coin = 14861633855, -- Coin, by BryanROBLOXgamer10
+	},
+
 	textures = {
 		--[[
 			Two seamless tiles, laid faintly over the flat fills: colour alone renders

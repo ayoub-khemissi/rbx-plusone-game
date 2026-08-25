@@ -19,7 +19,7 @@ tags count.
 | `TrapPart` *(or `Killzone`)* | Part or Model | Kills; back at the Hub after 2 s |
 | `Conveyor` | Part | Conveyor belt: pushes along the front face |
 | `BouncePad` | Part | Trampoline: launches the player upwards |
-| `Coin` | Part | Drawn in and collected, per player, back after 30 s |
+| `Coin` | Part **or Model** | Drawn in and collected, per player, back after 30 s |
 | `SpeedGate` | Solid part | Blocks while the player's Speed is too low |
 | `FinishPad` | Part | Ends a course: pays out and sends the player to the lobby |
 | `ShopPad` | Part | Opens the shop |
@@ -91,8 +91,14 @@ arrive falling or rising.
 | --- | --- | --- | --- |
 | `Value` | number | no | Raw value. Without it, the configured default applies |
 
-A Coin is a **marker**. Tag the detection part, not the decoration, and place it
-where a runner will pass; everything else is done for you.
+A Coin is a **marker**, and it may be a Part **or a Model** — tag whichever one you
+want to see turn, and place it where a runner will pass. Everything else is done for
+you: a model is measured, turned, drawn in and hidden by its **pivot**, so put the
+pivot at the centre of the coin and it will spin on the spot rather than orbit.
+
+The theme names a Coin model of its own (`Config.Theme.models.coin`), which is what
+the test platform builds with. A real map does not need it: whatever you tag is what
+the player sees.
 
 `Value` is the raw value. What the player receives is that value multiplied by the
 Stage they are standing in and by everything they have earned, and the amount thrown

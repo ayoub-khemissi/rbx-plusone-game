@@ -17,6 +17,10 @@
 ]]
 
 local CollectionService = game:GetService("CollectionService")
+local InsertService = game:GetService("InsertService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared").Config)
 
 local MapBindings = require(script.Parent.MapBindings)
 
@@ -34,6 +38,40 @@ local COLOURS = {
 	belt = Color3.fromRGB(150, 60, 220),
 	coin = Color3.fromRGB(247, 197, 37),
 }
+
+--[[
+	The Coin the theme names, fetched once and cloned for every pickup.
+
+	INSERTED, NOT BUILT. A Coin is something somebody modelled; the server can make a
+	cylinder and nothing better. It is fetched once because LoadAsset is a web
+	request — eight of them for eight Coins would be eight round trips for one model.
+
+	It can fail: the asset may be private, deleted, or the request may simply not
+	come back. That is why it is wrapped and why there is a cylinder to fall back on:
+	a test platform that refuses to build because a model is unavailable helps nobody.
+]]
+local function coinModel(logger): Model?
+	local id = Config.Theme.models and Config.Theme.models.coin
+	if typeof(id) ~= "number" or id <= 0 then
+		return nil
+	end
+
+	local ok, result = pcall(function()
+		return InsertService:LoadAsset(id)
+	end)
+	if not ok then
+		logger:warn(`Coin model {id} could not be loaded ({result}), falling back to a cylinder`)
+		return nil
+	end
+
+	local container = result :: Model
+	local model = container:FindFirstChildOfClass("Model")
+	if model then
+		model.Parent = nil
+	end
+	container:Destroy()
+	return model
+end
 
 --[[ The belts to lay out, in the order the shop will eventually sell them. ]]
 local BELTS = { 1.5, 3, 10, 50, 100, 200, 500 }
@@ -72,7 +110,7 @@ local function label(anchor: BasePart, text: string)
 	title.Parent = billboard
 end
 
-function Sandbox.build()
+function Sandbox.build(logger)
 	-- Everything the previous map left behind, including a previous sandbox.
 	for _, child in workspace:GetChildren() do
 		if not child:IsA("Terrain") and not child:IsA("Camera") then
@@ -131,23 +169,35 @@ function Sandbox.build()
 
 	--[[
 		A row of Coins to run along. They carry no `Value`, so they are worth what
-		Balance says — which is what a builder gets from dropping a tagged part and
+		Balance says — which is what a builder gets from dropping a tagged model and
 		setting nothing.
 	]]
+	local template = coinModel(logger)
 	for index = 1, 8 do
-		-- A cylinder's axis runs along X, so a thin X makes a disc standing on edge:
-		-- the client's turn around Y then reads as a coin spinning, not a wheel
-		-- rolling.
-		local coin = part(
-			folder,
-			`Coin{index}`,
-			Vector3.new(0.6, 3, 3),
-			Vector3.new(-42 + (index - 1) * 12, 5, 4),
-			COLOURS.coin
-		)
-		coin.Shape = Enum.PartType.Cylinder
-		coin.Material = Enum.Material.Metal
+		local position = Vector3.new(-42 + (index - 1) * 12, 5, 4)
+		local coin: Instance
+
+		if template then
+			local clone = template:Clone()
+			clone.Name = `Coin{index}`
+			clone.Parent = folder
+			clone:PivotTo(CFrame.new(position))
+			coin = clone
+		else
+			-- A cylinder's axis runs along X, so a thin X makes a disc standing on
+			-- edge: the client's turn around Y then reads as a coin spinning rather
+			-- than a wheel rolling.
+			local block = part(folder, `Coin{index}`, Vector3.new(0.6, 3, 3), position, COLOURS.coin)
+			block.Shape = Enum.PartType.Cylinder
+			block.Material = Enum.Material.Metal
+			coin = block
+		end
+
 		CollectionService:AddTag(coin, MapBindings.TAGS.coin)
+	end
+
+	if template then
+		template:Destroy()
 	end
 
 	for index, multiplier in BELTS do

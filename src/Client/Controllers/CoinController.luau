@@ -2,6 +2,11 @@
 --[[
 	CoinController — every Coin the player sees, and the pull that takes it.
 
+	A COIN IS WHATEVER THE MAP TAGGED — a single part, or a model with a mesh, a
+	light and whatever else it was built from. Everything here goes through the pivot
+	and through every BasePart underneath, so the two behave identically and a map
+	may mix them.
+
 	EACH PLAYER RUNS THEIR OWN FIELD. The map holds one part per Coin, but nothing
 	the player sees happen to it is replicated: the turning, the draw towards them,
 	the disappearance and the thirty seconds before it comes back are all done here,
@@ -95,22 +100,55 @@ function CoinController.new(player: Player, state, remotes, popups)
 	return self
 end
 
---[[ A Coin the map declares. Parts only: a model is tagged part by part. ]]
+--[[
+	Every BasePart a Coin is made of: one, if the Coin is a part.
+
+	Collected here once rather than walked on every frame — a model with a dozen
+	pieces would otherwise be a dozen searches a second for nothing.
+]]
+local function partsOf(instance: Instance): { BasePart }
+	if instance:IsA("BasePart") then
+		return { instance }
+	end
+
+	local parts = {}
+	for _, descendant in instance:GetDescendants() do
+		if descendant:IsA("BasePart") then
+			table.insert(parts, descendant)
+		end
+	end
+	return parts
+end
+
+--[[ A Coin the map declares, whatever it is built from. ]]
 function CoinController._track(self, instance: Instance)
-	if not instance:IsA("BasePart") then
+	if not instance:IsA("BasePart") and not instance:IsA("Model") then
+		return
+	end
+
+	local parts = partsOf(instance)
+	if #parts == 0 then
 		return
 	end
 
 	self.coins[instance] = {
-		part = instance,
-		home = instance.CFrame,
+		instance = instance,
+		parts = parts,
+		home = instance:GetPivot(),
 		-- "idle" waiting to be taken, "drawn" flying in, "gone" until it returns.
 		phase = "idle",
 		elapsed = 0,
 		takenAt = 0,
-		from = instance.Position,
+		from = instance:GetPivot().Position,
 		granted = nil,
 	}
+end
+
+--[[ Hidden and shown LOCALLY: the modifier is never replicated. ]]
+local function setHidden(coin, hidden: boolean)
+	for _, part in coin.parts do
+		part.LocalTransparencyModifier = if hidden then 1 else 0
+	end
 end
 
 function CoinController._root(self): BasePart?
@@ -155,11 +193,11 @@ function CoinController._scan(self, root: BasePart?)
 	local now = os.clock()
 
 	for _, coin in self.coins do
-		if not coin.part.Parent then
+		if not coin.instance.Parent then
 			continue
 		end
 
-		local distance = (coin.part.Position - root.Position).Magnitude
+		local distance = (coin.instance:GetPivot().Position - root.Position).Magnitude
 		if distance > CULL_RANGE then
 			continue
 		end
@@ -176,8 +214,8 @@ function CoinController._scan(self, root: BasePart?)
 		if coin.phase == "idle" and distance <= reach then
 			coin.phase = "drawn"
 			coin.elapsed = 0
-			coin.from = coin.part.Position
-			self.remotes.events.CollectCoin:FireServer(coin.part)
+			coin.from = coin.instance:GetPivot().Position
+			self.remotes.events.CollectCoin:FireServer(coin.instance)
 		end
 	end
 end
@@ -187,7 +225,7 @@ function CoinController._step(self, coin, deltaTime: number, root: BasePart?)
 	local spin = CFrame.Angles(0, deltaTime * TURNS_PER_SECOND * math.pi * 2, 0)
 
 	if coin.phase == "idle" then
-		coin.part.CFrame = coin.part.CFrame * spin
+		coin.instance:PivotTo(coin.instance:GetPivot() * spin)
 		return
 	end
 
@@ -212,7 +250,8 @@ function CoinController._step(self, coin, deltaTime: number, root: BasePart?)
 	-- A hop over the straight line, so the flight has a shape at any distance.
 	position += Vector3.new(0, math.sin(progress * math.pi) * DRAW_HEIGHT, 0)
 
-	coin.part.CFrame = CFrame.new(position) * (coin.part.CFrame - coin.part.Position) * spin
+	local pivot = coin.instance:GetPivot()
+	coin.instance:PivotTo(CFrame.new(position) * (pivot - pivot.Position) * spin)
 
 	if progress >= 1 then
 		self:_land(coin)
@@ -223,8 +262,8 @@ end
 function CoinController._land(self, coin)
 	coin.phase = "gone"
 	coin.takenAt = os.clock()
-	coin.part.CFrame = coin.home
-	coin.part.LocalTransparencyModifier = 1
+	coin.instance:PivotTo(coin.home)
+	setHidden(coin, true)
 	self.near[coin] = nil
 
 	if coin.granted then
@@ -240,8 +279,8 @@ end
 	the number belongs to the moment of catching it, not to the moment the network
 	came back.
 ]]
-function CoinController._onGranted(self, part, granted)
-	local coin = self.coins[part]
+function CoinController._onGranted(self, instance, granted)
+	local coin = self.coins[instance]
 	if not coin or typeof(granted) ~= "number" or granted <= 0 then
 		return
 	end
@@ -261,8 +300,8 @@ end
 function CoinController._restore(_self, coin)
 	coin.phase = "idle"
 	coin.granted = nil
-	coin.part.CFrame = coin.home
-	coin.part.LocalTransparencyModifier = 0
+	coin.instance:PivotTo(coin.home)
+	setHidden(coin, false)
 end
 
 function CoinController._restoreAll(self)

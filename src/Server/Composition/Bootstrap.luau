@@ -201,7 +201,7 @@ function Bootstrap.start()
 		something that destructive.
 	]]
 	if devMode and workspace:GetAttribute("Sandbox") == true then
-		Sandbox.build()
+		Sandbox.build(ports.logger)
 		ports.logger:info("Sandbox built: the previous workspace was cleared")
 	end
 

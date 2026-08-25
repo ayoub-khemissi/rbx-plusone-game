@@ -18,13 +18,20 @@ local RemoteBindings = {}
 -- is the wall that stops a client claiming across the map, not the game rule.
 local MAX_PICKUP_RANGE = 90
 
-local function distanceToPlayer(player: Player, part: BasePart): number
+--[[
+	How far a player is from something in the world.
+
+	Through the PIVOT, so a Coin built as a model is measured the same way a Coin
+	built as one part is. A map may use either and neither the check nor the range
+	has to know which.
+]]
+local function distanceToPlayer(player: Player, instance: PVInstance): number
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if not root then
 		return math.huge
 	end
-	return (root.Position - part.Position).Magnitude
+	return (root.Position - instance:GetPivot().Position).Magnitude
 end
 
 function RemoteBindings.bind(container, remotes)
@@ -87,21 +94,23 @@ function RemoteBindings.bind(container, remotes)
 		amount alone lets the client match the answer to the Coin still flying
 		towards it, with no bookkeeping on either side.
 	]]
-	events.CollectCoin.OnServerEvent:Connect(function(player, part)
-		if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
+	events.CollectCoin.OnServerEvent:Connect(function(player, coin)
+		-- A part or a model: whatever the map tagged, which is what the client
+		-- claimed and what the answer will be matched against.
+		if typeof(coin) ~= "Instance" or not coin:IsA("PVInstance") then
 			return
 		end
-		if not CollectionService:HasTag(part, "Coin") then
+		if not CollectionService:HasTag(coin, "Coin") then
 			return
 		end
-		if distanceToPlayer(player, part) > MAX_PICKUP_RANGE then
+		if distanceToPlayer(player, coin) > MAX_PICKUP_RANGE then
 			return
 		end
 
-		local value = part:GetAttribute("Value") or container.config.Balance.run.coinValue
-		local result = useCases.collectCoin:run(player, value, part)
+		local value = coin:GetAttribute("Value") or container.config.Balance.run.coinValue
+		local result = useCases.collectCoin:run(player, value, coin)
 		if result.ok then
-			events.CollectCoin:FireClient(player, part, result.value.granted)
+			events.CollectCoin:FireClient(player, coin, result.value.granted)
 		end
 	end)
 
