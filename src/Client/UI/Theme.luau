@@ -41,6 +41,12 @@ local function opacityOf(key: string, fallback: number): number
 	return if typeof(value) == "number" then math.clamp(value, 0, 1) else fallback
 end
 
+--[[ How big one repeat of a tile is drawn, in design pixels. ]]
+local function tileOf(key: string, fallback: number): number
+	local value = textures[key]
+	return if typeof(value) == "number" and value > 0 then value else fallback
+end
+
 --[[
 	The pair of colours a world wears. Falls back to the accent pair rather than
 	failing: a theme that lists fewer worlds than the game has still draws.
@@ -87,9 +93,11 @@ return table.freeze({
 
 	texture = table.freeze({
 		panelPattern = textureOf("panelPattern"),
-		panelOpacity = opacityOf("panelOpacity", 0.2),
+		panelOpacity = opacityOf("panelOpacity", 0.28),
+		panelTile = tileOf("panelTile", 64),
 		buttonPattern = textureOf("buttonPattern"),
-		buttonOpacity = opacityOf("buttonOpacity", 0.26),
+		buttonOpacity = opacityOf("buttonOpacity", 0.34),
+		buttonTile = tileOf("buttonTile", 96),
 	}),
 
 	--[[

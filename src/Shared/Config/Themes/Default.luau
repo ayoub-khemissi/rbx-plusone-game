@@ -146,23 +146,30 @@ local theme: Theme = {
 
 			They are chosen for what they sit on. The panels wear a grid of large
 			squares, which is the plate a simulator window is built from and reads
-			well across a wide surface. The buttons wear a fine rough plaster, because
-			a grid on something the size of a button becomes a motif competing with
-			the word written across it.
+			well across a wide surface. The buttons wear brushed metal: a streak
+			rather than a motif, which is what a small, saturated, glossy surface can
+			carry — a grid at that size becomes a pattern competing with the word
+			written across it, and a plaster noise disappears into the gloss.
 
-			The opacities are the dial. Low enough and the grain is a rumour nobody
-			sees; high enough and it becomes a pattern the eye reads instead of the
-			words on top of it. The buttons carry slightly more than the panels: they
-			are small, saturated and glossy, and the same value on both leaves the
-			buttons looking bare next to the windows.
+			The opacities are the dial, and the tiles are how big one repeat is drawn.
+			Too faint and the grain is a rumour nobody sees; too strong and it becomes
+			a pattern the eye reads instead of the words on top of it. The buttons
+			carry more than the panels: they are small, saturated and glossy, and the
+			same value on both leaves the buttons looking bare next to the windows.
+
+			A tile wants to be large enough that a button shows one or two repeats
+			rather than a mosaic of them — the texture should read as the surface the
+			thing is made of, not as something printed on it.
 
 			Any seamless, low-contrast texture works — see docs/TEXTURES.md. Set
 			either to nil and that surface goes smooth again.
 		]]
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-		panelOpacity = 0.2,
-		buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
-		buttonOpacity = 0.26,
+		panelOpacity = 0.28,
+		panelTile = 64,
+		buttonPattern = "rbxassetid://4549727994", -- metal
+		buttonOpacity = 0.34,
+		buttonTile = 96,
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's
 			own sparkle texture is used, which ships with every Roblox install — so the

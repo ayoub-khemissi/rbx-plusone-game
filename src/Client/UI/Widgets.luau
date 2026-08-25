@@ -233,7 +233,7 @@ function Widgets.card(parent: Instance, options): Frame
 		Widgets.surface(card, {
 			image = Theme.texture.panelPattern,
 			radius = radius,
-			tile = 64,
+			tile = Theme.texture.panelTile,
 			transparency = 1 - Theme.texture.panelOpacity,
 		})
 	end
@@ -333,7 +333,7 @@ function Widgets.button(parent: Instance, options): TextButton
 			image = Theme.texture.buttonPattern,
 			radius = options.radius or Theme.radius.button,
 			inset = inset,
-			tile = 48,
+			tile = Theme.texture.buttonTile,
 			transparency = 1 - Theme.texture.buttonOpacity,
 		})
 	end
