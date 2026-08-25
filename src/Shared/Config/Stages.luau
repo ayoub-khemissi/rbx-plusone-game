@@ -41,15 +41,15 @@ type Stage = StageLadder.Stage
 
 local stages: { Stage } = {
 	{ id = 1, requiredLevel = 1, requiredSpeed = 0, coinMultiplier = 1 },
-	{ id = 2, requiredLevel = 20, requiredSpeed = 6106, coinMultiplier = 1.3 },
-	{ id = 3, requiredLevel = 40, requiredSpeed = 22791, coinMultiplier = 1.65 },
-	{ id = 4, requiredLevel = 60, requiredSpeed = 49244, coinMultiplier = 2.1 },
-	{ id = 5, requiredLevel = 80, requiredSpeed = 85062, coinMultiplier = 2.65 },
-	{ id = 6, requiredLevel = 100, requiredSpeed = 129977, coinMultiplier = 3.35 },
-	{ id = 7, requiredLevel = 120, requiredSpeed = 183785, coinMultiplier = 4.2 },
-	{ id = 8, requiredLevel = 140, requiredSpeed = 246326, coinMultiplier = 5.3 },
-	{ id = 9, requiredLevel = 160, requiredSpeed = 317464, coinMultiplier = 6.6 },
-	{ id = 10, requiredLevel = 180, requiredSpeed = 397086, coinMultiplier = 8.3 },
+	{ id = 2, requiredLevel = 20, requiredSpeed = 17293, coinMultiplier = 1.3 },
+	{ id = 3, requiredLevel = 40, requiredSpeed = 85162, coinMultiplier = 1.65 },
+	{ id = 4, requiredLevel = 60, requiredSpeed = 216401, coinMultiplier = 2.1 },
+	{ id = 5, requiredLevel = 80, requiredSpeed = 419391, coinMultiplier = 2.65 },
+	{ id = 6, requiredLevel = 100, requiredSpeed = 700668, coinMultiplier = 3.35 },
+	{ id = 7, requiredLevel = 120, requiredSpeed = 1065686, coinMultiplier = 4.2 },
+	{ id = 8, requiredLevel = 140, requiredSpeed = 1519172, coinMultiplier = 5.3 },
+	{ id = 9, requiredLevel = 160, requiredSpeed = 2065326, coinMultiplier = 6.6 },
+	{ id = 10, requiredLevel = 180, requiredSpeed = 2707942, coinMultiplier = 8.3 },
 }
 
 return table.freeze(stages)

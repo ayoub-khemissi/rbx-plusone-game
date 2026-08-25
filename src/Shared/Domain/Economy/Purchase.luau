@@ -46,7 +46,7 @@ function Purchase.evaluate(catalog: any, profile: Profile, upgradeId: string, co
 		return Result.err("MAX_LEVEL", "Already at maximum level", { level = level })
 	end
 
-	local cost = catalog:costFor(upgradeId, level)
+	local cost = catalog:costFor(upgradeId, level, profile.prestiges)
 	if profile.coins < cost then
 		return Result.err("INSUFFICIENT_FUNDS", "Not enough Coins", {
 			cost = cost,
@@ -88,7 +88,7 @@ function Purchase.planBulk(catalog: any, profile: Profile, upgradeId: string, ma
 		if catalog:isMaxed(upgradeId, level) then
 			break
 		end
-		local cost = catalog:costFor(upgradeId, level)
+		local cost = catalog:costFor(upgradeId, level, profile.prestiges)
 		if cost > budget then
 			plan.nextCost = cost
 			break

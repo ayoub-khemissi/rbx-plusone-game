@@ -30,7 +30,16 @@ export type UpgradeCatalog = typeof(setmetatable(
 	UpgradeCatalog
 ))
 
-function UpgradeCatalog.new(definitions: { Definition }): UpgradeCatalog
+--[[
+	`priceGrowthPerPrestige` keeps the shop worth the same as the money it is bought
+	with. Income is multiplied by every rebirth taken; a fixed price list would
+	therefore be free by the third world, and the shop would stop being a decision
+	somewhere in the second. Pass the rebirth multiplier's own growth and the two
+	move together forever.
+]]
+export type Tuning = { priceGrowthPerPrestige: number? }
+
+function UpgradeCatalog.new(definitions: { Definition }, tuning: Tuning?): UpgradeCatalog
 	local order, byId = {}, {}
 
 	for _, definition in definitions do
@@ -41,7 +50,11 @@ function UpgradeCatalog.new(definitions: { Definition }): UpgradeCatalog
 		table.insert(order, definition.id)
 	end
 
-	return setmetatable({ _order = order, _byId = byId }, UpgradeCatalog)
+	return setmetatable({
+		_order = order,
+		_byId = byId,
+		_priceGrowth = tuning and tuning.priceGrowthPerPrestige or 1,
+	}, UpgradeCatalog)
 end
 
 function UpgradeCatalog.ids(self: UpgradeCatalog): { string }
@@ -61,9 +74,22 @@ function UpgradeCatalog.expect(self: UpgradeCatalog, upgradeId: string): Definit
 end
 
 --[[ The cost of going from `currentLevel` to `currentLevel + 1`. ]]
-function UpgradeCatalog.costFor(self: UpgradeCatalog, upgradeId: string, currentLevel: number): number
+--[[
+	What the next level costs, for a player who has taken `prestiges` rebirths.
+
+	The rebirth count is the only thing the price needs from the player, and every
+	caller has it on the profile — which is why it is a number here rather than a
+	context somebody can forget to pass.
+]]
+function UpgradeCatalog.costFor(
+	self: UpgradeCatalog,
+	upgradeId: string,
+	currentLevel: number,
+	prestiges: number?
+): number
 	local definition = self:expect(upgradeId)
-	return math.floor(definition.baseCost * definition.costGrowth ^ math.max(currentLevel, 0))
+	local scale = self._priceGrowth ^ math.max(math.floor(prestiges or 0), 0)
+	return math.floor(definition.baseCost * definition.costGrowth ^ math.max(currentLevel, 0) * scale)
 end
 
 function UpgradeCatalog.isMaxed(self: UpgradeCatalog, upgradeId: string, currentLevel: number): boolean

@@ -125,7 +125,10 @@ function Container.new(options: Options)
 	-- disconnection. `monotonic()` only measures durations, like the dash cooldown.
 	local clock = ports.clock or { now = os.time, monotonic = os.clock }
 
-	local catalog = UpgradeCatalog.new(config.Upgrades)
+	-- The shop is priced in the money of the day: see UpgradeCatalog.
+	local catalog = UpgradeCatalog.new(config.Upgrades, {
+		priceGrowthPerPrestige = balance.prestige.multiplierGrowth,
+	})
 	--[[
 		Worlds are built once and shared. Two players in the same world read the same
 		ladder, and a world is only built when somebody reaches it.

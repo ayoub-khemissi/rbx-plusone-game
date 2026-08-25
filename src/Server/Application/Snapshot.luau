@@ -48,7 +48,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 
 	local reachedStage = self.ladder:highestUnlocked(profile.speed)
 	local nextStage = self.ladder:nextOf(reachedStage)
-	local level = self.levels:progressFor(profile.speed, profile.bestLevel)
+	local level = self.levels:progressFor(profile.speed)
 
 	return {
 		-- Permanent progression

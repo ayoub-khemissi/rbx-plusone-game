@@ -35,7 +35,9 @@ function ShopPanel.new(parent: Instance, state, remotes)
 		panel = panel,
 		state = state,
 		remotes = remotes,
-		catalog = UpgradeCatalog.new(Config.Upgrades),
+		catalog = UpgradeCatalog.new(Config.Upgrades, {
+			priceGrowthPerPrestige = Config.Balance.prestige.multiplierGrowth,
+		}),
 		rows = {},
 	}, ShopPanel)
 
@@ -217,7 +219,7 @@ function ShopPanel.render(self)
 			row.buy.TextXAlignment = Enum.TextXAlignment.Center
 			row.price.Visible = false
 		else
-			local cost = self.catalog:costFor(definition.id, currentLevel)
+			local cost = self.catalog:costFor(definition.id, currentLevel, self.state:get("Prestiges"))
 			row.buy.Text = Format.abbreviate(cost)
 			row.buy.BackgroundColor3 = if coins >= cost then Theme.color.positive else Theme.color.locked
 			row.buy.TextXAlignment = Enum.TextXAlignment.Right

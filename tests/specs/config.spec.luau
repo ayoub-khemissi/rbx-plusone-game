@@ -170,34 +170,141 @@ describe("Config.Balance", function()
 		afternoon. Everything sold on top — the treadmills — shortens this, and it
 		only means something if the floor is real.
 
+		THE SHOP IS PART OF THE MEASUREMENT. Measured without it this used to read
+		over four hours while the real game took under one: Stride alone multiplies
+		the gain by five before a world is out, and a floor that ignores the single
+		biggest accelerator in the game is not a floor. So the simulation buys, the
+		way a player buys — whatever is affordable, cheapest first.
+
 		Simulated rather than reasoned about, because the gain feeds back into
-		itself: running faster earns levels faster, which makes you run faster. Any
-		retune of the level exponent or the speed curve moves this, and that is
+		itself: running faster earns more, which buys more, which runs faster. Any
+		retune of the exponent, the speed curve or a price moves this, and that is
 		exactly when someone should be told.
 	]]
-	it("keeps a world out of reach for at least four hours of running", function()
+	local function simulateWorld(world: number): number
+		local scale = Config.Worlds[world].scale
 		local curve = SpeedCurve.new(Config.Balance.speedCurve)
-		local levels = LevelCurve.new(Config.Balance.level)
+		local levels = LevelCurve.new({
+			base = Config.Balance.level.base * scale,
+			exponent = Config.Balance.level.exponent,
+		})
 		local policy = PrestigePolicy.new(Config.Balance.prestige)
-		local perSecond = Config.Balance.progression.speedPerStep / Config.Balance.movement.studsPerStep
+		local catalog = UpgradeCatalog.new(Config.Upgrades, {
+			priceGrowthPerPrestige = Config.Balance.prestige.multiplierGrowth,
+		})
+
 		local perWorld = Config.Balance.prestige.rebirthsPerWorld
+		local tuning = Config.Balance.progression
+		local perStep = 1 / Config.Balance.movement.studsPerStep
+		local seconds, step = 0, 2
+		local best = 0
 
-		-- The seven cycles of reset-and-climb a world is made of. Each is quicker
-		-- than the last, because the multiplier keeps what the reset takes away.
-		local seconds, step = 0, 5
-		for taken = 0, perWorld - 1 do
-			local target = policy:requirementFor(taken)
-			local multiplier = policy:multiplierFor(taken)
-			local experience = 0
+		for cycle = 0, perWorld - 1 do
+			-- The ladder is continuous: the second world starts at the seventh
+			-- rebirth, and its scale is already that multiplier.
+			local prestiges = (world - 1) * perWorld + cycle
+			local multiplier = policy:multiplierFor(prestiges)
+			-- No world scale here: the requirement already grows by the same rebirth
+			-- multiplier the scale is made of, and counting it twice would make every
+			-- world after the first look impossible.
+			local target = policy:requirementFor(prestiges)
+			local upgrades, speed, coins = {}, 0, 0
 
-			while experience < target and seconds < 20 * 3600 do
-				experience += curve:walkSpeedFor(levels:levelFor(experience)) * perSecond * multiplier * step
+			while speed < target and seconds < 40 * 3600 do
+				local level = levels:levelFor(speed)
+
+				local stageMultiplier = 1
+				for _, stage in Config.Stages do
+					if speed >= stage.requiredSpeed * scale then
+						stageMultiplier = stage.coinMultiplier
+					end
+				end
+
+				local speedBonus, coinBonus = 0, 0
+				for id, owned in upgrades do
+					local definition = catalog:get(id)
+					if definition.effect == "speedMultiplier" then
+						speedBonus += definition.effectPerLevel * owned
+					elseif definition.effect == "coinMultiplier" then
+						coinBonus += definition.effectPerLevel * owned
+					end
+				end
+
+				local catchUp = if best > 0 and level < best then tuning.catchUp else 1
+				local steps = curve:walkSpeedFor(level) * perStep * step
+				speed += steps * tuning.speedPerStep * (1 + speedBonus) * multiplier * catchUp
+				coins += steps * tuning.coinsPerStep * (1 + coinBonus) * multiplier * stageMultiplier
+				best = math.max(best, level)
+
+				local bought = true
+				while bought do
+					bought = false
+					local cheapest, price = nil, math.huge
+					for _, definition in Config.Upgrades do
+						local owned = upgrades[definition.id] or 0
+						if not catalog:isMaxed(definition.id, owned) then
+							local cost = catalog:costFor(definition.id, owned, prestiges)
+							if cost <= coins and cost < price then
+								cheapest, price = definition.id, cost
+							end
+						end
+					end
+					if cheapest then
+						upgrades[cheapest] = (upgrades[cheapest] or 0) + 1
+						coins -= price
+						bought = true
+					end
+				end
+
 				seconds += step
 			end
 		end
 
-		expect(seconds / 3600).toBeGreaterThan(4)
-		expect(seconds / 3600).toBeLessThan(6)
+		return seconds / 3600
+	end
+
+	it("keeps a world out of reach for at least four hours of running", function()
+		local hours = simulateWorld(1)
+		expect(hours).toBeGreaterThan(4)
+		expect(hours).toBeLessThan(6)
+	end)
+
+	--[[
+		AND EVERY WORLD COSTS THE SAME, which is the promise the whole scaling rests
+		on: the ladder, the level curve and the shop are all multiplied by the same
+		rebirth multiplier, so a world is the same climb wherever it sits. Before the
+		shop was priced that way it was the odd one out — fixed prices against income
+		that grows every rebirth — and the fifth world took a quarter of the first.
+	]]
+	it("costs the same in every world", function()
+		local first = simulateWorld(1)
+		for world = 2, #Config.Worlds do
+			expect(simulateWorld(world)).toBeCloseTo(first, first * 0.05)
+		end
+	end)
+
+	--[[
+		A world is two hundred levels, and the seventh rebirth is what closes it. If
+		the requirement stopped short the last courses would belong to nobody; if it
+		overshot, the level a world ends on would drift world after world.
+	]]
+	it("ends a world on level 200", function()
+		local levels = LevelCurve.new(Config.Balance.level)
+		local policy = PrestigePolicy.new(Config.Balance.prestige)
+		local last = policy:requirementFor(Config.Balance.prestige.rebirthsPerWorld - 1)
+
+		expect(levels:levelFor(last)).toBe(200)
+	end)
+
+	--[[
+		And the top of that ladder has to be the top of the speed curve: level 200 is
+		where a world ends and where the character stops getting faster, or one of
+		the two numbers is decoration.
+	]]
+	it("reaches the top speed exactly at the top of the world", function()
+		local curve = SpeedCurve.new(Config.Balance.speedCurve)
+		expect(curve:walkSpeedFor(200)).toBe(Config.Balance.speedCurve.maxWalkSpeed)
+		expect(curve:walkSpeedFor(199)).toBeLessThan(Config.Balance.speedCurve.maxWalkSpeed)
 	end)
 
 	--[[

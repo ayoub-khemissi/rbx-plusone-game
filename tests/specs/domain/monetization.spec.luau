@@ -201,6 +201,35 @@ describe("Grants", function()
 		expect(stack:isActive(context.profile, "swiftRush", 200)).toBe(true)
 	end)
 
+	--[[
+		Income and shop prices are both multiplied by every rebirth taken, so a fixed
+		amount buys a shop row on day one and nothing at all two worlds later. The
+		price on the product never changes; what it buys must not either.
+	]]
+	it("pays a grant in the money of the day", function()
+		context.prestigePolicy = {
+			multiplierFor = function(_self, taken)
+				return 2 ^ taken
+			end,
+		}
+		context.profile.prestiges = 3
+
+		local summary = Grants.apply({ coins = 5000, speed = 250 }, context)
+
+		expect(summary.coins).toBe(40000)
+		expect(context.profile.speed).toBe(2000)
+	end)
+
+	-- A player who has never rebirthed pays and receives exactly what is written.
+	it("quotes the amount at the first rebirth", function()
+		context.prestigePolicy = {
+			multiplierFor = function()
+				return 1
+			end,
+		}
+		expect(Grants.apply({ coins = 5000 }, context).coins).toBe(5000)
+	end)
+
 	it("grants an instant molt without the speed requirement", function()
 		context.profile.speed = 10
 		context.prestigePolicy = {

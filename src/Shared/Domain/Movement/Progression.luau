@@ -20,6 +20,8 @@ type Reading = MovementAccounting.Reading
 export type Tuning = {
 	speedPerStep: number,
 	coinsPerStep: number,
+	-- How much faster ground already covered is re-covered. See `credit`.
+	catchUp: number?,
 }
 
 export type Context = {
@@ -83,7 +85,7 @@ end
 
 --[[ Movement state to apply to the character for the current profile. ]]
 function Progression.movementFor(self: Progression, profile: Profile, bonuses: any): MovementState
-	local level = self.levels:levelFor(profile.speed, profile.bestLevel)
+	local level = self.levels:levelFor(profile.speed)
 	local walkSpeed = self.curve:walkSpeedFor(level)
 	local dashPowerLevel = self.dashPolicy:powerLevelFor(bonuses)
 
@@ -109,8 +111,33 @@ end
 	nothing to check it against. Everything after the measurement is the same, and
 	writing it twice is how the two would drift.
 ]]
+--[[
+	How much faster the player climbs while below the best level they ever reached.
+
+	A rebirth takes the experience away and leaves the multiplier, and with an
+	exponent near two nine tenths of a world sits in its last tenth of levels — so
+	without this, most of every cycle is spent re-walking ground the player had
+	already walked, at a pace they had already outgrown.
+
+	It is paid on the GAIN and not on the price, and that distinction is the whole
+	reason it exists. Discounting the price of a known level would raise the level a
+	given Speed reads as, every rebirth, until "Level 700" in the first world meant
+	nothing to anybody. The gain leaves the ladder exactly where it was: the player
+	climbs it quickly, and it still says what it said.
+
+	It stops the moment they pass their best. New ground is what a world is made of,
+	and it costs what it costs.
+]]
+function Progression._catchUpFor(self: Progression, profile: Profile): number
+	local best = profile.bestLevel or 0
+	if best <= 0 then
+		return 1
+	end
+	return if self.levels:levelFor(profile.speed) < best then self.tuning.catchUp or 1 else 1
+end
+
 function Progression.credit(self: Progression, profile: Profile, steps: number, bonuses: any, elapsed: number)
-	local speedGained = steps * self.tuning.speedPerStep * bonuses.speed
+	local speedGained = steps * self.tuning.speedPerStep * bonuses.speed * self:_catchUpFor(profile)
 	local coinsGained = steps * self.tuning.coinsPerStep * bonuses.coins
 
 	profile.speed += speedGained
@@ -120,10 +147,10 @@ function Progression.credit(self: Progression, profile: Profile, steps: number, 
 
 	--[[
 		The high-water mark of this world, raised here because this is the one place
-		experience is ever added. It survives a rebirth, and it is what makes the
-		climb back cheap: ground already covered is not walked twice at full price.
+		experience is ever added. It survives a rebirth, and it is what tells the
+		catch-up where to stop.
 	]]
-	local reached = self.levels:levelFor(profile.speed, profile.bestLevel)
+	local reached = self.levels:levelFor(profile.speed)
 	if reached > (profile.bestLevel or 0) then
 		profile.bestLevel = reached
 	end

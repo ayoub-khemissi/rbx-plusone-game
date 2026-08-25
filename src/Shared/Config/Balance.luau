@@ -116,39 +116,44 @@ return table.freeze({
 	progression = table.freeze({
 		speedPerStep = 1,
 		coinsPerStep = 0.4,
+		--[[
+			How much faster ground already covered is re-covered, after a rebirth.
+
+			Nine tenths of a world's experience sits in the last tenth of its levels,
+			so without this a cycle spends most of itself re-walking known ground at a
+			pace the player had already outgrown — twenty minutes of it by the seventh
+			rebirth. At twelve, the climb back to where they were takes a couple of
+			minutes and the rest of the cycle is spent on new ground.
+
+			Paid on the GAIN, never on the price of a level: a discount would raise the
+			level a given Speed reads as, every rebirth, until the number said nothing.
+			See Domain.Movement.Progression.
+		]]
+		catchUp = 12,
 	}),
 
 	--[[
 		Speed read as a rank. `base * level^exponent`, so the first levels arrive in
 		seconds and the pace stretches without ever flattening.
 
-		At the starting walk speed this is roughly a level every 15 seconds at the
-		start, every 4 minutes around level 25, and the last Stage lands near level
-		50 — far enough that there is always a next one in sight.
+		The exponent decides the SHAPE of a world, the base its LENGTH, and they are
+		set together: 2.3 makes the first level arrive in twenty seconds and the two
+		hundredth cost a third of the world, while 17.6 puts level 200 exactly on the
+		experience seven rebirths add up to. A world is then four and a half hours of
+		uninterrupted running WITH the shop bought as fast as it can be afforded —
+		which is the floor a free player should meet.
+
+		A flatter exponent was tried at 1.9: the same world, but the first level took
+		two minutes to arrive, and the opening minutes are the ones a player decides
+		on. Every world reads the same either way, because World scales this curve
+		and the Stage ladder by the same factor.
 
 		A level grants nothing on its own. Rewards hang off Stages, which the map
 		lays out; retuning this changes how progress READS, never what it pays.
 	]]
 	level = table.freeze({
-		base = 20.6,
-		-- The exponent decides how long a world takes; the base places level 200 at
-		-- the experience seven rebirths add up to. Together they put a world at
-		-- four and a half hours of uninterrupted running, which is the floor a free
-		-- player should meet.
-		exponent = 1.9,
-		--[[
-			What a level already reached costs to reach again, after a rebirth.
-
-			Nine tenths of a world's experience sits in the last tenth of its levels,
-			so without this a rebirth spends most of its cycle re-walking known
-			ground — twenty-five minutes of it by the seventh. At 8% the climb back
-			to level 200 takes under two minutes, and the minute after that buys ten
-			levels of genuinely new ground at full price.
-
-			It does not shorten a world: only the climb back is compressed, and a
-			world is made of new levels.
-		]]
-		knownDiscount = 0.08,
+		base = 17.6,
+		exponent = 2.3,
 	}),
 
 	-- The long loop. The requirement matches the last Stage: prestige is what you do
@@ -169,13 +174,13 @@ return table.freeze({
 		200 on the seventh — because the character keeps getting faster as it climbs.
 		The seventh lands exactly on the top of the world, so the loop covers all ten
 		stages rather than leaving the last ones for nobody. Cycles shorten as they
-		go, 58 minutes down to 24.
+		go: near two hours for the first, a quarter of an hour for the last.
 
 		Solved by simulating real play against the speed curve, since the earn rate
 		feeds back into itself. The config spec re-runs that simulation.
 	]]
 	prestige = table.freeze({
-		baseRequirement = 28913,
+		baseRequirement = 205666,
 		requirementGrowth = 1.6,
 		multiplierGrowth = 1.6,
 		rebirthsPerWorld = 7,

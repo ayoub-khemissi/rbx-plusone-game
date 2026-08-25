@@ -60,7 +60,7 @@ The main revenue: the player comes back to buy at every hard step.
 
 | Product | Indicative price | Contents |
 | --- | --- | --- |
-| Handful / Bag / Chest / Vault of Coins | 99 / 199 / 499 / 999 R$ | 2 500 → 100 000 Coins |
+| Handful / Bag / Chest / Vault of Coins | 99 / 199 / 499 / 999 R$ | 2 500 → 100 000 Coins, at the first rebirth |
 | Speed Rush | 149 R$ | ×2 Speed, 20 min |
 | Coin Rush | 149 R$ | ×3 Coins, 20 min |
 | Party Time | 299 R$ | A bonus for **every** player on the server, 10 min |
@@ -70,6 +70,13 @@ The main revenue: the player comes back to buy at every hard step.
 
 The 99 / 199 / 499 / 999 ladder is the one Roblox players are used to, with a *best
 value* tier highlighted to lift the average basket.
+
+**Coin and Speed amounts are quoted at the first rebirth and paid in the money of the
+day.** Income and shop prices are both multiplied by every rebirth taken, so a fixed
+100 000 buys a shop row on the first evening and nothing at all two worlds later —
+the product would quietly stop being worth its price without anyone changing it. What
+the player receives therefore scales with their rebirth count, and buys exactly what
+it bought when the price was set.
 
 **Instant Prestige keeps the upgrades**, unlike the free Prestige which resets them.
 That is precisely what is being sold: not the multiplier, which stays reachable by
@@ -116,4 +123,6 @@ No line of code has to change to switch the monetization on.
 
 Everything lives in `src/Shared/Config/Monetization.luau`: boost durations and
 stacking, the daily reward table, the session chest interval, promo codes and offers.
-Upgrade prices in Coins are in `Upgrades.luau`, and the AFK rate in `Balance.luau`.
+Upgrade prices in Coins are in `Upgrades.luau` — quoted, like the products, at the
+first rebirth, and multiplied by `prestige.multiplierGrowth` for every rebirth taken.
+The AFK rate is in `Balance.luau`.
