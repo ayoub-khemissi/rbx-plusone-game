@@ -188,9 +188,11 @@ local theme: Theme = {
 			shading in the same hue. It can only ever deepen a surface, which is why
 			these numbers can be this high: they buy pattern, not haze.
 
-			The panels carry more than the buttons because they have more to cover. A
-			near-white plate the size of a window reads as blank paper long after the
-			same value has textured a button.
+			The panels carry LESS than the buttons, and it is the text that decides it.
+			A window is dark type on a pale plate, and every point of grain the plate
+			takes on is contrast that type loses — the grain sits under the words, but
+			a greyer ground is a greyer ground. A button is white type on a saturated
+			fill: there the same grain deepens the face and the words gain by it.
 
 			A tile wants to be large enough that a button shows one or two repeats
 			rather than a mosaic of them — the texture should read as the surface the
@@ -200,7 +202,7 @@ local theme: Theme = {
 			either to nil and that surface goes smooth again.
 		]]
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-		panelOpacity = 0.85,
+		panelOpacity = 0.3,
 		panelTile = 64,
 		buttonPattern = "rbxassetid://4549727994", -- metal
 		buttonOpacity = 0.55,

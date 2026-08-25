@@ -95,7 +95,7 @@ return table.freeze({
 
 	texture = table.freeze({
 		panelPattern = textureOf("panelPattern"),
-		panelOpacity = opacityOf("panelOpacity", 0.85),
+		panelOpacity = opacityOf("panelOpacity", 0.3),
 		panelTile = tileOf("panelTile", 64),
 		buttonPattern = textureOf("buttonPattern"),
 		buttonOpacity = opacityOf("buttonOpacity", 0.55),
