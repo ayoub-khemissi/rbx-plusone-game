@@ -140,8 +140,6 @@ function Notifications.push(self, message: string, kind: string?)
 		size = UDim2.fromOffset(0, DEPTHS[1].height),
 		color = COLORS[kind or "info"] or Theme.color.info,
 		radius = Theme.radius.chip,
-		-- No grain on something this small, and one less layer to fade out.
-		pattern = false,
 	})
 	toast.ZIndex = 20
 	toast.AutomaticSize = Enum.AutomaticSize.X

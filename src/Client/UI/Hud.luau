@@ -52,7 +52,6 @@ local function chip(parent: Instance, options)
 		color = Theme.color.panel,
 		transparency = 0.12,
 		radius = Theme.radius.chip,
-		pattern = false,
 		visible = false,
 	})
 	frame.AutomaticSize = Enum.AutomaticSize.X
@@ -108,7 +107,6 @@ local function gaugeChip(parent: Instance, options)
 		color = Theme.color.panel,
 		transparency = 0.12,
 		radius = Theme.radius.chip,
-		pattern = false,
 		visible = false,
 	})
 	frame.AutomaticSize = Enum.AutomaticSize.X

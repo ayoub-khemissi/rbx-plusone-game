@@ -21,6 +21,9 @@ function Panel.new(parent: Instance, options)
 		size = options.size or UDim2.fromOffset(560, 460),
 		position = UDim2.fromScale(0.5, 0.5),
 		anchorPoint = Vector2.new(0.5, 0.5),
+		-- The one place the grain belongs: a window is large, and its padding lives
+		-- on the content frame rather than on the card.
+		pattern = true,
 		visible = false,
 	})
 	frame.ZIndex = 5

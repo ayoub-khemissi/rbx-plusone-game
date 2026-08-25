@@ -43,7 +43,7 @@ function RewardsPanel.new(parent: Instance, state, remotes)
 		size = UDim2.new(1, 0, 0, 52),
 		position = UDim2.fromOffset(0, 54),
 		textSize = Theme.text.big,
-		textColor = Theme.color.background,
+		color = Theme.color.positive,
 		onClick = function()
 			self.remotes.events.ClaimDaily:FireServer()
 			Sound.play("reward")
@@ -154,7 +154,9 @@ function RewardsPanel.refresh(self)
 		self.dailyButton.Text = if daily.claimable
 			then "CLAIM"
 			else `NEXT IN {Format.duration(daily.secondsRemaining)}`
-		self.dailyButton.BackgroundColor3 = if daily.claimable then Theme.color.accent else Theme.color.locked
+		self.dailyButton.BackgroundColor3 = if daily.claimable
+			then Theme.color.positive
+			else Theme.color.locked
 	end
 
 	local chest = status.chest

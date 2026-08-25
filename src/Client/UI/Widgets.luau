@@ -142,8 +142,15 @@ function Widgets.card(parent: Instance, options): Frame
 	Widgets.corner(card, radius)
 	Widgets.stroke(card, options.edge or Theme.color.panelEdge, options.edgeThickness)
 
-	-- A theme may lay a faint tile over its panels. No texture, flat panel, no fuss.
-	if Theme.texture.panelPattern and options.pattern ~= false then
+	--[[
+		The tile is OPT-IN, and only windows ask for it.
+
+		It is a child like any other, so a UIPadding on the card shrinks it too: the
+		grain then covers the inner box only, leaving a bare margin around it, and
+		everything inside looks glued to the edge of a smaller box. On a window,
+		whose padding is on an inner content frame, it fills correctly.
+	]]
+	if Theme.texture.panelPattern and options.pattern == true then
 		local pattern = Instance.new("ImageLabel")
 		pattern.Name = "Pattern"
 		pattern.Size = UDim2.fromScale(1, 1)
@@ -204,7 +211,9 @@ function Widgets.button(parent: Instance, options): TextButton
 	button.Size = options.size or UDim2.fromOffset(160, 50)
 	button.Position = options.position or UDim2.fromScale(0, 0)
 	button.AnchorPoint = options.anchorPoint or Vector2.zero
-	button.BackgroundColor3 = options.color or Theme.color.accent
+	-- Green, not the accent. The accent is the currency colour, and a gold price on
+	-- a gold button is a button nobody can read.
+	button.BackgroundColor3 = options.color or Theme.color.positive
 	button.AutoButtonColor = true
 	button.BorderSizePixel = 0
 	button.Font = options.font or Theme.font.title

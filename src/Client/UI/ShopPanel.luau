@@ -109,7 +109,7 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 		position = UDim2.fromScale(1, 0.5),
 		anchorPoint = Vector2.new(1, 0.5),
 		textSize = Theme.text.big,
-		textColor = Theme.color.background,
+		color = Theme.color.positive,
 		onClick = function()
 			self.remotes.events.BuyUpgrade:FireServer(definition.id)
 		end,
@@ -219,7 +219,7 @@ function ShopPanel.render(self)
 		else
 			local cost = self.catalog:costFor(definition.id, currentLevel)
 			row.buy.Text = Format.abbreviate(cost)
-			row.buy.BackgroundColor3 = if coins >= cost then Theme.color.accent else Theme.color.locked
+			row.buy.BackgroundColor3 = if coins >= cost then Theme.color.positive else Theme.color.locked
 			row.buy.TextXAlignment = Enum.TextXAlignment.Right
 			row.price.Visible = true
 		end
