@@ -161,7 +161,8 @@ describe("DashPolicy", function()
 		maxLevel = 5,
 		baseMultiplier = 1,
 		multiplierPerLevel = 1,
-		maxPower = 250,
+		powerScale = 20,
+		maxPower = 1000,
 		cooldown = 2,
 	}
 	local SLOW, FAST = 16, 53
@@ -203,9 +204,19 @@ describe("DashPolicy", function()
 		once the character is quick — the same button stops meaning the same thing.
 	]]
 	it("scales the impulse with the character's run speed", function()
-		expect(dash:powerFor(1, SLOW)).toBe(SLOW * 2)
-		expect(dash:powerFor(1, FAST)).toBe(FAST * 2)
+		expect(dash:powerFor(1, SLOW)).toBe(SLOW * 2 * TUNING.powerScale)
 		expect(dash:powerFor(1, FAST)).toBeGreaterThan(dash:powerFor(1, SLOW))
+	end)
+
+	--[[
+		The multiplier is what the shop promises; the scale is what makes the engine
+		feel it. Writing a velocity equal to the run speed changes nothing at all —
+		the character was already moving that fast — so the two have to stay
+		separate: one is a promise, the other is physics.
+	]]
+	it("keeps the advertised multiple and the impulse apart", function()
+		expect(dash:multiplierFor(1)).toBe(2)
+		expect(dash:powerFor(1, SLOW)).toBe(dash:multiplierFor(1) * SLOW * TUNING.powerScale)
 	end)
 
 	it("gives nothing to a character that is not moving under its own power", function()
@@ -369,7 +380,8 @@ describe("Progression", function()
 				maxLevel = 5,
 				baseMultiplier = 1,
 				multiplierPerLevel = 1,
-				maxPower = 250,
+				powerScale = 20,
+				maxPower = 1000,
 				cooldown = 2,
 			}),
 			tuning = { speedPerStep = 1, coinsPerStep = 0.5 },

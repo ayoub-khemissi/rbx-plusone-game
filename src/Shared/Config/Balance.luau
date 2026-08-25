@@ -66,7 +66,11 @@ return table.freeze({
 		maxLevel = 5,
 		baseMultiplier = 1,
 		multiplierPerLevel = 1,
-		maxPower = 250,
+		-- The shop sells x1 through x6; this is what one of those is worth as an
+		-- impulse. A velocity equal to the run speed does nothing — the character
+		-- was already going that fast — so it has to overshoot to be felt.
+		powerScale = 20,
+		maxPower = 1000,
 		cooldown = 2, -- seconds; a dash is a decision, not a resource to dump
 	}),
 

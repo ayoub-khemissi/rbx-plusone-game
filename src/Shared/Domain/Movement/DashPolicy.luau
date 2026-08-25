@@ -25,6 +25,9 @@ export type Tuning = {
 	-- Multiple of the walk speed with the dash unlocked and no power bought.
 	baseMultiplier: number,
 	multiplierPerLevel: number,
+	-- What one point of multiplier is worth as impulse. The shop shows the
+	-- multiplier; this turns it into something the physics engine notices.
+	powerScale: number,
 	maxPower: number,
 	cooldown: number,
 }
@@ -47,6 +50,7 @@ function DashPolicy.new(tuning: Tuning): DashPolicy
 		maxLevel = tuning.maxLevel,
 		baseMultiplier = tuning.baseMultiplier,
 		multiplierPerLevel = tuning.multiplierPerLevel,
+		powerScale = tuning.powerScale,
 		maxPower = tuning.maxPower,
 		cooldown = tuning.cooldown,
 	}, DashPolicy)
@@ -77,16 +81,22 @@ end
 --[[
 	Impulse of a dash for a character running at that speed.
 
+	The multiplier is what the shop advertises; `powerScale` is what makes the
+	engine feel it. Setting the velocity to exactly the run speed does nothing at
+	all — the character was already moving that fast — so the impulse has to
+	overshoot by a wide margin before a dash reads as a dash.
+
 	Capped, for the reason the walk speed is capped rather than for balance: a body
-	moving fast enough crosses a thin platform between two frames. The ceiling is
-	generous, and a map with walls thinner than a few studs will want it lower.
+	moving fast enough crosses a thin platform between two frames. At these values
+	the ceiling is doing real work, and a map built from thin walls will want it
+	lower.
 ]]
 function DashPolicy.powerFor(self: DashPolicy, powerLevel: number, walkSpeed: number?): number
 	local speed = if typeof(walkSpeed) == "number" and walkSpeed > 0 then walkSpeed else 0
 	if speed <= 0 then
 		return 0
 	end
-	return math.min(speed * self:multiplierFor(powerLevel), self.maxPower)
+	return math.min(speed * self:multiplierFor(powerLevel) * self.powerScale, self.maxPower)
 end
 
 function DashPolicy.remainingCooldown(self: DashPolicy, state: State, now: number): number

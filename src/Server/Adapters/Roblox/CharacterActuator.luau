@@ -40,6 +40,10 @@ function CharacterActuator.apply(_self, player: Player, movement: any)
 
 	setIfChanged(character, "JumpLevel", movement.jumpLevel)
 	setIfChanged(character, "JumpPower", movement.jumpPower)
+	-- Unlocking and power are two purchases, so the character has to carry both:
+	-- gating the dash on the power level refuses it to anyone who owns the move and
+	-- has not upgraded it yet.
+	setIfChanged(character, "DashUnlocked", movement.dashUnlocked == true)
 	setIfChanged(character, "DashLevel", movement.dashLevel)
 	setIfChanged(character, "DashPower", movement.dashPower)
 	setIfChanged(character, "Magnet", movement.magnet)

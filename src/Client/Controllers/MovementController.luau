@@ -146,9 +146,9 @@ function MovementController._onDashRequest(self)
 		return
 	end
 
-	local level = self.character:GetAttribute("DashLevel") or 0
+	-- Owning the dash is what allows it; the power level only decides how hard.
 	local power = self.character:GetAttribute("DashPower") or 0
-	if level <= 0 or power <= 0 then
+	if self.character:GetAttribute("DashUnlocked") ~= true or power <= 0 then
 		return
 	end
 
