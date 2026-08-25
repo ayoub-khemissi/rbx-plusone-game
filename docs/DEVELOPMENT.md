@@ -47,6 +47,22 @@ otherwise surfaces as a puzzling runtime error much later.
 In Studio without API access, persistence falls back to memory automatically, so
 the game still runs; nothing is written and nothing is lost.
 
+### Asking the live place what it holds
+
+`./tools/inspect-place.ps1 -UniverseId <id>` runs a script against the PUBLISHED
+place through Open Cloud and prints what it found: every tag the map declares and
+how many of each, what sits in the Workspace, and whether the test platform's
+`Sandbox` attribute is set.
+
+It answers from here the questions that otherwise need somebody in front of Studio
+reading a properties panel out loud — *is the model tagged, or only named* is the
+usual one. Pass `-Script ./something.luau` to ask anything else. Roblox runs it in
+a sandbox of its own: nothing it does can change the place or reach a player.
+
+The key needs `universe:read` and `universe.place.luau-execution-session:write`,
+both scoped to that universe. A key made for uploading icons has the first and not
+the second, and the script says so when that is the answer.
+
 ### What syncs when
 
 Live sync covers **edits to files that already existed when the server started**.
