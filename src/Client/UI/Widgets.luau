@@ -23,9 +23,29 @@ local Theme = require(script.Parent.Theme)
 
 local Widgets = {}
 
--- How much a button grows under the pointer, and how fast. Small: the button has
--- to answer, not jump. It is a hint that the thing is alive, not an animation.
-local HOVER_SCALE = 1.05
+--[[ A colour lifted towards white, which is what a highlight is made of. ]]
+local function lift(color: Color3, amount: number): Color3
+	return color:Lerp(Color3.new(1, 1, 1), amount)
+end
+
+--[[
+	How a button answers the pointer, and it answers WITHOUT CHANGING SIZE.
+
+	It used to grow, and growing is the wrong tool: a button that swells takes room
+	from whatever is beside it. In the shop it covered the description of the row
+	below; in the Rebirth window the two buttons ate each other's edges. An effect
+	that changes an element's footprint will eventually collide with something,
+	because the layout was measured for the element, not for the effect.
+
+	So it lights instead. The fill lifts towards white, the outline brightens to a
+	rim, and neither occupies a single pixel more than before — which means it is
+	safe on anything, in any layout, forever.
+
+	The press darkens, by hand rather than through AutoButtonColor: that property
+	dims on hover as well, and would spend its time cancelling the lift.
+]]
+local HOVER_LIFT = 0.16
+local PRESS_DROP = 0.14
 local HOVER_TWEEN = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 -- How wide the transparency jump of a progress bar is, and how fast the bar chases
@@ -234,7 +254,7 @@ function Widgets.button(parent: Instance, options): TextButton
 	-- Green, not the accent. The accent is the currency colour, and a gold price on
 	-- a gold button is a button nobody can read.
 	button.BackgroundColor3 = options.color or Theme.color.positive
-	button.AutoButtonColor = true
+	button.AutoButtonColor = false
 	button.BorderSizePixel = 0
 	button.Font = options.font or Theme.font.title
 	button.Text = options.text or ""
@@ -251,37 +271,66 @@ function Widgets.button(parent: Instance, options): TextButton
 	button.Parent = parent
 
 	Widgets.corner(button, options.radius)
-	Widgets.stroke(button, options.edge or Theme.color.panelEdge, Theme.stroke.button)
 	if options.gradient ~= false then
 		Widgets.gradient(button)
 	end
 
 	--[[
-		Grows under the pointer.
+		The resting colour, remembered from the start.
 
-		A UIScale rather than a size change, so a button inside a list does not shove
-		its neighbours aside every time the mouse crosses it: scaling is drawn, not
-		laid out. Touch devices never fire these, which is correct — there is no
-		hovering with a finger, and the press already answers on its own.
-
-		IT SCALES DESCENDANTS, AND ONLY DESCENDANTS. A caption or a price that
-		belongs to a button has to BE a child of it, or it stays put while the button
-		swells away from it — set `Active = false` on it so it does not swallow the
-		click, and it may hang outside the button's bounds freely.
+		Read by the hover, the press and `setEnabled` alike, so none of them can
+		capture a colour one of the others was in the middle of applying — which is
+		how a button ends up permanently stuck in its hover tint.
 	]]
-	local hover = Instance.new("UIScale")
-	hover.Parent = button
+	button:SetAttribute("RestingColor", button.BackgroundColor3)
 
-	button.MouseEnter:Connect(function()
-		-- A dead button must not answer. Growing under the pointer is a promise that
-		-- pressing will do something.
+	local rim = Widgets.stroke(button, options.edge or Theme.color.panelEdge, Theme.stroke.button)
+	local edge = rim.Color
+	button:SetAttribute("RestingEdge", edge)
+	local hovered, pressed = false, false
+
+	local function paint()
 		if button:GetAttribute("Disabled") == true then
 			return
 		end
-		TweenService:Create(hover, HOVER_TWEEN, { Scale = HOVER_SCALE }):Play()
+
+		local resting = button:GetAttribute("RestingColor") :: Color3
+		local target = resting
+		if pressed then
+			target = resting:Lerp(Color3.new(0, 0, 0), PRESS_DROP)
+		elseif hovered then
+			target = lift(resting, HOVER_LIFT)
+		end
+
+		TweenService:Create(button, HOVER_TWEEN, { BackgroundColor3 = target }):Play()
+		TweenService:Create(rim, HOVER_TWEEN, {
+			Color = if hovered then lift(edge, 0.55) else edge,
+		}):Play()
+	end
+
+	--[[
+		A dead button must not answer: lighting under the pointer is a promise that
+		pressing will do something.
+
+		Descendants are not lit — only the button itself. A caption or a price that
+		belongs to a button should still BE a child of it, so it moves and hides with
+		it; set `Active = false` on such a child so it does not swallow the click.
+	]]
+	button.MouseEnter:Connect(function()
+		hovered = true
+		paint()
 	end)
 	button.MouseLeave:Connect(function()
-		TweenService:Create(hover, HOVER_TWEEN, { Scale = 1 }):Play()
+		hovered, pressed = false, false
+		paint()
+	end)
+	button.MouseButton1Down:Connect(function()
+		pressed = true
+		paint()
+	end)
+	button.MouseButton1Up:Connect(function()
+		pressed = false
+		paint()
 	end)
 
 	if options.onClick then
@@ -315,15 +364,17 @@ function Widgets.setEnabled(button: TextButton, enabled: boolean)
 	end
 
 	button:SetAttribute("Disabled", not enabled)
-	button.AutoButtonColor = enabled
 	button.Active = enabled
 	button.Selectable = enabled
 	button.BackgroundColor3 = if enabled then resting else Theme.color.locked
 	button.TextTransparency = if enabled then 0 else 0.25
 
-	local scale = button:FindFirstChildOfClass("UIScale")
-	if scale and not enabled then
-		scale.Scale = 1
+	-- A button switched off while the pointer is on it would otherwise keep the
+	-- bright rim the hover gave it, and go on advertising itself.
+	local rim = button:FindFirstChildOfClass("UIStroke")
+	local edge = button:GetAttribute("RestingEdge")
+	if rim and typeof(edge) == "Color3" then
+		rim.Color = edge
 	end
 end
 
@@ -353,11 +404,6 @@ end
 	The cost is that a NumberSequence cannot be tweened, so the bar animates itself
 	on Heartbeat while it is moving and disconnects the moment it settles.
 ]]
---[[ A colour lifted towards white, which is what a highlight is made of. ]]
-local function lift(color: Color3, amount: number): Color3
-	return color:Lerp(Color3.new(1, 1, 1), amount)
-end
-
 --[[
 	The colour ramp along a bar: a resting gradient, plus a highlight centred on
 	`phase`.

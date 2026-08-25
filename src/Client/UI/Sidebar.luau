@@ -6,11 +6,9 @@
 	is what turns a row of coloured squares into a menu a first-time player can read.
 
 	THE CAPTION STRADDLES THE BOTTOM EDGE, half over the button and half over the
-	world, and it is a CHILD of the button rather than a label sitting under it. Both
-	of those are the same decision: a child moves with whatever the button does, so
-	the caption grows with it under the pointer instead of staying behind while the
-	button swells away from it. Anything meant to belong to a button has to live
-	inside it.
+	world, and it is a CHILD of the button rather than a label sitting under it. A
+	child hangs outside its parent's bounds freely and moves, hides and dies with it,
+	which is what makes the overlap safe to draw and impossible to leave behind.
 
 	The overhang is why the gap between buttons is what it is — half a caption hangs
 	below each one, and the next button starts after that.
