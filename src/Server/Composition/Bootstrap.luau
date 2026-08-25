@@ -107,6 +107,10 @@ local function startSampling(container, map, voidLevel: number)
 						spot, and the belt is the server's own number anyway.
 					]]
 					local belt = map.treadmillAt(reading.position)
+					-- The client animates from this, so it is written every tick
+					-- whether or not there is a belt.
+					container.ports.actuator:setTreadmill(player, belt)
+
 					if belt then
 						container.useCases.runOnTreadmill:run(player, belt, elapsed)
 

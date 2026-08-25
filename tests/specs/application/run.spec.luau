@@ -526,3 +526,53 @@ describe("FinishCourse", function()
 		expect(container.useCases.finishCourse:run(player, 99).code).toBe("BAD_COURSE")
 	end)
 end)
+
+describe("RunOnTreadmill", function()
+	local container, player, session
+	beforeEach(function()
+		container, _ = build()
+		player, session = joined(container)
+	end)
+
+	it("pays for standing on a belt", function()
+		local before = session.profile.speed
+		local result = container.useCases.runOnTreadmill:run(player, 3, 1)
+
+		expect(result.ok).toBe(true)
+		expect(session.profile.speed).toBeGreaterThan(before)
+		expect(session.profile.coins).toBeGreaterThan(0)
+	end)
+
+	-- The multiplier is the thing being sold, so it has to actually multiply.
+	it("pays a stronger belt more", function()
+		container.useCases.runOnTreadmill:run(player, 1, 1)
+		local weak = session.profile.speed
+
+		local other, otherSession = joined(container, 2)
+		container.useCases.runOnTreadmill:run(other, 10, 1)
+
+		expect(otherSession.profile.speed).toBeCloseTo(weak * 10, 1e-6)
+	end)
+
+	--[[
+		A belt runs the character at THEIR speed. A player who has earned more gets
+		more out of the same belt, which is what stops a treadmill from flattening
+		everything a player did before stepping on it.
+	]]
+	it("pays a faster character more on the same belt", function()
+		container.useCases.runOnTreadmill:run(player, 5, 1)
+		local slow = session.profile.speed
+
+		local other, otherSession = joined(container, 2)
+		otherSession.profile.speed = 100000
+		local before = otherSession.profile.speed
+		container.useCases.runOnTreadmill:run(other, 5, 1)
+
+		expect(otherSession.profile.speed - before).toBeGreaterThan(slow)
+	end)
+
+	it("credits nothing for no time and no belt", function()
+		expect(container.useCases.runOnTreadmill:run(player, 0, 1).ok).toBe(false)
+		expect(container.useCases.runOnTreadmill:run(player, 3, 0).ok).toBe(false)
+	end)
+end)

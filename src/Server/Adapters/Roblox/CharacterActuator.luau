@@ -49,4 +49,18 @@ function CharacterActuator.apply(_self, player: Player, movement: any)
 	setIfChanged(character, "Magnet", movement.magnet)
 end
 
+--[[
+	Says whether the character is on a belt, and how strong it is.
+
+	On the character rather than in the snapshot because the client reads it to
+	decide what to ANIMATE, and an animation that waits for a snapshot round trip
+	starts a fifth of a second after the player stepped on.
+]]
+function CharacterActuator.setTreadmill(_self, player: Player, multiplier: number?)
+	local character = player.Character
+	if character then
+		setIfChanged(character, "Treadmill", multiplier or 0)
+	end
+end
+
 return CharacterActuator
