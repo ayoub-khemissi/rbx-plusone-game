@@ -183,6 +183,25 @@ strip before shipping — the safety is structural, not a habit.
 Any development affordance should follow that shape: **real path, separate data,
 enabled by the composition root.**
 
+## The sandbox
+
+Walking on a mechanic is the only way to judge it, and hand-building a lobby to
+try one out is a poor use of an afternoon. A bare platform carrying every pad —
+finish plates, treadmills, shop, rebirth, idle — can be built at start-up:
+
+1. Select `Workspace` in Studio
+2. Add a **boolean attribute** named `Sandbox`, set to true
+3. Play
+
+**It clears the workspace first.** So it sits behind two locks rather than one:
+development mode, which the bootstrap takes from `RunService:IsStudio()`, and
+that attribute. One flag is not enough fence for something that destructive, and
+a published server wiping its own map would be a very short incident.
+
+Everything on it is tagged exactly as a hand-built map would be. If a pad works
+there and not in a real map, the difference is the map's tags rather than the
+server.
+
 ## Commits
 
 [Conventional Commits](https://www.conventionalcommits.org/):

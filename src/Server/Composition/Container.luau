@@ -43,6 +43,7 @@ local SampleMovement = require(UseCases.SampleMovement)
 local ReachCheckpoint = require(UseCases.ReachCheckpoint)
 local FallToCheckpoint = require(UseCases.FallToCheckpoint)
 local FinishCourse = require(UseCases.FinishCourse)
+local RunOnTreadmill = require(UseCases.RunOnTreadmill)
 local RequestJump = require(UseCases.RequestJump)
 local NoteLanded = require(UseCases.NoteLanded)
 local RequestDash = require(UseCases.RequestDash)
@@ -264,6 +265,7 @@ function Container.new(options: Options)
 		reachCheckpoint = ReachCheckpoint.new(deps()),
 		fallToCheckpoint = FallToCheckpoint.new(deps()),
 		finishCourse = FinishCourse.new(deps(withRewards)),
+		runOnTreadmill = RunOnTreadmill.new(deps({ tuning = balance.movement })),
 		requestJump = RequestJump.new(deps()),
 		noteLanded = NoteLanded.new(deps()),
 		requestDash = RequestDash.new(deps()),

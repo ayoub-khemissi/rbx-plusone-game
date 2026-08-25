@@ -101,24 +101,38 @@ function Progression.movementFor(self: Progression, profile: Profile, bonuses: a
 end
 
 --[[ Credits one sampling interval of running. ]]
+--[[
+	Credits a number of steps to the profile.
+
+	Split out of `advance` because a treadmill has steps to pay for but no distance
+	to measure: it is the server that decides how far the character ran, so there is
+	nothing to check it against. Everything after the measurement is the same, and
+	writing it twice is how the two would drift.
+]]
+function Progression.credit(self: Progression, profile: Profile, steps: number, bonuses: any, elapsed: number)
+	local speedGained = steps * self.tuning.speedPerStep * bonuses.speed
+	local coinsGained = steps * self.tuning.coinsPerStep * bonuses.coins
+
+	profile.speed += speedGained
+	profile.coins += coinsGained
+	profile.totals.coinsEarned += coinsGained
+	profile.totals.playtime += math.max(elapsed, 0)
+
+	return { speedGained = speedGained, coinsGained = coinsGained }
+end
+
 function Progression.advance(self: Progression, profile: Profile, context: Context): Outcome
 	local reading: Reading =
 		self.accounting:measure(context.distance, context.deltaTime, context.currentWalkSpeed)
 	local bonuses = self.multipliers:compute(profile, bonusContext(context))
 
-	local speedGained = reading.steps * self.tuning.speedPerStep * bonuses.speed
-	local coinsGained = reading.steps * self.tuning.coinsPerStep * bonuses.coins
-
-	profile.speed += speedGained
-	profile.coins += coinsGained
+	local gained = self:credit(profile, reading.steps, bonuses, context.deltaTime)
 	profile.totals.distance += reading.distance
-	profile.totals.coinsEarned += coinsGained
-	profile.totals.playtime += math.max(context.deltaTime, 0)
 
 	return {
 		steps = reading.steps,
-		speedGained = speedGained,
-		coinsGained = coinsGained,
+		speedGained = gained.speedGained,
+		coinsGained = gained.coinsGained,
 		clamped = reading.clamped,
 		movement = self:movementFor(profile, bonuses),
 		multipliers = bonuses,

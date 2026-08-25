@@ -22,6 +22,7 @@ local Container = require(script.Parent.Container)
 local AdaptersFactory = require(script.Parent.Adapters)
 local RemoteBindings = require(script.Parent.RemoteBindings)
 local MapBindings = require(script.Parent.MapBindings)
+local Sandbox = require(script.Parent.Sandbox)
 local CharacterProbe = require(script.Parent.Parent.Adapters.Roblox.CharacterProbe)
 
 local Bootstrap = {}
@@ -100,11 +101,29 @@ local function startSampling(container, map, voidLevel: number)
 				if reading.position.y < voidLevel then
 					map.fall(player)
 				else
-					container.useCases.sampleMovement:run(player, {
-						position = reading.position,
-						walkSpeed = reading.walkSpeed,
-						at = now,
-					})
+					--[[
+						A belt REPLACES the measurement rather than adding to it.
+						Crediting both would pay a player twice for walking on the
+						spot, and the belt is the server's own number anyway.
+					]]
+					local belt = map.treadmillAt(reading.position)
+					if belt then
+						container.useCases.runOnTreadmill:run(player, belt, elapsed)
+
+						-- Stepping off must not read as a leap from wherever the
+						-- player was standing before they got on.
+						local session = container.sessions:forPlayer(player)
+						if session then
+							session.lastPosition = nil
+							session.lastSampleAt = nil
+						end
+					else
+						container.useCases.sampleMovement:run(player, {
+							position = reading.position,
+							walkSpeed = reading.walkSpeed,
+							at = now,
+						})
+					end
 
 					container.useCases.accrueIdleReward:run(
 						player,
@@ -171,7 +190,19 @@ function Bootstrap.start()
 	local remotes = Net.server()
 	local ports = AdaptersFactory.build(remotes)
 	-- Studio is the only place the dev codes exist. See Config/Monetization.luau.
-	local container = Container.new({ ports = ports, devMode = RunService:IsStudio() })
+	local devMode = RunService:IsStudio()
+	local container = Container.new({ ports = ports, devMode = devMode })
+
+	--[[
+		The sandbox CLEARS the workspace, so it is fenced behind the same flag as the
+		dev codes and behind an attribute on top. A published server that wiped its
+		own map would be a very short incident, and one flag is not enough fence for
+		something that destructive.
+	]]
+	if devMode and workspace:GetAttribute("Sandbox") == true then
+		Sandbox.build()
+		ports.logger:info("Sandbox built: the previous workspace was cleared")
+	end
 
 	-- MapBindings needs the remotes to open a panel from a hub pad.
 	container.remotes = remotes

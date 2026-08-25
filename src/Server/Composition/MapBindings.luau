@@ -32,6 +32,7 @@ MapBindings.TAGS = {
 	prestigePad = "PrestigePad",
 	idlePad = "AfkPad",
 	finishPad = "FinishPad",
+	treadmill = "Treadmill",
 }
 
 local FALL_GRACE_FALLBACK = 1
@@ -90,6 +91,7 @@ function MapBindings.bind(container)
 	local lastFall: { [Player]: number } = {}
 	local lastPad: { [Player]: number } = {}
 	local idlePads: { BasePart } = {}
+	local treadmills: { { part: BasePart, multiplier: number } } = {}
 	local missingStageId = 0
 
 	local function cooled(memory, player: Player, delay: number): boolean
@@ -268,6 +270,23 @@ function MapBindings.bind(container)
 		end
 	end)
 
+	--[[
+		Treadmills are polled for the same reason, and carry the multiplier they are
+		worth. A belt with no multiplier is a decoration, not a fault: it runs at x1
+		and the console says so.
+	]]
+	onTagged(TAGS.treadmill, function(instance)
+		local multiplier = instance:GetAttribute("Multiplier")
+		if typeof(multiplier) ~= "number" or multiplier <= 0 then
+			logger:warn(`A {TAGS.treadmill} has no Multiplier and will run at x1: {instance:GetFullName()}`)
+			multiplier = 1
+		end
+
+		for _, part in partsOf(instance) do
+			table.insert(treadmills, { part = part, multiplier = multiplier })
+		end
+	end)
+
 	Players.PlayerRemoving:Connect(function(player)
 		lastFall[player] = nil
 		lastPad[player] = nil
@@ -289,12 +308,37 @@ function MapBindings.bind(container)
 		return false
 	end
 
+	--[[
+		The multiplier of the belt under a player, or nil if there is none.
+
+		The strongest one wins where belts overlap, which is the answer a player
+		expects when they are standing on two.
+	]]
+	local function treadmillAt(position: { x: number, y: number, z: number }): number?
+		local best: number? = nil
+		for _, belt in treadmills do
+			local part = belt.part
+			if part.Parent then
+				local size, centre = part.Size, part.Position
+				local withinX = math.abs(position.x - centre.X) <= size.X / 2 + IDLE_PAD_MARGIN
+				local withinZ = math.abs(position.z - centre.Z) <= size.Z / 2 + IDLE_PAD_MARGIN
+				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + IDLE_PAD_MARGIN * 2
+
+				if withinX and withinY and withinZ and (best == nil or belt.multiplier > best) then
+					best = belt.multiplier
+				end
+			end
+		end
+		return best
+	end
+
 	--[[ The report announced in docs/MAP.md: what the server actually found. ]]
 	local function report()
 		logger:info(
 			`Map loaded: {countTagged(TAGS.checkpoint)} checkpoints, {countTagged(TAGS.killzone)} hazards, `
 				.. `{countTagged(TAGS.coin)} coins, {countTagged(TAGS.conveyor)} conveyors, `
-				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#idlePads} idle pads`
+				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#idlePads} idle pads, `
+				.. `{#treadmills} treadmills`
 		)
 		if missingStageId > 0 then
 			logger:info(`{missingStageId} checkpoints without a StageId, assigned to Stage {DEFAULT_STAGE}`)
@@ -304,7 +348,7 @@ function MapBindings.bind(container)
 		end
 	end
 
-	return { isOnIdlePad = isOnIdlePad, fall = fall, report = report }
+	return { isOnIdlePad = isOnIdlePad, treadmillAt = treadmillAt, fall = fall, report = report }
 end
 
 return MapBindings

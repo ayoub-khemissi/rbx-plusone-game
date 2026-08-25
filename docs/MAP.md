@@ -26,6 +26,7 @@ tags count.
 | `ShopPad` | Part | Opens the shop |
 | `PrestigePad` | Part | Triggers a Prestige |
 | `AfkPad` | Part | Passive income area |
+| `Treadmill` | Part | Pays as if running on the spot, multiplied |
 
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
 lets a decorated checkpoint be tagged once instead of six times.
@@ -127,6 +128,26 @@ obstacle, never before one.
 
 Without a `StageId` the plate names no course, so it is ignored and the console
 says so rather than paying out the wrong one.
+
+### `Treadmill`
+
+A belt that pays as if the player were running, while they stand still.
+
+| Attribute | Type | Required | Role |
+| --- | --- | --- | --- |
+| `Multiplier` | number | no | What the belt is worth. Default: 1 |
+
+It runs the character at **their own** walk speed, multiplied — so a belt
+accelerates what a player earned rather than replacing it, and a fast player gets
+more out of the same belt.
+
+A belt REPLACES the movement measurement while it is stood on, never adds to it:
+walking on the spot must not pay twice.
+
+Nothing is verified here, and nothing needs to be. Ordinary running is checked
+against what is physically reachable because the client reports where it went; a
+belt is the server deciding how far the character ran, so there is no claim to
+check.
 
 ### `ShopPad`, `PrestigePad`, `AfkPad`
 
