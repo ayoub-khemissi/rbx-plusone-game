@@ -263,6 +263,11 @@ function Widgets.button(parent: Instance, options): TextButton
 		its neighbours aside every time the mouse crosses it: scaling is drawn, not
 		laid out. Touch devices never fire these, which is correct — there is no
 		hovering with a finger, and the press already answers on its own.
+
+		IT SCALES DESCENDANTS, AND ONLY DESCENDANTS. A caption or a price that
+		belongs to a button has to BE a child of it, or it stays put while the button
+		swells away from it — set `Active = false` on it so it does not swallow the
+		click, and it may hang outside the button's bounds freely.
 	]]
 	local hover = Instance.new("UIScale")
 	hover.Parent = button
