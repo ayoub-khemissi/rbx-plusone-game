@@ -26,6 +26,10 @@ local MapBindings = require(script.Parent.MapBindings)
 
 local Sandbox = {}
 
+-- Everything the platform builds lives under one folder, which is also how it
+-- knows not to mistake its own leftovers for a map.
+local FOLDER = "Sandbox"
+
 local FLOOR_SIZE = Vector3.new(260, 4, 180)
 local PAD = Vector3.new(16, 1, 16)
 local BELT = Vector3.new(14, 1, 26)
@@ -54,9 +58,17 @@ local COLOURS = {
 ]]
 local function taggedCoin(): PVInstance?
 	for _, instance in CollectionService:GetTagged(MapBindings.TAGS.coin) do
-		-- A Model or a single MeshPart: whatever the author tagged is what they
-		-- meant, and both are cloned and pivoted the same way.
-		if instance:IsA("PVInstance") and instance:IsDescendantOf(workspace) then
+		--[[
+			A Model or a MeshPart, never a bare Part — and never one of these.
+
+			A bare Part is exactly what this file builds when it has nothing better,
+			so accepting one means that the first time somebody SAVES a place after
+			the platform has run, the platform starts cloning its own cylinders and
+			never reaches for a real model again. Ignoring its own folder covers the
+			same trap from the other side.
+		]]
+		local usable = instance:IsA("Model") or instance:IsA("MeshPart")
+		if usable and instance:IsDescendantOf(workspace) and not instance:FindFirstAncestor(FOLDER) then
 			local template = instance:Clone()
 			-- Held aside, so it must not look like a Coin in play while it waits.
 			CollectionService:RemoveTag(template, MapBindings.TAGS.coin)
@@ -152,7 +164,7 @@ function Sandbox.build(logger)
 	end
 
 	local folder = Instance.new("Folder")
-	folder.Name = "Sandbox"
+	folder.Name = FOLDER
 	folder.Parent = workspace
 
 	part(folder, "Floor", FLOOR_SIZE, Vector3.new(0, 0, 0), COLOURS.floor)
