@@ -37,7 +37,7 @@ local LABELS = Config.Theme.labels
 local GROWTH = Config.Balance.prestige.multiplierGrowth
 
 local WIDTH = 700
-local COLUMN_GAP = 56 -- room for the arrow between the two columns
+local COLUMN_GAP = 76 -- room for the arrow between the two columns
 local ROW_HEIGHT = 62
 local ROW_GAP = 12
 local ROWS = 3
@@ -83,9 +83,12 @@ local function pill(parent: Instance, options)
 		color = options.color,
 		radius = Theme.radius.button,
 		edgeThickness = Theme.stroke.panel,
+		-- The same brushed face a button wears: a filled chip this size reads as
+		-- vinyl without it.
+		grain = true,
 	})
 	frame.ZIndex = 7
-	Widgets.gradient(frame, 0.34)
+	Widgets.gradient(frame, 0.18)
 
 	local padding = Instance.new("UIPadding")
 	padding.PaddingLeft = UDim.new(0, 10)
@@ -135,9 +138,13 @@ local function arrow(parent: Instance, y: number)
 		position = UDim2.new(0.5, 0, 0, y),
 		anchorPoint = Vector2.new(0.5, 0),
 		font = Theme.font.number,
-		textSize = Theme.text.title,
+		textSize = Theme.text.hero,
+		-- CENTRED IN ITS OWN BOX. A label aligns its glyph left unless told
+		-- otherwise, and the box spans the whole gap — so the arrow was drawn
+		-- against the left pill rather than between the two.
+		align = Enum.TextXAlignment.Center,
 		color = Theme.color.panelSoft,
-		outline = Theme.stroke.text,
+		outline = Theme.stroke.textHeavy,
 		text = "▶",
 	})
 	mark.ZIndex = 7

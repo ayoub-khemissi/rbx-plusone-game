@@ -123,6 +123,7 @@ local function rebirthChip(parent: Instance, options)
 		size = UDim2.fromOffset(0, 46),
 		color = Theme.worlds[1][1],
 		radius = Theme.radius.chip,
+		grain = true,
 		visible = false,
 	})
 	frame.AutomaticSize = Enum.AutomaticSize.X

@@ -293,7 +293,24 @@ function Widgets.card(parent: Instance, options): Frame
 			transparency = 1 - Theme.texture.panelOpacity,
 			-- A shade of the card's own colour, so the grain reads as the grid
 			-- pressed into a white plate rather than a grey film laid over it.
-			tint = card.BackgroundColor3:Lerp(Color3.new(0, 0, 0), 0.55),
+			tint = deepen(card.BackgroundColor3, 0.55),
+		})
+	end
+
+	--[[
+		`grain` is the other surface: what a BUTTON wears, on something that is not
+		one. A filled chip on a window — a comparison row, a badge — is a small
+		saturated face like a button and reads as vinyl for the same reason. It is
+		opt-in rather than automatic because most cards are large and pale, and the
+		grid is what those want.
+	]]
+	if options.grain == true then
+		Widgets.surface(card, {
+			image = Theme.texture.buttonPattern,
+			radius = radius,
+			tile = Theme.texture.buttonTile,
+			transparency = 1 - Theme.texture.buttonOpacity,
+			tint = deepen(card.BackgroundColor3, GRAIN_DEPTH),
 		})
 	end
 
