@@ -234,7 +234,7 @@ function Widgets.card(parent: Instance, options): Frame
 			image = Theme.texture.panelPattern,
 			radius = radius,
 			tile = 64,
-			transparency = 0.92,
+			transparency = 1 - Theme.texture.panelOpacity,
 		})
 	end
 
@@ -334,7 +334,7 @@ function Widgets.button(parent: Instance, options): TextButton
 			radius = options.radius or Theme.radius.button,
 			inset = inset,
 			tile = 48,
-			transparency = 0.9,
+			transparency = 1 - Theme.texture.buttonOpacity,
 		})
 	end
 	if options.gradient ~= false then

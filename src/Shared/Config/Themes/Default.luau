@@ -150,11 +150,19 @@ local theme: Theme = {
 			a grid on something the size of a button becomes a motif competing with
 			the word written across it.
 
+			The opacities are the dial. Low enough and the grain is a rumour nobody
+			sees; high enough and it becomes a pattern the eye reads instead of the
+			words on top of it. The buttons carry slightly more than the panels: they
+			are small, saturated and glossy, and the same value on both leaves the
+			buttons looking bare next to the windows.
+
 			Any seamless, low-contrast texture works — see docs/TEXTURES.md. Set
 			either to nil and that surface goes smooth again.
 		]]
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
+		panelOpacity = 0.2,
 		buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
+		buttonOpacity = 0.26,
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's
 			own sparkle texture is used, which ships with every Roblox install — so the

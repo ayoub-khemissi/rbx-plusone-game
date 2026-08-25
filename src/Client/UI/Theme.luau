@@ -28,6 +28,19 @@ local function color(key: string, fallback: Color3): Color3
 	return fallback
 end
 
+local textures = Config.Theme.textures or {}
+
+local function textureOf(key: string): string?
+	local id = textures[key]
+	return if typeof(id) == "string" and id ~= "" then id else nil
+end
+
+--[[ A theme may leave the dial out; it may not turn it past either end. ]]
+local function opacityOf(key: string, fallback: number): number
+	local value = textures[key]
+	return if typeof(value) == "number" then math.clamp(value, 0, 1) else fallback
+end
+
 --[[
 	The pair of colours a world wears. Falls back to the accent pair rather than
 	failing: a theme that lists fewer worlds than the game has still draws.
@@ -73,8 +86,10 @@ return table.freeze({
 	worlds = table.freeze(worldColors()),
 
 	texture = table.freeze({
-		panelPattern = Config.Theme.textures and Config.Theme.textures.panelPattern,
-		buttonPattern = Config.Theme.textures and Config.Theme.textures.buttonPattern,
+		panelPattern = textureOf("panelPattern"),
+		panelOpacity = opacityOf("panelOpacity", 0.2),
+		buttonPattern = textureOf("buttonPattern"),
+		buttonOpacity = opacityOf("buttonOpacity", 0.26),
 	}),
 
 	--[[

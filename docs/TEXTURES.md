@@ -212,7 +212,8 @@ rule.
 
 ## Textures in the interface
 
-The theme lays two of these textures faintly over the interface, at 8 to 10% opacity.
+The theme lays two of these textures over the interface, at around a quarter
+opacity.
 Colour alone renders as vinyl; a grain under it reads as a moulded object, which is
 the look every simulator interface is after. Two lines in
 `src/Shared/Config/Themes/Default.luau`:
@@ -220,9 +221,16 @@ the look every simulator interface is after. Two lines in
 ```lua
 textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
+	panelOpacity = 0.2,
 	buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
+	buttonOpacity = 0.26,
 },
 ```
+
+**The opacities are the dial.** Too low and the grain is a rumour nobody sees; too
+high and it becomes a pattern the eye reads instead of the words on top of it. The
+buttons carry slightly more than the panels — they are small, saturated and glossy,
+and the same value on both leaves them looking bare beside the windows.
 
 **They are chosen for what they sit on.** The panels wear a grid of large squares —
 the plate a simulator window is built from, and a motif that reads well across a wide
@@ -237,6 +245,7 @@ An interface pattern must be **seamless and low contrast**. A brick or wood text
 works badly here: the motif shows through, and the text sits on top of it.
 
 One consequence worth knowing: a button draws its own text, and no child can get
-underneath that — so the grain lies over the glyphs as well. At this opacity the veil
-is nothing. Anything heavier would be the reason to move a button's text into a child
-label of its own.
+underneath that — so the grain lies over the glyphs as well. A light tile at a
+quarter opacity is harmless over white glyphs wearing a dark stroke. If you ever want
+it heavier than that, or a darker tile, moving a button's text into a child label of
+its own is the fix.
