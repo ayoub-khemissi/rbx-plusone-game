@@ -203,6 +203,18 @@ function Bootstrap.start()
 	if devMode and workspace:GetAttribute("Sandbox") == true then
 		Sandbox.build(ports.logger)
 		ports.logger:info("Sandbox built: the previous workspace was cleared")
+	elseif workspace:FindFirstChild(Sandbox.FOLDER) then
+		--[[
+			The platform is off, and its output is still here — which means somebody
+			SAVED a place while it was on, and a folder of test pads is now part of
+			the map. It looks like a working map from the outside: the pads answer,
+			the belts pay, the Coins are Coins. It is just not the map anybody built,
+			and every Coin in it is a grey cylinder.
+		]]
+		ports.logger:warn(
+			`The map contains a "{Sandbox.FOLDER}" folder left by the test platform. `
+				.. "Delete it in Studio: it was saved into the place, and nothing removes it now."
+		)
 	end
 
 	-- MapBindings needs the remotes to open a panel from a hub pad.

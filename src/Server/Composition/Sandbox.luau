@@ -28,7 +28,9 @@ local Sandbox = {}
 
 -- Everything the platform builds lives under one folder, which is also how it
 -- knows not to mistake its own leftovers for a map.
+-- Named outwards so Bootstrap can spot the leftovers of a run that was saved.
 local FOLDER = "Sandbox"
+Sandbox.FOLDER = FOLDER
 
 local FLOOR_SIZE = Vector3.new(260, 4, 180)
 local PAD = Vector3.new(16, 1, 16)
