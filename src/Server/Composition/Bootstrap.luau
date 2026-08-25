@@ -17,7 +17,6 @@ local RunService = game:GetService("RunService")
 local Shared = require(script.Parent.Parent.Shared)
 local Config = require(Shared.Config)
 local Net = require(Shared.Net)
-local CoinField = require(Shared.Domain.Run.CoinField)
 
 local Container = require(script.Parent.Container)
 local AdaptersFactory = require(script.Parent.Adapters)
@@ -57,11 +56,15 @@ end
 	A map does not need an invisible slab under it to catch falls: the server finds
 	the lowest part of the map and treats anything below it as a fall. One less thing
 	to remember when building, and it cannot be forgotten.
+
+	A Killzone is not floor. Counting one would push the void below the very thing
+	meant to catch the player — so a map that DOES lay a slab under itself and tags
+	it keeps the void where it belongs, and either one kills.
 ]]
 local function findVoidLevel(logger): number
 	local lowest = math.huge
 	for _, descendant in workspace:GetDescendants() do
-		if descendant:IsA("BasePart") then
+		if descendant:IsA("BasePart") and not MapBindings.isKillzone(descendant) then
 			local bottom = descendant.Position.Y - descendant.Size.Y / 2
 			if bottom < lowest then
 				lowest = bottom
@@ -157,17 +160,10 @@ local function bindPlayers(container)
 			container.ports.logger:warn(`Loading the profile of {player.Name}: {result.code}`)
 		end
 
-		-- A fresh character is standing on solid ground: refill the air jumps, forget
-		-- the last sampled position, which belonged to the previous body, and put
-		-- every Coin back — a fall costs the run, not the money on it.
+		-- Every new body, whatever ended the last one, goes back to the run where it
+		-- left off.
 		player.CharacterAdded:Connect(function()
-			local session = container.sessions:forPlayer(player)
-			if session then
-				session.lastPosition = nil
-				session.lastSampleAt = nil
-				CoinField.clear(session.coins)
-				container.useCases.noteLanded:run(player)
-			end
+			container.useCases.spawnAtCheckpoint:run(player)
 		end)
 	end
 
@@ -188,6 +184,10 @@ local function bindPlayers(container)
 end
 
 function Bootstrap.start()
+	-- How long a fall costs. Roblox brings the character back on its own; the
+	-- server only says when, and every death in the game is paid at this rate.
+	Players.RespawnTime = Config.Balance.run.respawnDelay
+
 	local remotes = Net.server()
 	local ports = AdaptersFactory.build(remotes)
 	-- Studio is the only place the dev codes exist. See Config/Monetization.luau.

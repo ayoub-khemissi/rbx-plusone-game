@@ -325,4 +325,17 @@ function MapBindings.bind(container)
 	return { treadmillAt = treadmillAt, fall = fall, report = report }
 end
 
+--[[
+	Whether a part is one of the map's hazards. Read by the void detection, which
+	must not mistake a Killzone slab for the floor it is lying under.
+]]
+function MapBindings.isKillzone(part: Instance): boolean
+	for _, tag in MapBindings.TAGS.killzone do
+		if CollectionService:HasTag(part, tag) then
+			return true
+		end
+	end
+	return false
+end
+
 return MapBindings

@@ -132,12 +132,16 @@ function Fakes.random(values: { number }?)
 	}
 end
 
-function Fakes.teleporter()
-	local fake = { destinations = {} }
+function Fakes.body()
+	local fake = { destinations = {}, kills = 0 }
 
 	function fake:sendTo(playerRef, position)
 		table.insert(self.destinations, position)
 		self.last = position
+	end
+
+	function fake:kill(playerRef)
+		self.kills += 1
 	end
 
 	return fake

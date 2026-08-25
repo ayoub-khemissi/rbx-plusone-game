@@ -59,7 +59,7 @@ function FinishStage.run(self, player, stageId)
 	session.lastPosition = nil
 	session.lastSampleAt = nil
 	session.checkpoint = nil
-	self.teleporter:sendTo(player, self.hubPoint)
+	self.body:sendTo(player, self.hubPoint)
 
 	return Result.ok({ stageId = stageId, reward = reward })
 end

@@ -32,7 +32,7 @@ function PerformPrestige.run(self, player)
 	-- The course starts over too: keeping a deep checkpoint would skip it all.
 	self.sessions:resetRun(session)
 
-	self.teleporter:sendTo(player, self.hubPoint)
+	self.body:sendTo(player, self.hubPoint)
 	self.publisher:publish(player, self.snapshots:build(session))
 	self.notifier:notify(
 		player,

@@ -17,7 +17,7 @@ tags count.
 | Tag | Put it on | What the server does with it |
 | --- | --- | --- |
 | `Checkpoint` | Part **or Model** | Records where the player respawns |
-| `TrapPart` *(or `Killzone`)* | Part or Model | Sends the player back to their last checkpoint |
+| `TrapPart` *(or `Killzone`)* | Part or Model | Kills; back on the last checkpoint after 2 s |
 | `Conveyor` | Part | Conveyor belt: pushes along the front face |
 | `BouncePad` | Part | Trampoline: launches the player upwards |
 | `Coin` | Part | Drawn in and collected, per player, back after 30 s |
@@ -59,12 +59,22 @@ The first checkpoint of a Stage doubles as that Stage's entry point.
 
 Anything lethal: lava, spikes, a deadly obstacle. Both names are accepted.
 
-No attributes. The player returns to their last `Checkpoint`, **keeps their Speed and
-their Coins**, and loses only time.
+No attributes. The character **dies**, comes back after `Balance.run.respawnDelay`
+seconds — two — on their last `Checkpoint`, **keeps their Speed and their Coins**, and
+loses only time.
+
+It kills rather than teleports. Snatching a falling character back onto solid ground
+reads as a glitch; a death is punctuation the player already knows how to read, and
+the seconds before the new body are the price of the mistake.
 
 **The void needs no tag.** At start-up the server finds the lowest part of the map and
-treats any fall below that level as lethal. There is no invisible slab to lay, and
+treats any fall below that level the same way. There is no invisible slab to lay, and
 therefore none to forget.
+
+If your map does lay one anyway — a catcher under the whole course — **tag it**. An
+untagged slab is floor: the player lands on it, alive, under the map, with nothing to
+run back to. A tagged one is ignored when the void level is measured, so both work
+and neither cancels the other.
 
 ### `Conveyor`
 

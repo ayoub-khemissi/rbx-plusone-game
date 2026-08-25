@@ -76,7 +76,7 @@ src/
 │  ├─ Adapters/                ROBLOX IMPLEMENTATIONS
 │  │  ├─ Persistence/          DataStore · InMemory
 │  │  ├─ Replication/          Attributes and leaderstats · Notifications
-│  │  └─ Roblox/               Character actuator, probe, teleporter,
+│  │  └─ Roblox/               Character actuator, probe, body,
 │  │                           Marketplace, logger
 │  └─ Composition/             Container · Adapters · Bootstrap · bindings
 │
@@ -101,7 +101,7 @@ adapter in production, by a double in tests.
 | `StatsPublisher` | replicate state | attributes and leaderstats | recording fake |
 | `Notifier` | player messages | remote event | recording fake |
 | `MovementActuator` | apply state to the character | Humanoid adapter | recording fake |
-| `Teleporter` | move the character | CFrame adapter | recording fake |
+| `Body` | move or kill the character | CFrame adapter | recording fake |
 | `PassGateway` / `Marketplace` | passes and purchases | MarketplaceService | scripted fake |
 | `Clock` | time | `os.time` / `os.clock` | a clock the test drives |
 

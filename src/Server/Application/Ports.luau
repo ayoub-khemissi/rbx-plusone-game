@@ -41,9 +41,13 @@ export type MovementActuator = {
 	apply: (self: MovementActuator, player: PlayerRef, movement: any) -> (),
 }
 
---[[ Forced movement of the character: respawn, checkpoint return, gate push-back. ]]
-export type Teleporter = {
-	sendTo: (self: Teleporter, player: PlayerRef, position: Point) -> (),
+--[[
+	The player's character, as the server is allowed to treat it: put it somewhere,
+	or end it. A fall does both, one after the other.
+]]
+export type Body = {
+	sendTo: (self: Body, player: PlayerRef, position: Point) -> (),
+	kill: (self: Body, player: PlayerRef) -> (),
 }
 
 --[[ Gamepass ownership and purchase prompts. ]]

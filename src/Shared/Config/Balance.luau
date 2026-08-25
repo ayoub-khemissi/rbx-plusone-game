@@ -192,6 +192,9 @@ return table.freeze({
 		-- to this; without it a player still picks up what they run through.
 		coinReach = 7,
 		respawnHeight = 4, -- studs above a checkpoint where the player reappears
+		-- How long a fall costs. Long enough to be felt as a mistake, short enough
+		-- that the player is running again before they reach for the mouse.
+		respawnDelay = 2,
 		fallGrace = 1, -- seconds of immunity after respawning, so a hazard cannot loop
 		voidMargin = 80, -- studs under the lowest part of the map: below that, it is a fall
 	}),

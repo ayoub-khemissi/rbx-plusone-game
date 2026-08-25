@@ -45,6 +45,7 @@ local FinishStage = require(UseCases.FinishStage)
 local RunOnTreadmill = require(UseCases.RunOnTreadmill)
 local RequestJump = require(UseCases.RequestJump)
 local NoteLanded = require(UseCases.NoteLanded)
+local SpawnAtCheckpoint = require(UseCases.SpawnAtCheckpoint)
 local RequestDash = require(UseCases.RequestDash)
 local CollectCoin = require(UseCases.CollectCoin)
 local PerformPrestige = require(UseCases.PerformPrestige)
@@ -79,7 +80,7 @@ export type Ports = {
 	publisher: any,
 	notifier: any,
 	actuator: any,
-	teleporter: any,
+	body: any,
 	passGateway: any,
 	marketplace: any?,
 	clock: any?,
@@ -218,7 +219,7 @@ function Container.new(options: Options)
 		publisher = ports.publisher,
 		notifier = ports.notifier,
 		actuator = ports.actuator,
-		teleporter = ports.teleporter,
+		body = ports.body,
 		passGateway = ports.passGateway,
 		marketplace = ports.marketplace,
 		logger = ports.logger,
@@ -259,6 +260,7 @@ function Container.new(options: Options)
 		sampleMovement = SampleMovement.new(deps()),
 		reachCheckpoint = ReachCheckpoint.new(deps()),
 		fallToCheckpoint = FallToCheckpoint.new(deps()),
+		spawnAtCheckpoint = SpawnAtCheckpoint.new(deps()),
 		finishStage = FinishStage.new(deps(withRewards)),
 		runOnTreadmill = RunOnTreadmill.new(deps({ tuning = balance.movement })),
 		requestJump = RequestJump.new(deps()),

@@ -14,7 +14,7 @@ local function build(options)
 		publisher = Fakes.publisher(),
 		notifier = Fakes.notifier(),
 		actuator = Fakes.actuator(),
-		teleporter = Fakes.teleporter(),
+		body = Fakes.body(),
 		passGateway = Fakes.passGateway(),
 		marketplace = Fakes.marketplace(),
 		clock = Fakes.clock(1000),
@@ -165,15 +165,21 @@ describe("FallToCheckpoint", function()
 		player, session = joined(container)
 	end)
 
-	it("sends the player back to the last checkpoint", function()
+	--[[
+		Snatching a falling character back to solid ground reads as a glitch. A death
+		is punctuation the player already knows how to read, and the seconds before
+		the new body are what the fall costs.
+	]]
+	it("ends the run rather than snatching the character back", function()
 		container.useCases.reachCheckpoint:run(player, { stageId = 1, position = { x = 100, y = 10, z = 0 } })
 		container.useCases.fallToCheckpoint:run(player)
 
-		expect(ports.teleporter.last.x).toBe(100)
+		expect(ports.body.kills).toBe(1)
+		expect(ports.body.last).toBeNil()
 		expect(session.profile.totals.falls).toBe(1)
 	end)
 
-	-- La promesse du jeu : une chute coute du temps, jamais de la progression.
+	-- The promise of the game: a fall costs time, never progress.
 	it("never takes back speed or coins", function()
 		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
 		local speed, coins = session.profile.speed, session.profile.coins
@@ -184,18 +190,55 @@ describe("FallToCheckpoint", function()
 		expect(session.profile.coins).toBe(coins)
 	end)
 
-	it("refills the air jumps on the way back", function()
+	-- The plunge covers ground, and none of it is run.
+	it("forgets where the old body was", function()
+		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
+		container.useCases.fallToCheckpoint:run(player)
+
+		expect(session.lastPosition).toBeNil()
+	end)
+end)
+
+describe("SpawnAtCheckpoint", function()
+	local container, ports, player, session
+	beforeEach(function()
+		container, ports = build()
+		player, session = joined(container)
+	end)
+
+	it("puts the new body on the last checkpoint", function()
+		container.useCases.reachCheckpoint:run(player, { stageId = 1, position = { x = 100, y = 10, z = 0 } })
+		container.useCases.spawnAtCheckpoint:run(player)
+
+		expect(ports.body.last.x).toBe(100)
+	end)
+
+	it("falls back to the hub when no checkpoint was reached", function()
+		local result = container.useCases.spawnAtCheckpoint:run(player)
+
+		expect(result.value.atCheckpoint).toBe(false)
+		expect(ports.body.last).never.toBeNil()
+	end)
+
+	it("refills the air jumps", function()
 		session.profile.upgrades.jump = 2
 		container.useCases.requestJump:run(player)
 		container.useCases.requestJump:run(player)
-		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.spawnAtCheckpoint:run(player)
 
 		expect(container.useCases.requestJump:run(player).ok).toBe(true)
 	end)
 
-	it("falls back to the hub when no checkpoint was reached", function()
-		container.useCases.fallToCheckpoint:run(player)
-		expect(ports.teleporter.last).never.toBeNil()
+	--[[
+		Every new body comes through here, not only the ones a fall killed: a hazard
+		somebody built, a reset from the Roblox menu, the first spawn of the session.
+		They all owe the player the same return.
+	]]
+	it("puts the coins back on the course", function()
+		container.useCases.collectCoin:run(player, 100, "coin-a")
+		container.useCases.spawnAtCheckpoint:run(player)
+
+		expect(container.useCases.collectCoin:run(player, 100, "coin-a").ok).toBe(true)
 	end)
 end)
 
@@ -380,7 +423,7 @@ describe("PerformPrestige", function()
 		expect(session.profile.prestiges).toBe(1)
 		expect(session.profile.speed).toBe(0)
 		expect(session.checkpoint).toBeNil()
-		expect(ports.teleporter.last).never.toBeNil()
+		expect(ports.body.last).never.toBeNil()
 	end)
 end)
 
@@ -529,7 +572,7 @@ describe("FinishStage", function()
 		expect(result.ok).toBe(true)
 		expect(session.profile.speed).toBeGreaterThan(before)
 		expect(session.profile.coins).toBeGreaterThan(0)
-		expect(ports.teleporter.last).never.toBeNil()
+		expect(ports.body.last).never.toBeNil()
 	end)
 
 	--[[
