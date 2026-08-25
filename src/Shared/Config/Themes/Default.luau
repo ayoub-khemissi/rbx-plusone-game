@@ -176,12 +176,12 @@ local theme: Theme = {
 			squares, which is the plate a simulator window is built from and reads
 			well across a wide surface.
 
-			The buttons wear a fine rough plaster: a grain with no direction in it,
-			which is the whole reason it beats the brushed metal that was here
-			before. A streak has a direction, every button gets the same one, and a
-			row of them reads as brushed steel panels rather than as moulded pieces.
-			A grid at that size is worse again — it becomes a motif competing with
-			the word written across it.
+			The buttons wear a fine speckle. What it is a photograph OF does not
+			matter at this size — it is chosen for having no direction and no motif,
+			which is what a small saturated face can carry. A streak has a direction,
+			every button gets the same one, and a row of them reads as brushed steel
+			panels rather than as moulded pieces; a grid becomes a pattern competing
+			with the word written across it. Both were tried here first.
 
 			The opacities are the dial, and the tiles are how big one repeat is drawn.
 			Too faint and the grain is a rumour nobody sees; too strong and it becomes
@@ -208,7 +208,7 @@ local theme: Theme = {
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
 		panelOpacity = 0.3,
 		panelTile = 64,
-		buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
+		buttonPattern = "rbxassetid://4621460944", -- Snow2
 		buttonOpacity = 0.55,
 		buttonTile = 64,
 		--[[

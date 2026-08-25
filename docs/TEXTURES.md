@@ -223,7 +223,7 @@ textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
 	panelOpacity = 0.3,
 	panelTile = 64,
-	buttonPattern = "rbxassetid://4621516946", -- white_plaster_rough
+	buttonPattern = "rbxassetid://4621460944", -- Snow2
 	buttonOpacity = 0.55,
 	buttonTile = 64,
 },
@@ -258,15 +258,16 @@ spends the texture's contrast before it is drawn.
 the plate a simulator window is built from, and a motif that reads well across a wide
 surface.
 
-The buttons wear a fine rough plaster: a grain with **no direction in it**. A streak
-has a direction, every button gets the same one, and a row of them reads as brushed
-steel panels rather than as moulded pieces — which is why `metal` was tried here and
-dropped. A grid at that size is worse again: it becomes a motif competing with the
-word written across it.
+The buttons wear a fine speckle. What it is a photograph *of* does not matter at
+this size — it is chosen for having **no direction and no motif**. A streak has a
+direction, every button gets the same one, and a row of them reads as brushed steel
+panels rather than as moulded pieces, which is why `metal` was dropped from here. A
+grid is worse again: it becomes a pattern competing with the word written across it.
 
 Set either to `nil` and that surface goes smooth again. Other clean candidates:
-`marble`, `plaster_grey`, `large_floor_tiles` for panels; `Snow2`, `plaster_grey`,
-`marble` for buttons — all directionless, which is the property that matters there.
+`marble`, `plaster_grey`, `large_floor_tiles` for panels; `white_plaster_rough`,
+`plaster_grey`, `Snow`, `Sand` for buttons — all directionless, which is the property
+that matters there.
 
 An interface pattern must be **seamless and low contrast**. A brick or wood texture
 works badly here: the motif shows through, and the text sits on top of it.
