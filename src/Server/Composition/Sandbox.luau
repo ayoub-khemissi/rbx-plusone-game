@@ -52,9 +52,11 @@ local COLOURS = {
 	   request may simply not come back — and a test platform that refuses to build
 	   over an unavailable model helps nobody.
 ]]
-local function taggedCoin(): Model?
+local function taggedCoin(): PVInstance?
 	for _, instance in CollectionService:GetTagged(MapBindings.TAGS.coin) do
-		if instance:IsA("Model") and instance:IsDescendantOf(workspace) then
+		-- A Model or a single MeshPart: whatever the author tagged is what they
+		-- meant, and both are cloned and pivoted the same way.
+		if instance:IsA("PVInstance") and instance:IsDescendantOf(workspace) then
 			local template = instance:Clone()
 			-- Held aside, so it must not look like a Coin in play while it waits.
 			CollectionService:RemoveTag(template, MapBindings.TAGS.coin)
@@ -64,7 +66,7 @@ local function taggedCoin(): Model?
 	return nil
 end
 
-local function fetchedCoin(logger): Model?
+local function fetchedCoin(logger): PVInstance?
 	local id = Config.Theme.models and Config.Theme.models.coin
 	if typeof(id) ~= "number" or id <= 0 then
 		return nil
@@ -74,17 +76,31 @@ local function fetchedCoin(logger): Model?
 		return InsertService:LoadAsset(id)
 	end)
 	if not ok then
-		logger:warn(`Coin model {id} could not be loaded ({result}), falling back to a cylinder`)
+		logger:warn(`Coin model {id} could not be loaded ({result})`)
 		return nil
 	end
 
+	--[[
+		LoadAsset always hands back a Model to hold the asset, but what is INSIDE it
+		is whatever was published: a Model for a built assembly, a bare MeshPart for
+		a single mesh. Looking only for a Model finds nothing at all for the second
+		kind, which is most of the Coins anybody would use.
+	]]
 	local container = result :: Model
-	local model = container:FindFirstChildOfClass("Model")
-	if model then
-		model.Parent = nil
+	local template: PVInstance? = nil
+	for _, child in container:GetChildren() do
+		if child:IsA("PVInstance") then
+			template = child
+			child.Parent = nil
+			break
+		end
 	end
+
 	container:Destroy()
-	return model
+	if not template then
+		logger:warn(`Coin model {id} holds nothing that can be placed`)
+	end
+	return template
 end
 
 --[[ The belts to lay out, in the order the shop will eventually sell them. ]]
@@ -189,10 +205,14 @@ function Sandbox.build(logger)
 		Balance says — which is what a builder gets from dropping a tagged model and
 		setting nothing.
 	]]
-	template = template or fetchedCoin(logger)
-	if template then
-		logger:info("Coins built from a model")
+	local source = if template then "the map's own tagged Coin" else nil
+	if not template then
+		template = fetchedCoin(logger)
+		source = if template then `asset {Config.Theme.models.coin}` else nil
 	end
+	-- Said out loud either way: "why are my Coins cylinders" is a question the
+	-- console should already have answered.
+	logger:info(`Coins built from {source or "cylinders — no model was available"}`)
 
 	for index = 1, 8 do
 		local position = Vector3.new(-42 + (index - 1) * 12, 5, 4)
