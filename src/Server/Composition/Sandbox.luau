@@ -40,17 +40,31 @@ local COLOURS = {
 }
 
 --[[
-	The Coin the theme names, fetched once and cloned for every pickup.
+	The Coin to build the row from, in order of preference.
 
-	INSERTED, NOT BUILT. A Coin is something somebody modelled; the server can make a
-	cylinder and nothing better. It is fetched once because LoadAsset is a web
-	request — eight of them for eight Coins would be eight round trips for one model.
-
-	It can fail: the asset may be private, deleted, or the request may simply not
-	come back. That is why it is wrapped and why there is a cylinder to fall back on:
-	a test platform that refuses to build because a model is unavailable helps nobody.
+	1. ONE ALREADY IN THE PLACE. If the map contains a tagged Coin, that is the one
+	   the author wants and it needs no fetching. It is taken aside BEFORE the
+	   workspace is cleared, because the wipe would otherwise destroy the very thing
+	   being asked for.
+	2. THE ONE THE THEME NAMES, fetched once and cloned for every pickup. LoadAsset
+	   is a web request, so eight Coins would otherwise be eight round trips.
+	3. A CYLINDER. The fetch can fail — the asset may be private, deleted, or the
+	   request may simply not come back — and a test platform that refuses to build
+	   over an unavailable model helps nobody.
 ]]
-local function coinModel(logger): Model?
+local function taggedCoin(): Model?
+	for _, instance in CollectionService:GetTagged(MapBindings.TAGS.coin) do
+		if instance:IsA("Model") and instance:IsDescendantOf(workspace) then
+			local template = instance:Clone()
+			-- Held aside, so it must not look like a Coin in play while it waits.
+			CollectionService:RemoveTag(template, MapBindings.TAGS.coin)
+			return template
+		end
+	end
+	return nil
+end
+
+local function fetchedCoin(logger): Model?
 	local id = Config.Theme.models and Config.Theme.models.coin
 	if typeof(id) ~= "number" or id <= 0 then
 		return nil
@@ -111,6 +125,9 @@ local function label(anchor: BasePart, text: string)
 end
 
 function Sandbox.build(logger)
+	-- Taken aside before the wipe: see `taggedCoin`.
+	local template = taggedCoin()
+
 	-- Everything the previous map left behind, including a previous sandbox.
 	for _, child in workspace:GetChildren() do
 		if not child:IsA("Terrain") and not child:IsA("Camera") then
@@ -172,7 +189,11 @@ function Sandbox.build(logger)
 		Balance says — which is what a builder gets from dropping a tagged model and
 		setting nothing.
 	]]
-	local template = coinModel(logger)
+	template = template or fetchedCoin(logger)
+	if template then
+		logger:info("Coins built from a model")
+	end
+
 	for index = 1, 8 do
 		local position = Vector3.new(-42 + (index - 1) * 12, 5, 4)
 		local coin: Instance

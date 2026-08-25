@@ -29,6 +29,11 @@ tags count.
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
 lets a decorated pad be tagged once instead of six times.
 
+> ⚠️ **A tag is not a name.** The server reads tags and nothing else — a part called
+> `Coin` sitting in the map does nothing at all. Select it in Studio and add the tag
+> in the **Tags** section of the Properties panel, or through the Tag Editor plugin.
+> That is the whole wiring: nothing else has to be renamed, parented or scripted.
+
 Only some way to die is genuinely needed, and the void provides that for free. The
 rest is added when you want it.
 
