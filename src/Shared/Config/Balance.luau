@@ -120,22 +120,27 @@ return table.freeze({
 	-- The long loop. The requirement matches the last Stage: prestige is what you do
 	-- once the course has nothing left to show you.
 	--[[
-		A rebirth is a loop INSIDE a world, not the end of one. Seven of them open
-		the next world, and they run roughly half an hour each — 33 minutes for the
-		first, 52 for the seventh, four and a half hours in all.
+		A rebirth is a loop INSIDE a world, and NOTHING about the ladder restarts.
+		The count, the requirement and the multiplier run continuously across the
+		whole game; a world is a stretch of that climb, entered once seven have been
+		taken.
 
-		`requirementGrowth` applies within a world: the count restarts at each new
-		one, and the world's own scale carries it up. Compounding across every
-		rebirth ever taken would put the thirty-fifth out of reach by a factor of
-		millions.
+		Both compound. The requirement climbs a little faster than the multiplier —
+		1.33 against 1.30 — so a rebirth becomes a slightly bigger decision each
+		time, but only slightly: a gap that widens quickly turns a long loop into a
+		wall within a dozen cycles.
+
+		Within a world the cycles get SHORTER, from 45 down to 34 minutes, because
+		the character keeps getting faster as it climbs. Entering the next world puts
+		it back at the bottom of a bigger scale, and the rhythm starts over.
 
 		Solved by simulating real play against the speed curve, since the earn rate
 		feeds back into itself. The config spec re-runs that simulation.
 	]]
 	prestige = table.freeze({
-		baseRequirement = 13500,
-		requirementGrowth = 1.45,
-		multiplierPerPrestige = 0.4,
+		baseRequirement = 19800,
+		requirementGrowth = 1.33,
+		multiplierGrowth = 1.3,
 		rebirthsPerWorld = 7,
 		resetsUpgrades = true,
 		keptCoinRatio = 0,

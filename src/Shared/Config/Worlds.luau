@@ -33,17 +33,21 @@ export type World = {
 }
 
 --[[
-	Seven rebirths open the next one, and the scales are solved rather than picked:
-	each was searched for so that its seven cycles come to about four and a half
-	hours, against the rebirth ladder in Balance and the way the multiplier climbs.
-	They come out very close to linear, which is a consequence, not a rule.
+	Seven rebirths open the next one, and a world's scale is the multiplier a player
+	holds when they arrive: 1.3 to the power of the rebirths behind them. That is
+	what makes a world absorb exactly what the player gained rather than being
+	cleared faster by it, so every world lasts about as long as the last.
+
+	The numbers grow quickly, which is the point. A speed that ended world 1 is a
+	beginner's speed in world 2 — the same experience, read on a scale six times
+	larger.
 ]]
 local worlds: { World } = {
 	{ id = 1, name = "World 1", scale = 1 },
-	{ id = 2, name = "World 2", scale = 2.3, requires = { { kind = "prestiges", value = 7 } } },
-	{ id = 3, name = "World 3", scale = 3.54, requires = { { kind = "prestiges", value = 14 } } },
-	{ id = 4, name = "World 4", scale = 4.76, requires = { { kind = "prestiges", value = 21 } } },
-	{ id = 5, name = "World 5", scale = 5.98, requires = { { kind = "prestiges", value = 28 } } },
+	{ id = 2, name = "World 2", scale = 6.27, requires = { { kind = "prestiges", value = 7 } } },
+	{ id = 3, name = "World 3", scale = 39.37, requires = { { kind = "prestiges", value = 14 } } },
+	{ id = 4, name = "World 4", scale = 247.06, requires = { { kind = "prestiges", value = 21 } } },
+	{ id = 5, name = "World 5", scale = 1550.29, requires = { { kind = "prestiges", value = 28 } } },
 }
 
 return table.freeze(worlds)

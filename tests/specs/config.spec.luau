@@ -228,16 +228,23 @@ describe("Config.Balance", function()
 	end)
 
 	--[[
-		And the ladder RESTARTS at each world rather than compounding forever.
-		Growth applied across every rebirth ever taken puts the thirty-fifth out of
-		reach by a factor of millions, which is a wall rather than a long loop.
+		The ladder is CONTINUOUS: nothing about it restarts at a world boundary. What
+		keeps it climbable is that the multiplier compounds alongside it, a little
+		more slowly, so a rebirth becomes a bigger decision by degrees rather than
+		becoming a wall.
 	]]
-	it("restarts the rebirth ladder in each world", function()
+	it("runs one unbroken ladder across every world", function()
 		local policy = PrestigePolicy.new(Config.Balance.prestige)
 		local perWorld = Config.Balance.prestige.rebirthsPerWorld
 
-		expect(policy:requirementFor(perWorld)).toBe(policy:requirementFor(0))
-		expect(policy:requirementFor(perWorld - 1)).toBeGreaterThan(policy:requirementFor(0))
+		expect(policy:requirementFor(perWorld)).toBeGreaterThan(policy:requirementFor(perWorld - 1))
+		expect(policy:multiplierFor(perWorld)).toBeGreaterThan(policy:multiplierFor(perWorld - 1))
+
+		-- The gap between the two widens, but slowly enough to stay walkable: a
+		-- rebirth deep in the game must not cost hours more than the one before it.
+		local early = policy:requirementFor(1) / policy:multiplierFor(1)
+		local late = policy:requirementFor(30) / policy:multiplierFor(30)
+		expect(late / early).toBeLessThan(3)
 	end)
 end)
 

@@ -87,12 +87,15 @@ function PrestigePanel.render(self)
 	local state = self.state
 	local prestiges = state:get("Prestiges")
 	local progress = state:get("PrestigeProgress")
-	local perPrestige = Config.Balance.prestige.multiplierPerPrestige
+	-- The multiplier compounds, so the next one is a factor of the current one
+	-- rather than a step added to it.
+	local growth = Config.Balance.prestige.multiplierGrowth
 
 	self.current.Text = `{LABELS.prestige.plural or LABELS.prestige.name}: {prestiges} — {Format.multiplier(
 		state:get("PrestigeMultiplier")
 	)}`
-	self.next.Text = `After this one: {Format.multiplier(1 + (prestiges + 1) * perPrestige)} on every gain`
+	self.next.Text =
+		`After this one: {Format.multiplier(state:get("PrestigeMultiplier") * growth)} on every gain`
 	self.progressLabel.Text = `{Format.abbreviate(state:get("Speed"))} / {Format.abbreviate(
 		state:get("PrestigeRequirement")
 	)} {LABELS.speed.name}`

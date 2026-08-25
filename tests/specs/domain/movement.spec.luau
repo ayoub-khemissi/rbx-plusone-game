@@ -307,7 +307,7 @@ local function buildMultipliers()
 		prestigePolicy = PrestigePolicy.new({
 			baseRequirement = 100,
 			requirementGrowth = 2,
-			multiplierPerPrestige = 0.5,
+			multiplierGrowth = 1.5,
 			resetsUpgrades = true,
 		}),
 		passEffects = PASS_EFFECTS,
@@ -334,9 +334,10 @@ describe("Multipliers", function()
 		expect(multipliers:compute(profile, {}).speed).toBeCloseTo(2, 1e-9)
 	end)
 
+	-- Compounding, not adding: two rebirths at x1.5 are worth 2.25, never 2.
 	it("multiplies by the prestige bonus", function()
 		profile.prestiges = 2
-		expect(multipliers:compute(profile, {}).speed).toBeCloseTo(2, 1e-9)
+		expect(multipliers:compute(profile, {}).speed).toBeCloseTo(1.5 ^ 2, 1e-9)
 	end)
 
 	it("applies the stage coin multiplier", function()
