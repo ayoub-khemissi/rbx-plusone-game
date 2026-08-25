@@ -21,14 +21,18 @@
 ]]
 
 export type Tuning = {
-	maxLevel: number,
-	-- Multiple of the walk speed with the dash unlocked and no power bought.
-	baseMultiplier: number,
-	multiplierPerLevel: number,
-	-- What one point of multiplier is worth as impulse. The shop shows the
-	-- multiplier; this turns it into something the physics engine notices.
-	powerScale: number,
-	maxPower: number,
+	--[[
+		What a dash is worth, as a multiple of the run speed, by power level. Index 1
+		is the dash with nothing bought; each one after it is a level in the shop.
+
+		A table rather than a formula because these are chosen numbers, not a curve:
+		reading the list tells you exactly what the shop sells, and changing one
+		level does not move the others.
+	]]
+	multipliers: { number },
+	-- Seconds the dash is HELD. See powerFor for why this matters more than speed.
+	duration: number,
+	maxSpeed: number,
 	cooldown: number,
 }
 
@@ -47,11 +51,10 @@ end
 
 function DashPolicy.new(tuning: Tuning): DashPolicy
 	return setmetatable({
-		maxLevel = tuning.maxLevel,
-		baseMultiplier = tuning.baseMultiplier,
-		multiplierPerLevel = tuning.multiplierPerLevel,
-		powerScale = tuning.powerScale,
-		maxPower = tuning.maxPower,
+		multipliers = tuning.multipliers,
+		maxLevel = #tuning.multipliers - 1,
+		duration = tuning.duration,
+		maxSpeed = tuning.maxSpeed,
 		cooldown = tuning.cooldown,
 	}, DashPolicy)
 end
@@ -75,28 +78,27 @@ end
 --[[ The multiple of the run speed a dash is worth. This is what the shop sells. ]]
 function DashPolicy.multiplierFor(self: DashPolicy, powerLevel: number): number
 	local level = math.clamp(math.floor(powerLevel or 0), 0, self.maxLevel)
-	return self.baseMultiplier + level * self.multiplierPerLevel
+	return self.multipliers[level + 1]
 end
 
 --[[
-	Impulse of a dash for a character running at that speed.
+	Speed of a dash for a character running at that speed.
 
-	The multiplier is what the shop advertises; `powerScale` is what makes the
-	engine feel it. Setting the velocity to exactly the run speed does nothing at
-	all — the character was already moving that fast — so the impulse has to
-	overshoot by a wide margin before a dash reads as a dash.
+	IT IS A SPEED HELD FOR A WHILE, not an impulse. A single write to the velocity
+	is undone by the Humanoid within two or three frames, which is why the first
+	attempt needed absurd numbers to be felt at all and then crossed walls. Holding
+	a modest speed for a fraction of a second travels much further, at a velocity
+	the collision solver can still see.
 
-	Capped, for the reason the walk speed is capped rather than for balance: a body
-	moving fast enough crosses a thin platform between two frames. At these values
-	the ceiling is doing real work, and a map built from thin walls will want it
-	lower.
+	Capped for that reason and no other: past the ceiling the character skips
+	between two frames. A map built from thin walls will want it lower.
 ]]
 function DashPolicy.powerFor(self: DashPolicy, powerLevel: number, walkSpeed: number?): number
 	local speed = if typeof(walkSpeed) == "number" and walkSpeed > 0 then walkSpeed else 0
 	if speed <= 0 then
 		return 0
 	end
-	return math.min(speed * self:multiplierFor(powerLevel) * self.powerScale, self.maxPower)
+	return math.min(speed * self:multiplierFor(powerLevel), self.maxSpeed)
 end
 
 function DashPolicy.remainingCooldown(self: DashPolicy, state: State, now: number): number

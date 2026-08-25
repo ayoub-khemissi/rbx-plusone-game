@@ -17,11 +17,14 @@
 ]]
 
 local ContextActionService = game:GetService("ContextActionService")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local PressGate = require(ReplicatedStorage:WaitForChild("Shared").Domain.Movement.PressGate)
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared.Config)
+local PressGate = require(Shared.Domain.Movement.PressGate)
 
 local Flip = require(script.Parent.Parent.Flip)
 
@@ -31,6 +34,7 @@ MovementController.__index = MovementController
 local DASH_ACTION = "Dash"
 local DASH_KEYS = { Enum.KeyCode.Q, Enum.KeyCode.LeftShift }
 local DASH_LIFT = 8 -- a touch of lift, so a dash can save a jump that fell short
+local DASH_DURATION = Config.Balance.dash.duration
 
 -- Above one frame, below a human double tap. See PressGate for why this exists.
 local JUMP_PRESS_WINDOW = 0.1
@@ -178,7 +182,33 @@ function MovementController._applyDash(self, power: number)
 		return
 	end
 
-	self.root.AssemblyLinearVelocity = direction.Unit * power + Vector3.new(0, DASH_LIFT, 0)
+	--[[
+		HELD, not shoved.
+
+		Writing the velocity once and walking away does almost nothing: the Humanoid
+		steers the character back to its walk speed within two or three frames. The
+		speed is therefore rewritten every frame for the length of the dash, which is
+		what turns it into distance covered rather than a twitch.
+
+		Only the horizontal components are held. Gravity keeps the vertical one, so a
+		dash off a ledge still falls, and a dash mid-jump does not hang in the air.
+	]]
+	local unit = direction.Unit
+	local until_ = os.clock() + DASH_DURATION
+	local held: RBXScriptConnection
+
+	self.root.AssemblyLinearVelocity =
+		Vector3.new(unit.X * power, self.root.AssemblyLinearVelocity.Y + DASH_LIFT, unit.Z * power)
+
+	held = RunService.Heartbeat:Connect(function()
+		local root = self.root
+		if os.clock() >= until_ or not root or not root.Parent then
+			held:Disconnect()
+			return
+		end
+		root.AssemblyLinearVelocity =
+			Vector3.new(unit.X * power, root.AssemblyLinearVelocity.Y, unit.Z * power)
+	end)
 end
 
 return MovementController

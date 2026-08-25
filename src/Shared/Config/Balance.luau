@@ -62,15 +62,35 @@ return table.freeze({
 		crosses thin platforms between two frames. It is set generously, and a map
 		built out of walls a few studs thick will want it lower.
 	]]
+	--[[
+		A dash is a SPEED HELD for a fraction of a second, not a shove.
+
+		A single write to the velocity is undone by the Humanoid within two or three
+		frames, so it took absurd numbers to be felt and then crossed walls. Held for
+		0.28s, a modest speed covers real ground at a velocity the collision solver
+		can still see.
+
+		The multipliers are a list, not a curve: they are chosen numbers, and reading
+		the list tells you exactly what the shop sells. Index 1 is the dash with
+		nothing bought; the five after it are the levels of Dash Power.
+
+		Distance covered, at the starting run speed of 16:
+		    unimproved  1.5x   6.7 studs
+		    level 1     2x       9
+		    level 2     3x      13
+		    level 3     4x      18
+		    level 4     5x      22
+		    level 5     6x      27
+
+		`maxSpeed` is a physics limit, not a balance one: 200 studs/s is about 3.3
+		studs between two frames, so walls thinner than that can be crossed. Past a
+		run speed of roughly 35 the top levels meet it and stop separating — that is
+		the honest cost of not going through the level design.
+	]]
 	dash = table.freeze({
-		maxLevel = 5,
-		baseMultiplier = 1,
-		multiplierPerLevel = 1,
-		-- The shop sells x1 through x6; this is what one of those is worth as an
-		-- impulse. A velocity equal to the run speed does nothing — the character
-		-- was already going that fast — so it has to overshoot to be felt.
-		powerScale = 20,
-		maxPower = 1000,
+		multipliers = table.freeze({ 1.5, 2, 3, 4, 5, 6 }),
+		duration = 0.28,
+		maxSpeed = 200,
 		cooldown = 2, -- seconds; a dash is a decision, not a resource to dump
 	}),
 

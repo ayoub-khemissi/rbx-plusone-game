@@ -94,8 +94,10 @@ describe("Config.Upgrades", function()
 		expect(jumps:levelFor({ flat = { jumps = catalog:get("jump").maxLevel } })).toBe(
 			Config.Balance.movement.maxJumpLevel
 		)
+		-- The shop must sell exactly as many levels as the table has entries beyond
+		-- the unimproved one, or the last one bought would grant nothing.
 		expect(dash:powerLevelFor({ flat = { dashPower = catalog:get("dashPower").maxLevel } })).toBe(
-			Config.Balance.dash.maxLevel
+			#Config.Balance.dash.multipliers - 1
 		)
 	end)
 end)
@@ -141,7 +143,7 @@ describe("Config.Balance", function()
 		local dash = DashPolicy.new(Config.Balance.dash)
 		local levels = UpgradeCatalog.new(Config.Upgrades):get("dashPower").maxLevel
 
-		expect(dash:multiplierFor(0)).toBe(1)
+		expect(dash:multiplierFor(0)).toBeLessThan(2)
 		expect(dash:multiplierFor(levels)).toBe(6)
 		expect(dash:powerFor(1, 20)).toBeGreaterThan(20)
 		expect(dash:powerFor(levels, 20)).toBeGreaterThan(dash:powerFor(1, 20))

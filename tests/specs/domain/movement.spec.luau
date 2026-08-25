@@ -158,11 +158,9 @@ describe("DashPolicy", function()
 	local dash, state
 
 	local TUNING = {
-		maxLevel = 5,
-		baseMultiplier = 1,
-		multiplierPerLevel = 1,
-		powerScale = 20,
-		maxPower = 1000,
+		multipliers = { 1.5, 2, 3, 4, 5, 6 },
+		duration = 0.28,
+		maxSpeed = 200,
 		cooldown = 2,
 	}
 	local SLOW, FAST = 16, 53
@@ -193,9 +191,9 @@ describe("DashPolicy", function()
 		unimproved is x1, and the five levels are x2 through x6.
 	]]
 	it("sells the multiples it advertises", function()
-		expect(dash:multiplierFor(0)).toBe(1)
+		expect(dash:multiplierFor(0)).toBe(1.5)
 		for level = 1, 5 do
-			expect(dash:multiplierFor(level)).toBe(level + 1)
+			expect(dash:multiplierFor(level)).toBe(TUNING.multipliers[level + 1])
 		end
 	end)
 
@@ -203,20 +201,19 @@ describe("DashPolicy", function()
 		THE POINT OF SCALING. A fixed impulse is a rocket at walking pace and a nudge
 		once the character is quick — the same button stops meaning the same thing.
 	]]
-	it("scales the impulse with the character's run speed", function()
-		expect(dash:powerFor(1, SLOW)).toBe(SLOW * 2 * TUNING.powerScale)
+	it("scales the speed with the character's run speed", function()
+		expect(dash:powerFor(1, SLOW)).toBe(SLOW * 2)
 		expect(dash:powerFor(1, FAST)).toBeGreaterThan(dash:powerFor(1, SLOW))
 	end)
 
 	--[[
-		The multiplier is what the shop promises; the scale is what makes the engine
-		feel it. Writing a velocity equal to the run speed changes nothing at all —
-		the character was already moving that fast — so the two have to stay
-		separate: one is a promise, the other is physics.
+		Every level has to be worth buying at the speed the player is running when
+		they can afford it. The ceiling only ever meets the top levels late.
 	]]
-	it("keeps the advertised multiple and the impulse apart", function()
-		expect(dash:multiplierFor(1)).toBe(2)
-		expect(dash:powerFor(1, SLOW)).toBe(dash:multiplierFor(1) * SLOW * TUNING.powerScale)
+	it("keeps the levels apart at the speeds they are bought", function()
+		for level = 1, 5 do
+			expect(dash:powerFor(level, SLOW)).toBeGreaterThan(dash:powerFor(level - 1, SLOW))
+		end
 	end)
 
 	it("gives nothing to a character that is not moving under its own power", function()
@@ -229,7 +226,7 @@ describe("DashPolicy", function()
 		crosses a thin platform between two frames.
 	]]
 	it("never breaks the ceiling, whatever the speed or the level", function()
-		expect(dash:powerFor(5, 1e6)).toBe(TUNING.maxPower)
+		expect(dash:powerFor(5, 1e6)).toBe(TUNING.maxSpeed)
 	end)
 
 	it("returns the power spent on a successful dash", function()
@@ -377,11 +374,9 @@ describe("Progression", function()
 			multipliers = buildMultipliers(),
 			jumpBudget = JumpBudget.new({ maxJumpLevel = 3 }),
 			dashPolicy = DashPolicy.new({
-				maxLevel = 5,
-				baseMultiplier = 1,
-				multiplierPerLevel = 1,
-				powerScale = 20,
-				maxPower = 1000,
+				multipliers = { 1.5, 2, 3, 4, 5, 6 },
+				duration = 0.28,
+				maxSpeed = 200,
 				cooldown = 2,
 			}),
 			tuning = { speedPerStep = 1, coinsPerStep = 0.5 },
