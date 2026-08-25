@@ -18,6 +18,8 @@ export type Definition = {
 	costGrowth: number,
 	effectPerLevel: number,
 	effect: string, -- "speedMultiplier" | "coinMultiplier" | a flat key such as "jumps"
+	-- Conditions from Domain.Progression.Requirements; nil means always available.
+	requires: { any }?,
 }
 
 local UpgradeCatalog = {}

@@ -10,6 +10,7 @@ local MESSAGES = {
 	UNKNOWN_UPGRADE = "That upgrade does not exist.",
 	MAX_LEVEL = "Already at maximum level!",
 	INSUFFICIENT_FUNDS = "You are %s Coins short.",
+	LOCKED = "Not unlocked yet.",
 }
 
 local BuyUpgrade = {}
@@ -29,7 +30,11 @@ function BuyUpgrade.run(self, player, upgradeId)
 		return Result.err("UNKNOWN_UPGRADE", MESSAGES.UNKNOWN_UPGRADE)
 	end
 
-	local result = Purchase.apply(self.catalog, session.profile, upgradeId)
+	-- What a requirement may ask about beyond the profile itself.
+	local result = Purchase.apply(self.catalog, session.profile, upgradeId, {
+		level = self.levels:levelFor(session.profile.speed),
+		passes = session.passes,
+	})
 
 	if not result.ok then
 		local template = MESSAGES[result.code or ""] or "Purchase failed."

@@ -5,20 +5,40 @@
 	`evaluate` changes nothing and serves both the server (validation) and the client
 	(greying out a button). `apply` only spends when `evaluate` agrees, so the two can
 	never drift apart.
+
+	`context` carries what a REQUIREMENT may ask about beyond the profile: the
+	player's level and the passes they own. Leaving it out is safe rather than
+	permissive — an upgrade that requires nothing still buys, and one that requires
+	something stays locked, because a caller who forgot the context has not proved
+	anything.
 ]]
 
 local Result = require(script.Parent.Parent.Support.Result)
 local Profile = require(script.Parent.Parent.Profile.Profile)
+local Requirements = require(script.Parent.Parent.Progression.Requirements)
+
+local gate = Requirements.new()
 
 type Result = Result.Result
 type Profile = Profile.Profile
 
 local Purchase = {}
 
-function Purchase.evaluate(catalog: any, profile: Profile, upgradeId: string): Result
+function Purchase.evaluate(catalog: any, profile: Profile, upgradeId: string, context: any?): Result
 	local definition = catalog:get(upgradeId)
 	if not definition then
 		return Result.err("UNKNOWN_UPGRADE", `Unknown upgrade: {tostring(upgradeId)}`)
+	end
+
+	-- Checked before the price: an upgrade that is not open yet is not a question
+	-- of money, and telling the player they cannot afford it would be a lie.
+	local unlocked = gate:evaluate(definition.requires, {
+		profile = profile,
+		level = context and context.level or 0,
+		passes = context and context.passes or {},
+	})
+	if not unlocked.met then
+		return Result.err("LOCKED", "Not unlocked yet", { unmet = unlocked.unmet })
 	end
 
 	local level = Profile.levelOf(profile, upgradeId)
@@ -37,8 +57,8 @@ function Purchase.evaluate(catalog: any, profile: Profile, upgradeId: string): R
 	return Result.ok({ cost = cost, nextLevel = level + 1, definition = definition })
 end
 
-function Purchase.apply(catalog: any, profile: Profile, upgradeId: string): Result
-	local evaluation = Purchase.evaluate(catalog, profile, upgradeId)
+function Purchase.apply(catalog: any, profile: Profile, upgradeId: string, context: any?): Result
+	local evaluation = Purchase.evaluate(catalog, profile, upgradeId, context)
 	if not evaluation.ok then
 		return evaluation
 	end
