@@ -34,7 +34,6 @@ local Motion = {}
 -- without it the same duration reads as a slow zoom.
 local POP_OUT = TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local POP_BACK = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local FLASH_IN = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local FLASH_OUT = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local SHINE_TIME = 0.55
 local APPEAR_TIME = 0.22
@@ -79,35 +78,23 @@ end
 	For a state that BECAME true — a cooldown that finished, a purchase that went
 	through. It is deliberately short on the way in and slow on the way out: the
 	arrival is the event, the fade is just the eye letting go.
+
+	It tweens the frame's OWN colour rather than laying a sheet over it. A sheet
+	would be a child, and a child of anything holding a UIListLayout is laid out —
+	one more item in the row, sized to the whole frame, shoving everything else
+	aside. Colouring the frame itself works wherever a frame works.
 ]]
 function Motion.flash(frame: GuiObject, color: Color3)
-	local wash = frame:FindFirstChild("MotionFlash") :: Frame?
-	if not wash then
-		wash = Instance.new("Frame")
-		wash.Name = "MotionFlash"
-		wash.Size = UDim2.fromScale(1, 1)
-		wash.BackgroundColor3 = color
-		wash.BorderSizePixel = 0
-		wash.ZIndex = (frame.ZIndex or 1) + 1
-		wash.Parent = frame
-
-		local corner = frame:FindFirstChildOfClass("UICorner")
-		if corner then
-			local copy = corner:Clone()
-			copy.Parent = wash
-		end
+	local resting = frame:GetAttribute("MotionRestingColor")
+	if typeof(resting) ~= "Color3" then
+		resting = frame.BackgroundColor3
+		frame:SetAttribute("MotionRestingColor", resting)
 	end
 
-	local target = wash :: Frame
-	target.BackgroundColor3 = color
-	target.BackgroundTransparency = 1
-	target.Visible = true
+	frame.BackgroundColor3 = color
 
-	local up = TweenService:Create(target, FLASH_IN, { BackgroundTransparency = 0.45 })
-	up.Completed:Connect(function()
-		TweenService:Create(target, FLASH_OUT, { BackgroundTransparency = 1 }):Play()
-	end)
-	up:Play()
+	local back = TweenService:Create(frame, FLASH_OUT, { BackgroundColor3 = resting })
+	back:Play()
 end
 
 --[[
@@ -117,6 +104,12 @@ end
 	strongest thing in this file, which is exactly why almost nothing may use it: a
 	sweep that happens every few seconds is wallpaper, and then nothing is left to
 	say that something mattered.
+
+	THE FRAME MUST LAY NOTHING OUT. The band is a child, and a child of a frame with
+	a UIListLayout is laid out like any other — one more item in the row, sized to
+	the whole frame, which on an auto-sizing chip grows the chip to fit the band and
+	the band to fit the chip. Give a frame that arranges things a plain wrapper and
+	sweep that instead.
 ]]
 function Motion.shine(frame: GuiObject)
 	local existing = frame:FindFirstChild("MotionShine")

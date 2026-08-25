@@ -109,6 +109,15 @@ end
 	by how many a world takes, and both of those already crossed the wire.
 ]]
 local function rebirthChip(parent: Instance, options)
+	--[[
+		Two frames, not one. The outer carries the fill, the gradient and the shape;
+		the inner arranges the contents. They are split because the sweep that
+		celebrates a rebirth is a child laid OVER the badge, and a child of anything
+		holding a UIListLayout is laid out INSIDE it — one more item in the row,
+		sized to the whole chip, which on an auto-sizing chip grows the chip to fit
+		the band and the band to fit the chip. That is a blue slab across the bottom
+		of the screen, which is exactly what it was.
+	]]
 	local frame = Widgets.card(parent, {
 		name = "Rebirth",
 		size = UDim2.fromOffset(0, 46),
@@ -125,25 +134,32 @@ local function rebirthChip(parent: Instance, options)
 	gradient.Rotation = 90
 	gradient.Parent = frame
 
+	local content = Instance.new("Frame")
+	content.Name = "Content"
+	content.Size = UDim2.fromOffset(0, 46)
+	content.AutomaticSize = Enum.AutomaticSize.X
+	content.BackgroundTransparency = 1
+	content.Parent = frame
+
 	local padding = Instance.new("UIPadding")
 	padding.PaddingLeft = UDim.new(0, 10)
 	padding.PaddingRight = UDim.new(0, 10)
-	padding.Parent = frame
+	padding.Parent = content
 
-	Widgets.list(frame, {
+	Widgets.list(content, {
 		direction = Enum.FillDirection.Horizontal,
 		padding = 8,
 		verticalAlignment = Enum.VerticalAlignment.Center,
 	})
 
-	Widgets.icon(frame, {
+	Widgets.icon(content, {
 		image = options.image,
 		fallback = options.fallback,
 		size = UDim2.fromOffset(28, 28),
 		layoutOrder = 1,
 	})
 
-	local count = Widgets.label(frame, {
+	local count = Widgets.label(content, {
 		name = "Count",
 		size = UDim2.fromOffset(0, 30),
 		font = Theme.font.title,
@@ -166,7 +182,7 @@ local function rebirthChip(parent: Instance, options)
 	plate.BackgroundTransparency = 0.72
 	plate.BorderSizePixel = 0
 	plate.LayoutOrder = 3
-	plate.Parent = frame
+	plate.Parent = content
 	Widgets.corner(plate, Theme.radius.chip)
 
 	local platePadding = Instance.new("UIPadding")
