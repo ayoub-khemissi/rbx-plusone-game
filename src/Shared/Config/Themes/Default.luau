@@ -119,6 +119,24 @@ local theme: Theme = {
 		negative = { 229, 51, 60 },
 		special = { 150, 60, 220 },
 		locked = { 152, 156, 172 },
+
+		--[[
+			One pair per world, top and bottom of the gradient the Rebirth chip
+			wears. It is the only place the interface says WHICH world the player is
+			in, and it says it without a word: the number on the chip counts the
+			rebirths, the colour says what they bought.
+
+			They climb the way a player expects rarity to climb — blue, green,
+			violet, crimson — and the last one is the only two-colour pair, because
+			the end of the game should not look like another rung.
+		]]
+		worlds = {
+			{ { 59, 178, 240 }, { 22, 112, 200 } },
+			{ { 92, 201, 74 }, { 38, 148, 60 } },
+			{ { 168, 88, 232 }, { 104, 40, 190 } },
+			{ { 240, 88, 96 }, { 188, 32, 58 } },
+			{ { 255, 118, 200 }, { 88, 190, 255 } },
+		},
 	},
 
 	-- Optional decoration. Leave a field out and the surface stays flat, which is

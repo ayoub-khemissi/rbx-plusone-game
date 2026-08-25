@@ -7,6 +7,7 @@
 	fill `content` and never draw their own frame.
 ]]
 
+local Motion = require(script.Parent.Motion)
 local Theme = require(script.Parent.Theme)
 local Widgets = require(script.Parent.Widgets)
 
@@ -74,6 +75,9 @@ end
 function Panel.open(self)
 	self.isOpen = true
 	self.frame.Visible = true
+	-- Grown from the button that opened it, rather than blinked into place: the
+	-- window has to read as having come from somewhere.
+	Motion.appear(self.frame)
 	if self.onOpen then
 		self.onOpen()
 	end

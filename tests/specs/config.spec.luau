@@ -404,6 +404,25 @@ describe("Config.Theme", function()
 		expect(Config.Theme.labels.speed.baseWalkSpeed).toBeNil()
 		expect(Config.Theme.requiredSpeed).toBeNil()
 	end)
+
+	--[[
+		The Rebirth badge is the only place the interface says which world a player is
+		in, and it says it with a colour. A theme that lists fewer pairs than the game
+		has worlds would leave the last ones sharing a colour with an earlier one,
+		which is worse than saying nothing: it would be saying something false.
+	]]
+	it("dresses every world in a colour of its own", function()
+		local worlds = Config.Theme.palette.worlds
+		expect(#worlds).toBeGreaterThanOrEqual(#Config.Worlds)
+
+		local seen = {}
+		for _, pair in worlds do
+			expect(#pair).toBe(2)
+			local key = table.concat(pair[1], ",")
+			expect(seen[key]).toBeNil()
+			seen[key] = true
+		end
+	end)
 end)
 
 describe("Config.Products and Passes", function()

@@ -28,6 +28,26 @@ local function color(key: string, fallback: Color3): Color3
 	return fallback
 end
 
+--[[
+	The pair of colours a world wears. Falls back to the accent pair rather than
+	failing: a theme that lists fewer worlds than the game has still draws.
+]]
+local function worldColors(): { { Color3 } }
+	local out = {}
+	for _, pair in palette.worlds or {} do
+		if typeof(pair) == "table" and #pair >= 2 then
+			table.insert(out, {
+				Color3.fromRGB(pair[1][1], pair[1][2], pair[1][3]),
+				Color3.fromRGB(pair[2][1], pair[2][2], pair[2][3]),
+			})
+		end
+	end
+	if #out == 0 then
+		table.insert(out, { Color3.fromRGB(150, 60, 220), Color3.fromRGB(104, 40, 190) })
+	end
+	return out
+end
+
 return table.freeze({
 	color = table.freeze({
 		panel = color("panel", Color3.fromRGB(250, 249, 246)),
@@ -49,6 +69,8 @@ return table.freeze({
 		special = color("special", Color3.fromRGB(150, 60, 220)),
 		locked = color("locked", Color3.fromRGB(152, 156, 172)),
 	}),
+
+	worlds = table.freeze(worldColors()),
 
 	texture = table.freeze({
 		panelPattern = Config.Theme.textures and Config.Theme.textures.panelPattern,

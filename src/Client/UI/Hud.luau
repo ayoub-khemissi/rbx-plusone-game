@@ -21,6 +21,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared.Config)
 local Format = require(Shared.Domain.Support.Format)
 
+local Motion = require(script.Parent.Motion)
 local Theme = require(script.Parent.Theme)
 local Widgets = require(script.Parent.Widgets)
 
@@ -36,6 +37,7 @@ local GAUGE_WIDTH = 76 -- a single continuous gauge, such as a cooldown
 local SEGMENT_WIDTH = 34 -- one charge, when there are several
 local GAUGE_GAP = 4
 local DASH_COOLDOWN = Config.Balance.dash.cooldown
+local REBIRTHS_PER_WORLD = math.max(Config.Balance.prestige.rebirthsPerWorld or 1, 1)
 
 --[[
 	One readout: a rounded chip carrying an icon and a value.
@@ -87,6 +89,118 @@ local function chip(parent: Instance, options)
 	value.AutomaticSize = Enum.AutomaticSize.X
 
 	return { frame = frame, value = value }
+end
+
+--[[
+	The Rebirth readout, and the only thing on screen that is allowed to be loud.
+
+	It reports the one number a player shows other players. Everything else on the
+	HUD answers a question they asked themselves — how much, how far, can I dash yet
+	— and is drawn to be read and forgotten. This one is a rank, so it is built like
+	a badge: filled rather than pale, gradient rather than flat, with the multiplier
+	on a plate of its own.
+
+	IT IS ALSO THE ONLY PLACE THE INTERFACE SAYS WHICH WORLD THE PLAYER IS IN, and it
+	says it without a word. The count is the rebirths taken; the colour is the world
+	those rebirths bought. A player who has never seen a violet chip knows there is
+	one, which is worth more than a label reading "World 3".
+
+	The world is derived here rather than published: it is the rebirth count divided
+	by how many a world takes, and both of those already crossed the wire.
+]]
+local function rebirthChip(parent: Instance, options)
+	local frame = Widgets.card(parent, {
+		name = "Rebirth",
+		size = UDim2.fromOffset(0, 46),
+		color = Theme.worlds[1][1],
+		radius = Theme.radius.chip,
+		visible = false,
+	})
+	frame.AutomaticSize = Enum.AutomaticSize.X
+	frame.LayoutOrder = options.layoutOrder or 0
+
+	-- Top to bottom, the two colours of the world. A flat fill at this size reads as
+	-- a sticker; the gradient is what makes it read as a made object.
+	local gradient = Instance.new("UIGradient")
+	gradient.Rotation = 90
+	gradient.Parent = frame
+
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 10)
+	padding.PaddingRight = UDim.new(0, 10)
+	padding.Parent = frame
+
+	Widgets.list(frame, {
+		direction = Enum.FillDirection.Horizontal,
+		padding = 8,
+		verticalAlignment = Enum.VerticalAlignment.Center,
+	})
+
+	Widgets.icon(frame, {
+		image = options.image,
+		fallback = options.fallback,
+		size = UDim2.fromOffset(28, 28),
+		layoutOrder = 1,
+	})
+
+	local count = Widgets.label(frame, {
+		name = "Count",
+		size = UDim2.fromOffset(0, 30),
+		font = Theme.font.title,
+		textSize = Theme.text.big,
+		align = Enum.TextXAlignment.Left,
+		color = Theme.color.textOnColor,
+		outline = Theme.stroke.textHeavy,
+		layoutOrder = 2,
+	})
+	count.AutomaticSize = Enum.AutomaticSize.X
+
+	-- The multiplier gets a plate of its own because it is a different KIND of fact
+	-- from the count: one is how far the player has come, the other is what it is
+	-- worth from now on. Run together they read as one long number.
+	local plate = Instance.new("Frame")
+	plate.Name = "Multiplier"
+	plate.Size = UDim2.fromOffset(0, 30)
+	plate.AutomaticSize = Enum.AutomaticSize.X
+	plate.BackgroundColor3 = Color3.new(0, 0, 0)
+	plate.BackgroundTransparency = 0.72
+	plate.BorderSizePixel = 0
+	plate.LayoutOrder = 3
+	plate.Parent = frame
+	Widgets.corner(plate, Theme.radius.chip)
+
+	local platePadding = Instance.new("UIPadding")
+	platePadding.PaddingLeft = UDim.new(0, 10)
+	platePadding.PaddingRight = UDim.new(0, 10)
+	platePadding.Parent = plate
+
+	local multiplier = Widgets.label(plate, {
+		name = "Value",
+		size = UDim2.fromOffset(0, 30),
+		font = Theme.font.number,
+		textSize = Theme.text.body,
+		align = Enum.TextXAlignment.Center,
+		color = Theme.color.textOnColor,
+		layoutOrder = 1,
+	})
+	multiplier.AutomaticSize = Enum.AutomaticSize.X
+
+	local badge = { frame = frame, count = count, multiplier = multiplier, world = 0 }
+
+	--[[ Repaints for a world, and only when the world actually changed. ]]
+	function badge.setWorld(index: number)
+		local clamped = math.clamp(index, 1, #Theme.worlds)
+		if badge.world == clamped then
+			return
+		end
+		badge.world = clamped
+
+		local pair = Theme.worlds[clamped]
+		frame.BackgroundColor3 = pair[1]
+		gradient.Color = ColorSequence.new(pair[1], pair[2])
+	end
+
+	return badge
 end
 
 --[[
@@ -283,12 +397,20 @@ function Hud.new(parent: Instance, state)
 	self.coins.frame.Position = UDim2.new(0, 18, 1, -18)
 	self.coins.frame.AnchorPoint = Vector2.new(0, 1)
 
-	self.prestige = chip(row, {
-		name = "Prestige",
+	-- Coins are the number that moves most often, so they are the number that has
+	-- to move well: it travels to the new total and punches when it grows.
+	self.setCoins = Motion.roll(self.coins.value, {
+		onGrow = function()
+			Motion.pop(self.coins.value, 0.14)
+		end,
+	})
+
+	self.prestige = rebirthChip(row, {
 		image = LABELS.prestige.image,
 		fallback = LABELS.prestige.icon,
 		layoutOrder = 1,
 	})
+	self.shownPrestiges = nil
 
 	self.jump = gaugeChip(row, {
 		name = "Jump",
@@ -335,21 +457,42 @@ function Hud.render(self)
 	-- The bar reads as a rank, not as a place on the map. Stage names still gate
 	-- the course and multiply the Coins; they are simply not what a player watches
 	-- while running.
-	self.stageLabel.Text = `{LABELS.level.name} {math.max(state:get("Level"), 1)}`
+	local level = math.max(state:get("Level"), 1)
+	self.stageLabel.Text = `{LABELS.level.name} {level}`
 	self.stageValue.Text =
 		`{Format.abbreviate(state:get("LevelCurrent"))}/{Format.abbreviate(state:get("LevelRequired"))}`
 	self.stageBar.set(state:get("LevelProgress"))
 
+	--[[
+		A level is the one thing a running player earns that they did not ask for, and
+		it arrives while they are looking at the world rather than at the bar. It gets
+		the loudest thing the interface has, and almost nothing else does.
+	]]
+	if self.shownLevel and level > self.shownLevel then
+		Motion.pop(self.stageLabel, 0.28)
+		Motion.shine(self.stageBar.instance)
+	end
+	self.shownLevel = level
+
 	self.coins.frame.Visible = true
-	self.coins.value.Text = Format.abbreviate(state:get("Coins"))
+	self.setCoins(state:get("Coins"))
 
 	-- A player who has never prestiged has nothing to read here, and a "0" only
 	-- raises the question of what it is for.
 	local prestiges = state:get("Prestiges")
 	self.prestige.frame.Visible = prestiges > 0
 	if self.prestige.frame.Visible then
-		self.prestige.value.Text = `{prestiges}  {Format.multiplier(state:get("SpeedMultiplier"))}`
+		self.prestige.count.Text = tostring(prestiges)
+		self.prestige.multiplier.Text = Format.multiplier(state:get("SpeedMultiplier"))
+		-- Seven rebirths to a world, and the count already crossed the wire.
+		self.prestige.setWorld(prestiges // REBIRTHS_PER_WORLD + 1)
+
+		if self.shownPrestiges and prestiges > self.shownPrestiges then
+			Motion.pop(self.prestige.frame, 0.25)
+			Motion.shine(self.prestige.frame)
+		end
 	end
+	self.shownPrestiges = prestiges
 
 	-- Level 1 is the jump everybody already has: there is no air jump to count.
 	local jumpLevel = math.max(state:get("JumpLevel"), 1)
@@ -388,8 +531,16 @@ function Hud._drainDash(self, deltaTime: number)
 		return
 	end
 
+	local before = self.dashRemaining
 	self.dashRemaining = math.max(self.dashRemaining - deltaTime, 0)
 	self.dash.set(1 - self.dashRemaining / DASH_COOLDOWN)
+
+	-- The moment it becomes usable again, said as a wash of colour rather than a
+	-- full bar the player has to notice is full. It fires on the crossing, so a
+	-- gauge that was already full stays quiet.
+	if before > 0 and self.dashRemaining <= 0 then
+		Motion.flash(self.dash.frame, Theme.color.positive)
+	end
 end
 
 return Hud
