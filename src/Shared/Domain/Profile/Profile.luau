@@ -38,6 +38,9 @@ export type Profile = {
 	coins: number,
 	prestiges: number,
 	highestStage: number,
+	-- Highest level reached in the CURRENT world. Ground already covered, and what
+	-- makes re-earning it cheap after a rebirth.
+	bestLevel: number,
 	upgrades: { [string]: number },
 
 	totals: Totals,
@@ -53,7 +56,7 @@ export type Profile = {
 
 local Profile = {}
 
-Profile.SCHEMA_VERSION = 4
+Profile.SCHEMA_VERSION = 5
 
 local function positiveNumber(value: any, default: number): number
 	if typeof(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then
@@ -96,6 +99,7 @@ function Profile.create(): Profile
 		coins = 0,
 		prestiges = 0,
 		highestStage = 0,
+		bestLevel = 0,
 		upgrades = {},
 
 		totals = {
@@ -136,6 +140,7 @@ function Profile.migrate(raw: any): Profile
 	profile.coins = positiveNumber(raw.coins, 0)
 	profile.prestiges = positiveInteger(raw.prestiges, 0, 0)
 	profile.highestStage = positiveInteger(raw.highestStage, 0, 0)
+	profile.bestLevel = positiveInteger(raw.bestLevel, 0, 0)
 
 	copyNumberMap(raw.upgrades, profile.upgrades, true)
 

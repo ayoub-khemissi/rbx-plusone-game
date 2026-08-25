@@ -136,6 +136,19 @@ return table.freeze({
 		-- four and a half hours of uninterrupted running, which is the floor a free
 		-- player should meet.
 		exponent = 1.9,
+		--[[
+			What a level already reached costs to reach again, after a rebirth.
+
+			Nine tenths of a world's experience sits in the last tenth of its levels,
+			so without this a rebirth spends most of its cycle re-walking known
+			ground — twenty-five minutes of it by the seventh. At 8% the climb back
+			to level 200 takes under two minutes, and the minute after that buys ten
+			levels of genuinely new ground at full price.
+
+			It does not shorten a world: only the climb back is compressed, and a
+			world is made of new levels.
+		]]
+		knownDiscount = 0.08,
 	}),
 
 	-- The long loop. The requirement matches the last Stage: prestige is what you do

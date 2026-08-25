@@ -592,3 +592,55 @@ describe("RunOnTreadmill", function()
 		expect(container.useCases.runOnTreadmill:run(player, 3, 0).ok).toBe(false)
 	end)
 end)
+
+--[[
+	The climb back after a rebirth. Nine tenths of a world's experience sits in the
+	last tenth of its levels, so without a discount most of a cycle is spent
+	re-walking ground the player already covered.
+]]
+describe("Re-earning known ground", function()
+	it("remembers the highest level of the world", function()
+		local container = build()
+		local player, session = joined(container)
+
+		run(container, player, { x = 0, y = 5, z = 0 }, { x = 400, y = 5, z = 0 }, 10)
+
+		expect(session.profile.bestLevel).toBeGreaterThan(0)
+	end)
+
+	it("keeps the mark through a rebirth, which is the point of it", function()
+		local container = build()
+		local player, session = joined(container)
+		session.profile.speed = Config.Balance.prestige.baseRequirement
+		container.useCases.saveProfile:run(session.userId)
+
+		run(container, player, { x = 0, y = 5, z = 0 }, { x = 40, y = 5, z = 0 }, 10)
+		local mark = session.profile.bestLevel
+		expect(mark).toBeGreaterThan(1)
+
+		container.useCases.performPrestige:run(player)
+
+		expect(session.profile.speed).toBe(0)
+		expect(session.profile.bestLevel).toBe(mark)
+	end)
+
+	--[[
+		But NOT through a change of world. A world nobody has seen must cost what it
+		costs; carrying the mark across would discount ground never covered.
+	]]
+	it("clears the mark on the rebirth that opens the next world", function()
+		local container = build()
+		local player, session = joined(container)
+		local perWorld = Config.Balance.prestige.rebirthsPerWorld
+
+		session.profile.prestiges = perWorld - 1
+		session.profile.bestLevel = 180
+		session.profile.speed = Config.Balance.prestige.baseRequirement
+			* Config.Balance.prestige.requirementGrowth ^ (perWorld - 1)
+
+		container.useCases.performPrestige:run(player)
+
+		expect(session.profile.prestiges).toBe(perWorld)
+		expect(session.profile.bestLevel).toBe(0)
+	end)
+end)

@@ -48,7 +48,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 
 	local reachedStage = self.ladder:highestUnlocked(profile.speed)
 	local nextStage = self.ladder:nextOf(reachedStage)
-	local level = self.levels:progressFor(profile.speed)
+	local level = self.levels:progressFor(profile.speed, profile.bestLevel)
 
 	return {
 		-- Permanent progression
@@ -91,6 +91,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 
 		-- Rank. What the player reads; the Stage is what the map gates on.
 		level = level.level,
+		bestLevel = profile.bestLevel,
 		levelCurrent = level.current,
 		levelRequired = level.required,
 		levelProgress = level.ratio,

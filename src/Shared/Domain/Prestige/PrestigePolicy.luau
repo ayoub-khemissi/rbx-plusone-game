@@ -105,6 +105,17 @@ function PrestigePolicy.apply(self: PrestigePolicy, profile: Profile): Result
 	profile.prestiges += 1
 	profile.totals.prestiges += 1
 
+	--[[
+		The high-water mark survives a rebirth — that is the whole point of it — but
+		NOT a change of world. A world the player has never seen must cost what it
+		costs; carrying the mark across would hand them a discount on ground they
+		have not covered.
+	]]
+	local perWorld = self.tuning.rebirthsPerWorld
+	if perWorld and perWorld > 0 and profile.prestiges % perWorld == 0 then
+		profile.bestLevel = 0
+	end
+
 	if self.tuning.resetsUpgrades then
 		profile.upgrades = {}
 	end

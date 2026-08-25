@@ -83,7 +83,7 @@ end
 
 --[[ Movement state to apply to the character for the current profile. ]]
 function Progression.movementFor(self: Progression, profile: Profile, bonuses: any): MovementState
-	local level = self.levels:levelFor(profile.speed)
+	local level = self.levels:levelFor(profile.speed, profile.bestLevel)
 	local walkSpeed = self.curve:walkSpeedFor(level)
 	local dashPowerLevel = self.dashPolicy:powerLevelFor(bonuses)
 
@@ -117,6 +117,16 @@ function Progression.credit(self: Progression, profile: Profile, steps: number, 
 	profile.coins += coinsGained
 	profile.totals.coinsEarned += coinsGained
 	profile.totals.playtime += math.max(elapsed, 0)
+
+	--[[
+		The high-water mark of this world, raised here because this is the one place
+		experience is ever added. It survives a rebirth, and it is what makes the
+		climb back cheap: ground already covered is not walked twice at full price.
+	]]
+	local reached = self.levels:levelFor(profile.speed, profile.bestLevel)
+	if reached > (profile.bestLevel or 0) then
+		profile.bestLevel = reached
+	end
 
 	return { speedGained = speedGained, coinsGained = coinsGained }
 end
