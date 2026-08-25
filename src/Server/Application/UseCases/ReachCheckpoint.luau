@@ -12,7 +12,6 @@
 
 local Shared = require(script.Parent.Parent.Parent.Shared)
 local Result = require(Shared.Domain.Support.Result)
-local Format = require(Shared.Domain.Support.Format)
 
 local ReachCheckpoint = {}
 ReachCheckpoint.__index = ReachCheckpoint
@@ -46,11 +45,7 @@ function ReachCheckpoint.run(self, player, checkpoint)
 	end
 
 	if not self.ladder:isUnlocked(stageId, session.profile.speed) then
-		self.notifier:notify(
-			player,
-			`{Format.abbreviate(stage.requiredSpeed)} speed needed to enter {self.labels.stage.name} {stageId}.`,
-			"warning"
-		)
+		self.notifier:cue(player, "refused")
 		self.offers:trigger(session.profile, "gateBlocked", self.clock.now())
 		return Result.err(
 			"STAGE_LOCKED",
@@ -70,19 +65,10 @@ function ReachCheckpoint.run(self, player, checkpoint)
 	local discovered = self.progression:noteStage(session.profile, stageId)
 	self.publisher:publish(player, self.snapshots:build(session))
 
-	-- Crossing a checkpoint has to be VISIBLE. Without a message the player cannot
-	-- tell a working checkpoint from a decorative one, and neither could we.
-	if discovered then
-		self.notifier:notify(player, `{self.labels.stage.name} {stageId} reached!`, "success", "stageReached")
-	else
-		local label = self.labels and self.labels.checkpoint
-		self.notifier:notify(
-			player,
-			`{(label and label.icon) or "🏁"} {(label and label.name) or "Checkpoint"}`,
-			"info",
-			"checkpoint"
-		)
-	end
+	-- Crossing a checkpoint has to be NOTICED, which is not the same as read. A new
+	-- stage and a checkpoint already crossed are two different sounds, and the
+	-- player learns the difference once.
+	self.notifier:cue(player, if discovered then "stageReached" else "checkpoint")
 
 	return Result.ok({ stageId = stageId, discovered = discovered })
 end

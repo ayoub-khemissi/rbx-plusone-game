@@ -153,7 +153,7 @@ function RemoteBindings.bind(container, remotes)
 		if ok and typeof(passes) == "table" then
 			session.passes = passes
 			container.ports.publisher:publish(player, container.snapshots:build(session))
-			container.ports.notifier:notify(player, "Thanks! Your perk is live.", "success")
+			container.ports.notifier:cue(player, "reward")
 		end
 	end)
 

@@ -83,11 +83,12 @@ end
 function Fakes.notifier()
 	local fake = { messages = {} }
 
-	function fake:notify(playerRef, message: string, kind: string?, cue: string?)
-		table.insert(
-			self.messages,
-			{ player = playerRef, message = message, kind = kind or "info", cue = cue }
-		)
+	function fake:notify(playerRef, message: string, kind: string?)
+		table.insert(self.messages, { player = playerRef, message = message, kind = kind or "info" })
+	end
+
+	function fake:cue(playerRef, name: string)
+		table.insert(self.messages, { player = playerRef, cue = name })
 	end
 
 	function fake:lastMessage(): string?

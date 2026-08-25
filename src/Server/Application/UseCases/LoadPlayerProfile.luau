@@ -44,7 +44,7 @@ function LoadPlayerProfile.run(self, player)
 	self.publisher:publish(player, self.snapshots:build(session))
 
 	if not loaded then
-		self.notifier:notify(player, "Save unavailable: your progress will not be stored.", "error")
+		self.notifier:cue(player, "refused")
 		return Result.err("LOAD_FAILED", tostring(raw), session)
 	end
 

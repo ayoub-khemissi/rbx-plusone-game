@@ -3,7 +3,6 @@
 
 local Shared = require(script.Parent.Parent.Parent.Shared)
 local Result = require(Shared.Domain.Support.Result)
-local Format = require(Shared.Domain.Support.Format)
 
 local PerformPrestige = {}
 PerformPrestige.__index = PerformPrestige
@@ -20,31 +19,21 @@ function PerformPrestige.run(self, player)
 
 	local result = self.prestigePolicy:apply(session.profile)
 	if not result.ok then
-		local missing = result.value and result.value.missing or 0
-		self.notifier:notify(
-			player,
-			`{Format.abbreviate(missing)} more {self.labels.level.name} before your next {self.labels.prestige.name}.`,
-			"error"
-		)
+		self.notifier:cue(player, "refused")
 		return result
 	end
 
-	-- The course starts over too: keeping a deep checkpoint would skip it all.
+	-- The course starts over too: keeping a deep checkpoint would skip it all. The
+	-- CHARACTER does not move — a rebirth is taken standing on a pad the player
+	-- chose to step on, and snatching them to the hub for it takes the moment away
+	-- from them. The Speed is gone either way, so every gate ahead is shut again.
 	self.sessions:resetRun(session)
 
-	self.body:sendTo(player, self.hubPoint)
 	-- Played on the server, so the room sees it. A rebirth is the one moment in the
-	-- game whose whole point is being watched.
+	-- game whose whole point is being watched — which is another reason not to
+	-- teleport: the confetti should fall where the people are.
 	self.effects:celebrate(player, "rebirth")
 	self.publisher:publish(player, self.snapshots:build(session))
-	self.notifier:notify(
-		player,
-		`{self.labels.prestige.name} {result.value.prestiges}! All gains {Format.multiplier(
-			result.value.multiplier
-		)}`,
-		"success"
-	)
-
 	self.save:run(session.userId)
 	return result
 end

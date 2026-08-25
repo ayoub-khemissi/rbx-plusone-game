@@ -23,13 +23,19 @@ function ProcessReceipt.new(dependencies)
 	return setmetatable(table.clone(dependencies), ProcessReceipt)
 end
 
---[[ A server boost reaches everyone: that is what makes it a social purchase. ]]
-function ProcessReceipt._applyServerBoost(self, buyer, boost, now)
+--[[
+	A server boost reaches everyone: that is what makes it a social purchase.
+
+	The buyer is no longer named to the room. That was a toast, and toasts are gone
+	— worth knowing if this product ever stops selling, because being seen paying
+	for everybody was part of what it sold.
+]]
+function ProcessReceipt._applyServerBoost(self, boost, now)
 	self.sessions:forEach(function(session)
 		self.boosts:grant(session.profile, boost.id, boost.duration, now)
 		if session.player then
 			self.publisher:publish(session.player, self.snapshots:build(session))
-			self.notifier:notify(session.player, `🎉 {buyer.Name} started a Party for everyone!`, "success")
+			self.notifier:cue(session.player, "boost")
 		end
 	end)
 end
@@ -64,7 +70,7 @@ function ProcessReceipt.run(self, receiptInfo)
 		})
 
 		if product.grant.serverBoost and session.player then
-			self:_applyServerBoost(session.player, product.grant.serverBoost, now)
+			self:_applyServerBoost(product.grant.serverBoost, now)
 		end
 
 		self.offers:markPurchasedByProduct(session.profile, product.id)

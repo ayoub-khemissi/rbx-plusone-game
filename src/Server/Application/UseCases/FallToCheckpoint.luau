@@ -40,9 +40,8 @@ function FallToCheckpoint.run(self, player)
 
 	self.body:kill(player)
 
-	-- Silent message: a fall is loud enough on its own, and a toast on every miss
-	-- would nag. The cue is the whole point of the call.
-	self.notifier:notify(player, "", "info", "fall")
+	-- A fall is loud enough on its own: it is heard, never written.
+	self.notifier:cue(player, "fall")
 	self.publisher:publish(player, self.snapshots:build(session))
 
 	local destination = session.checkpoint or self.hubPoint

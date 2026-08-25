@@ -139,7 +139,8 @@ describe("ReachCheckpoint", function()
 
 		expect(result.code).toBe("STAGE_LOCKED")
 		expect(session.stageId).toBe(1)
-		expect(ports.notifier:lastMessage()).never.toBeNil()
+		-- Answered, not written: the player hears the refusal.
+		expect(ports.notifier:cues()[1]).toBe("refused")
 	end)
 
 	it("stays quiet when the same checkpoint is touched again", function()
@@ -433,7 +434,7 @@ describe("PerformPrestige", function()
 		expect(#ports.effects.celebrations).toBe(0)
 	end)
 
-	it("resets progress, grants the multiplier and sends the player home", function()
+	it("resets progress and grants the multiplier", function()
 		session.profile.speed = container.domain.prestigePolicy:requirementFor(0)
 
 		local result = container.useCases.performPrestige:run(player)
@@ -442,7 +443,18 @@ describe("PerformPrestige", function()
 		expect(session.profile.prestiges).toBe(1)
 		expect(session.profile.speed).toBe(0)
 		expect(session.checkpoint).toBeNil()
-		expect(ports.body.last).never.toBeNil()
+	end)
+
+	--[[
+		A rebirth is taken standing on a pad the player chose to step on, in front of
+		whoever is standing there with them. Snatching them to the hub for it takes
+		the moment away — and drops the confetti somewhere nobody is looking.
+	]]
+	it("leaves the player where they were standing", function()
+		session.profile.speed = container.domain.prestigePolicy:requirementFor(0)
+		container.useCases.performPrestige:run(player)
+
+		expect(ports.body.last).toBeNil()
 	end)
 end)
 
@@ -554,7 +566,7 @@ describe("Requirements", function()
 		expect(result.ok).toBe(false)
 		expect(result.code).toBe("LOCKED")
 		expect(session.profile.upgrades.dashPower).toBeNil()
-		expect(ports.notifier:lastMessage()).never.toBeNil()
+		expect(ports.notifier:cues()[1]).toBe("refused")
 	end)
 
 	-- And it must not be mistaken for a money problem: the player has plenty.

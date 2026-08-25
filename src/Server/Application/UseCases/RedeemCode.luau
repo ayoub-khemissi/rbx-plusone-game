@@ -19,7 +19,7 @@ function RedeemCode.run(self, player, rawCode)
 
 	local redemption = self.codes:redeem(session.profile, rawCode, self.clock.now())
 	if not redemption.ok then
-		self.notifier:notify(player, redemption.message or "Invalid code.", "error")
+		self.notifier:cue(player, "refused")
 		return redemption
 	end
 

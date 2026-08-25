@@ -32,8 +32,20 @@ export type StatsPublisher = {
 	The server never names a clip: which sound a moment makes, or whether it makes
 	one at all, is the client's business and a theme's to change.
 ]]
+--[[
+	Two different things, deliberately two calls.
+
+	`notify` puts words on the screen. `cue` names a moment that should be HEARD and
+	says nothing. They travelled together for a while — one call with an optional
+	cue — and the result was that everything worth a sound grew a toast to carry it,
+	until the screen was three messages deep and none of them was read.
+
+	The server names the moment, never the clip: which sound a cue makes is a client
+	decision.
+]]
 export type Notifier = {
-	notify: (self: Notifier, player: PlayerRef, message: string, kind: string?, cue: string?) -> (),
+	notify: (self: Notifier, player: PlayerRef, message: string, kind: string?) -> (),
+	cue: (self: Notifier, player: PlayerRef, name: string) -> (),
 }
 
 --[[ Applies the movement state (speed, jump, abilities) to the character. ]]

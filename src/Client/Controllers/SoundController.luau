@@ -14,9 +14,9 @@
 	    only ever means "the server accepted and charged you". Watching the Coin
 	    balance fall would fire on every price the shop merely displays;
 
-	  * a refusal plays on a notification of kind `error`, because a refusal is
-	    always announced. Guessing it from a balance that failed to move would
-	    catch every frame the player simply could not afford something;
+	  * a refusal plays on a cue the server sends, because a refusal is always
+	    answered. Guessing it from a balance that failed to move would catch every
+	    frame the player simply could not afford something;
 
 	  * a checkpoint and a fall play on a cue the SERVER names, since neither has
 	    a client-side signal worth trusting. The server names the moment, never the
@@ -29,11 +29,6 @@ local Sound = require(script.Parent.Parent.Sound)
 
 local SoundController = {}
 SoundController.__index = SoundController
-
-local KIND_CUES = {
-	error = "refused",
-	warning = "refused",
-}
 
 function SoundController.new(state, remotes)
 	local self = setmetatable({
@@ -65,11 +60,11 @@ function SoundController.new(state, remotes)
 		if typeof(payload) ~= "table" then
 			return
 		end
-		-- What the server named, if it named anything. The kind is only a fallback,
-		-- because "error" covers every refusal and nothing more precise.
-		local cue = payload.cue or KIND_CUES[payload.kind]
-		if cue then
-			Sound.play(cue)
+		-- Only what the server named. There is no fallback on the kind: a toast is
+		-- not a sound, and guessing one from the other is how every message on the
+		-- screen ended up making a noise.
+		if typeof(payload.cue) == "string" then
+			Sound.play(payload.cue)
 		end
 	end)
 

@@ -66,11 +66,11 @@ function RewardApplier.award(self, session, grant, options)
 	if session.player then
 		self.publisher:publish(session.player, self.snapshots:build(session))
 
+		-- Heard, not read. What was granted is already visible on the counters it
+		-- landed on, and a toast repeating it in words was one more thing covering
+		-- the course.
 		if options.silent ~= true then
-			local description = self:describe(summary)
-			local prefix = options.title or "Reward"
-			local message = if description ~= "" then `{prefix}: {description}` else prefix
-			self.notifier:notify(session.player, message, options.kind or "success", options.cue)
+			self.notifier:cue(session.player, options.cue or "reward")
 		end
 	end
 

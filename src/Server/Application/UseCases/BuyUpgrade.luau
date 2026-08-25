@@ -4,7 +4,6 @@
 local Shared = require(script.Parent.Parent.Parent.Shared)
 local Result = require(Shared.Domain.Support.Result)
 local Purchase = require(Shared.Domain.Economy.Purchase)
-local Format = require(Shared.Domain.Support.Format)
 
 local MESSAGES = {
 	UNKNOWN_UPGRADE = "That upgrade does not exist.",
@@ -37,16 +36,14 @@ function BuyUpgrade.run(self, player, upgradeId)
 	})
 
 	if not result.ok then
-		local template = MESSAGES[result.code or ""] or "Purchase failed."
-		local message = if result.code == "INSUFFICIENT_FUNDS"
-			then string.format(template, Format.abbreviate(result.value and result.value.missing or 0))
-			else template
-		self.notifier:notify(player, message, "error")
+		-- The reason travels in the Result, which is what the shop reads to grey a
+		-- row and explain itself in place. The player hears the refusal; they do not
+		-- need to be told about it twice.
+		self.notifier:cue(player, "refused")
 		return result
 	end
 
 	self.publisher:publish(player, self.snapshots:build(session))
-	self.notifier:notify(player, `{result.value.definition.name} level {result.value.level}!`, "success")
 
 	return result
 end
