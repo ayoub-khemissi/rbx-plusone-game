@@ -24,10 +24,15 @@
 	Both it and `coinMultiplier` must stay STRICTLY rising, which
 	Domain.Run.StageLadder verifies at start-up.
 
-	The levels are not guesses. They come from simulating uninterrupted play against
-	the curve in Balance: course 2 at eight minutes, course 6 at an hour and twenty,
-	course 10 at four and a half hours. Retuning the curve moves these, and the
-	config spec fails when they stop agreeing.
+	TWENTY LEVELS TO A STAGE, two hundred to a world. That regularity is the point:
+	a player always knows how far the next gate is, and every world is built to the
+	same ruler. Stage 10 opens at level 180 and the world tops out at 200, which is
+	also where the seventh rebirth lands — so the loop covers the whole world rather
+	than leaving the last stages for nobody.
+
+	`requiredSpeed` is `requiredLevel` read through the level curve in Balance.
+	Retuning that curve moves these, and the config spec fails when they stop
+	agreeing.
 ]]
 
 local StageLadder = require(script.Parent.Parent.Domain.Run.StageLadder)
@@ -36,15 +41,15 @@ type Stage = StageLadder.Stage
 
 local stages: { Stage } = {
 	{ id = 1, requiredLevel = 1, requiredSpeed = 0, coinMultiplier = 1 },
-	{ id = 2, requiredLevel = 12, requiredSpeed = 2246, coinMultiplier = 1.3 },
-	{ id = 3, requiredLevel = 22, requiredSpeed = 7106, coinMultiplier = 1.65 },
-	{ id = 4, requiredLevel = 31, requiredSpeed = 13633, coinMultiplier = 2.1 },
-	{ id = 5, requiredLevel = 43, requiredSpeed = 25387, coinMultiplier = 2.65 },
-	{ id = 6, requiredLevel = 56, requiredSpeed = 41936, coinMultiplier = 3.35 },
-	{ id = 7, requiredLevel = 70, requiredSpeed = 64079, coinMultiplier = 4.2 },
-	{ id = 8, requiredLevel = 87, requiredSpeed = 96853, coinMultiplier = 5.3 },
-	{ id = 9, requiredLevel = 108, requiredSpeed = 146061, coinMultiplier = 6.6 },
-	{ id = 10, requiredLevel = 131, requiredSpeed = 210787, coinMultiplier = 8.3 },
+	{ id = 2, requiredLevel = 20, requiredSpeed = 6106, coinMultiplier = 1.3 },
+	{ id = 3, requiredLevel = 40, requiredSpeed = 22791, coinMultiplier = 1.65 },
+	{ id = 4, requiredLevel = 60, requiredSpeed = 49244, coinMultiplier = 2.1 },
+	{ id = 5, requiredLevel = 80, requiredSpeed = 85062, coinMultiplier = 2.65 },
+	{ id = 6, requiredLevel = 100, requiredSpeed = 129977, coinMultiplier = 3.35 },
+	{ id = 7, requiredLevel = 120, requiredSpeed = 183785, coinMultiplier = 4.2 },
+	{ id = 8, requiredLevel = 140, requiredSpeed = 246326, coinMultiplier = 5.3 },
+	{ id = 9, requiredLevel = 160, requiredSpeed = 317464, coinMultiplier = 6.6 },
+	{ id = 10, requiredLevel = 180, requiredSpeed = 397086, coinMultiplier = 8.3 },
 }
 
 return table.freeze(stages)

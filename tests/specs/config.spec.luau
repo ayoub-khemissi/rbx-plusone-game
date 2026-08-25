@@ -228,6 +228,33 @@ describe("Config.Balance", function()
 	end)
 
 	--[[
+		And the LAST one lands on the top of the world. Without this the rebirth loop
+		tops out below the final stages and a player moves on having never seen them
+		— a third of a world nobody plays.
+	]]
+	it("reaches the top of the world on its last rebirth", function()
+		local policy = PrestigePolicy.new(Config.Balance.prestige)
+		local levels = LevelCurve.new(Config.Balance.level)
+		local perWorld = Config.Balance.prestige.rebirthsPerWorld
+		local lastStage = Config.Stages[#Config.Stages]
+
+		local final = policy:requirementFor(perWorld - 1)
+		expect(final).toBeGreaterThan(lastStage.requiredSpeed)
+		expect(levels:levelFor(final)).toBeGreaterThanOrEqual(lastStage.requiredLevel)
+	end)
+
+	--[[
+		A stage every twenty levels, two hundred to a world. The regularity is the
+		promise: a player always knows how far the next gate is, and every world is
+		built to the same ruler.
+	]]
+	it("spaces the stages evenly across a world", function()
+		for index = 2, #Config.Stages do
+			expect(Config.Stages[index].requiredLevel).toBe((index - 1) * 20)
+		end
+	end)
+
+	--[[
 		The ladder is CONTINUOUS: nothing about it restarts at a world boundary. What
 		keeps it climbable is that the multiplier compounds alongside it, a little
 		more slowly, so a rebirth becomes a bigger decision by degrees rather than
@@ -240,11 +267,18 @@ describe("Config.Balance", function()
 		expect(policy:requirementFor(perWorld)).toBeGreaterThan(policy:requirementFor(perWorld - 1))
 		expect(policy:multiplierFor(perWorld)).toBeGreaterThan(policy:multiplierFor(perWorld - 1))
 
-		-- The gap between the two widens, but slowly enough to stay walkable: a
-		-- rebirth deep in the game must not cost hours more than the one before it.
+		--[[
+			The two must climb at THE SAME RATE. A continuous ladder is only
+			self-similar across worlds if they do: let the requirement outpace the
+			multiplier and every world takes longer than the last by the same factor,
+			forever, until the ladder is a wall. This is the assertion that caught
+			exactly that.
+		]]
 		local early = policy:requirementFor(1) / policy:multiplierFor(1)
 		local late = policy:requirementFor(30) / policy:multiplierFor(30)
-		expect(late / early).toBeLessThan(3)
+		-- Loose, because requirementFor floors to whole experience and thirty
+		-- rebirths of rounding is not a design drift.
+		expect(late / early).toBeCloseTo(1, 0.001)
 	end)
 end)
 

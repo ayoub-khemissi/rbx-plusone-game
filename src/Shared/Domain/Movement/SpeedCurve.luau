@@ -23,6 +23,8 @@ export type Tuning = {
 	baseWalkSpeed: number,
 	maxBonusWalkSpeed: number,
 	softness: number,
+	-- A hard stop past the top of a world. See walkSpeedFor.
+	maxWalkSpeed: number?,
 	baseJumpPower: number,
 	jumpPowerPerLevel: number,
 	maxJumpPower: number,
@@ -50,8 +52,17 @@ function SpeedCurve.saturationFor(self: SpeedCurve, level: number): number
 	return 1 - math.exp(-gained / self.tuning.softness)
 end
 
+--[[
+	The walk speed a level is worth.
+
+	An exponential approaches its ceiling and never arrives, so the shape alone
+	cannot promise a top speed at a given level. The curve is therefore aimed at the
+	tested maximum for the LAST level of a world, and clamped there — the clamp only
+	bites past that level, which is where a world ends anyway.
+]]
 function SpeedCurve.walkSpeedFor(self: SpeedCurve, level: number): number
-	return self.tuning.baseWalkSpeed + self.tuning.maxBonusWalkSpeed * self:saturationFor(level)
+	local speed = self.tuning.baseWalkSpeed + self.tuning.maxBonusWalkSpeed * self:saturationFor(level)
+	return math.min(speed, self.tuning.maxWalkSpeed or math.huge)
 end
 
 function SpeedCurve.jumpPowerFor(self: SpeedCurve, jumpLevel: number): number

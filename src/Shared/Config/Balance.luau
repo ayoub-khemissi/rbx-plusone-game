@@ -14,11 +14,12 @@ return table.freeze({
 	-- Level -> actual walk speed
 	speedCurve = table.freeze({
 		baseWalkSpeed = 16, -- Roblox default, and the speed the first jump was designed around
-		-- Ceiling at 120 studs/s, which is 2 studs between two frames: platforms
-		-- thinner than that can be skipped, and anything built at 4 studs or more is
-		-- safe. It sits high on purpose — a world of ten courses needs the speed to
-		-- keep climbing all the way through, or the last five play like the fifth.
-		maxBonusWalkSpeed = 104,
+		-- 119 studs/s at level 200, which is the top of a world and the speed that
+		-- was play-tested as the fastest worth having. That is 2 studs between two
+		-- frames, so anything built at 4 studs or more is safe from being skipped.
+		-- `maxBonusWalkSpeed` is the asymptote of the shape, not a target: the curve
+		-- is aimed at 119 by level 200 and clamped there.
+		maxBonusWalkSpeed = 200,
 		--[[
 			In LEVELS, not in speed, and the one number that decides how fast the
 			game gets fast. Lower bites harder.
@@ -30,7 +31,9 @@ return table.freeze({
 			still climbing there, which is what keeps the last courses different
 			from the middle ones.
 		]]
-		softness = 155,
+		softness = 275,
+		-- Play-tested: the fastest the character should ever run.
+		maxWalkSpeed = 119,
 		baseJumpPower = 50,
 		jumpPowerPerLevel = 2.5,
 		maxJumpPower = 140,
@@ -127,11 +130,11 @@ return table.freeze({
 		lays out; retuning this changes how progress READS, never what it pays.
 	]]
 	level = table.freeze({
-		base = 20,
-		-- 1.9 rather than 1.7: the exponent is what decides how long a world takes.
-		-- At 1.7 the tenth course fell at forty minutes; at 1.9 it lands at four and
-		-- a half hours of uninterrupted running, which is the floor a free player
-		-- should meet.
+		base = 20.6,
+		-- The exponent decides how long a world takes; the base places level 200 at
+		-- the experience seven rebirths add up to. Together they put a world at
+		-- four and a half hours of uninterrupted running, which is the floor a free
+		-- player should meet.
 		exponent = 1.9,
 	}),
 
@@ -143,22 +146,25 @@ return table.freeze({
 		whole game; a world is a stretch of that climb, entered once seven have been
 		taken.
 
-		Both compound. The requirement climbs a little faster than the multiplier —
-		1.33 against 1.30 — so a rebirth becomes a slightly bigger decision each
-		time, but only slightly: a gap that widens quickly turns a long loop into a
-		wall within a dozen cycles.
+		THE TWO GROW AT THE SAME RATE, and they have to. A continuous ladder is only
+		self-similar across worlds if the requirement and the multiplier climb
+		together: let the requirement outpace it and every world takes longer than
+		the last, by the same factor, forever. At 1.6 apiece every world is 4.6
+		hours, exactly.
 
-		Within a world the cycles get SHORTER, from 45 down to 34 minutes, because
-		the character keeps getting faster as it climbs. Entering the next world puts
-		it back at the bottom of a bigger scale, and the rhythm starts over.
+		Each cycle still reaches further than the one before — level 45 on the first,
+		200 on the seventh — because the character keeps getting faster as it climbs.
+		The seventh lands exactly on the top of the world, so the loop covers all ten
+		stages rather than leaving the last ones for nobody. Cycles shorten as they
+		go, 58 minutes down to 24.
 
 		Solved by simulating real play against the speed curve, since the earn rate
 		feeds back into itself. The config spec re-runs that simulation.
 	]]
 	prestige = table.freeze({
-		baseRequirement = 19800,
-		requirementGrowth = 1.33,
-		multiplierGrowth = 1.3,
+		baseRequirement = 28913,
+		requirementGrowth = 1.6,
+		multiplierGrowth = 1.6,
 		rebirthsPerWorld = 7,
 		resetsUpgrades = true,
 		keptCoinRatio = 0,

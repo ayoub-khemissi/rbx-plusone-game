@@ -34,7 +34,7 @@ export type World = {
 
 --[[
 	Seven rebirths open the next one, and a world's scale is the multiplier a player
-	holds when they arrive: 1.3 to the power of the rebirths behind them. That is
+	holds when they arrive: 1.6 to the power of the rebirths behind them. That is
 	what makes a world absorb exactly what the player gained rather than being
 	cleared faster by it, so every world lasts about as long as the last.
 
@@ -44,10 +44,10 @@ export type World = {
 ]]
 local worlds: { World } = {
 	{ id = 1, name = "World 1", scale = 1 },
-	{ id = 2, name = "World 2", scale = 6.27, requires = { { kind = "prestiges", value = 7 } } },
-	{ id = 3, name = "World 3", scale = 39.37, requires = { { kind = "prestiges", value = 14 } } },
-	{ id = 4, name = "World 4", scale = 247.06, requires = { { kind = "prestiges", value = 21 } } },
-	{ id = 5, name = "World 5", scale = 1550.29, requires = { { kind = "prestiges", value = 28 } } },
+	{ id = 2, name = "World 2", scale = 26.84, requires = { { kind = "prestiges", value = 7 } } },
+	{ id = 3, name = "World 3", scale = 720.58, requires = { { kind = "prestiges", value = 14 } } },
+	{ id = 4, name = "World 4", scale = 19342.81, requires = { { kind = "prestiges", value = 21 } } },
+	{ id = 5, name = "World 5", scale = 519229.69, requires = { { kind = "prestiges", value = 28 } } },
 }
 
 return table.freeze(worlds)
