@@ -37,9 +37,13 @@ end
 	that changes an element's footprint will eventually collide with something,
 	because the layout was measured for the element, not for the effect.
 
-	So it lights instead. The fill lifts towards white, the outline brightens to a
-	rim, and neither occupies a single pixel more than before — which means it is
-	safe on anything, in any layout, forever.
+	So it lights instead. The fill lifts towards white and the dark edge turns gold —
+	neither occupies a single pixel more than before, which makes it safe on anything,
+	in any layout, forever.
+
+	The gold is spent ONLY there. A button outlined in it at rest would be a call to
+	action, and a screen of them is a screen with none; on the one under the pointer
+	it says "this one" and costs the interface nothing the rest of the time.
 
 	The press darkens, by hand rather than through AutoButtonColor: that property
 	dims on hover as well, and would spend its time cancelling the lift.
@@ -368,7 +372,7 @@ function Widgets.button(parent: Instance, options): TextButton
 	]]
 	button:SetAttribute("RestingColor", button.BackgroundColor3)
 
-	local rim = Widgets.stroke(button, options.edge or Theme.color.buttonEdge, Theme.stroke.button)
+	local rim = Widgets.stroke(button, options.edge or Theme.color.panelEdge, Theme.stroke.button)
 	local edge = rim.Color
 	button:SetAttribute("RestingEdge", edge)
 	local hovered, pressed = false, false
@@ -388,7 +392,7 @@ function Widgets.button(parent: Instance, options): TextButton
 
 		TweenService:Create(button, HOVER_TWEEN, { BackgroundColor3 = target }):Play()
 		TweenService:Create(rim, HOVER_TWEEN, {
-			Color = if hovered then lift(edge, 0.55) else edge,
+			Color = if hovered then Theme.color.hoverEdge else edge,
 		}):Play()
 	end
 

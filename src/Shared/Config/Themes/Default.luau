@@ -102,19 +102,18 @@ local theme: Theme = {
 		outline = { 20, 22, 34 },
 
 		--[[
-			The rim around a BUTTON, and the one place the interface wears gold on
-			purpose.
+			The rim a button wears WHILE THE POINTER IS ON IT, and nothing else in the
+			game wears at all.
 
-			Panels keep the dark edge: they are large, pale and full of text, and a
-			bright outline around one would frame the reading rather than the card.
-			A button is small, saturated and meant to be pressed — a warm rim lifts
-			it off the panel where the dark edge only sank it into the outline of
-			everything else.
+			At rest every button keeps the dark edge, like every card and chip: a
+			screen where all of them are outlined in gold is a screen with a dozen
+			calls to action and therefore none. Spending the colour on the one under
+			the pointer is what makes it mean "this one".
 
-			It is a lighter gold than `accent`, which is the Coin colour: near it,
-			not the same as it.
+			A lighter gold than `accent`, which is the Coin colour: near it, not the
+			same as it.
 		]]
-		buttonEdge = { 250, 208, 82 },
+		hoverEdge = { 250, 208, 82 },
 		text = { 52, 56, 78 },
 		textMuted = { 122, 128, 150 },
 		textOnColor = { 255, 255, 255 },
