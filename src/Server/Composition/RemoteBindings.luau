@@ -14,7 +14,9 @@ local Players = game:GetService("Players")
 local RemoteBindings = {}
 
 -- Hard ceiling on the magnet, whatever the client claims to own.
-local MAX_MAGNET_RANGE = 90
+-- The furthest a Coin may be claimed from. Well past the Magnet's own reach: this
+-- is the wall that stops a client claiming across the map, not the game rule.
+local MAX_PICKUP_RANGE = 90
 
 local function distanceToPlayer(player: Player, part: BasePart): number
 	local character = player.Character
@@ -74,37 +76,33 @@ function RemoteBindings.bind(container, remotes)
 		end
 	end)
 
-	-- Coin magnet: the client points at a coin, the server checks the tag and the
-	-- distance before paying anything.
+	--[[
+		A Coin the client says it reached. The client owns what a pickup LOOKS like —
+		see MapBindings — and the server owns whether it happened: the tag, the
+		distance, and the player's own field, which is what stops the same Coin
+		paying twice.
+
+		The answer goes back on the same remote, carrying the Coin and what it was
+		actually worth after the multipliers. Sending the part back rather than the
+		amount alone lets the client match the answer to the Coin still flying
+		towards it, with no bookkeeping on either side.
+	]]
 	events.CollectCoin.OnServerEvent:Connect(function(player, part)
 		if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
 			return
 		end
-		if not CollectionService:HasTag(part, "Coin") or not part.CanTouch then
+		if not CollectionService:HasTag(part, "Coin") then
 			return
 		end
-		if distanceToPlayer(player, part) > MAX_MAGNET_RANGE then
+		if distanceToPlayer(player, part) > MAX_PICKUP_RANGE then
 			return
 		end
 
 		local value = part:GetAttribute("Value") or container.config.Balance.run.coinValue
-		local result = useCases.collectCoin:run(player, value)
-
-		-- Answered on the same remote, the other way round: the client asked whether
-		-- it could have this coin, and this is what it was actually worth after the
-		-- multipliers. It is the only place that number exists.
+		local result = useCases.collectCoin:run(player, value, part)
 		if result.ok then
-			events.CollectCoin:FireClient(player, result.value.granted)
+			events.CollectCoin:FireClient(player, part, result.value.granted)
 		end
-
-		part.Transparency = 1
-		part.CanTouch = false
-		task.delay(container.config.Balance.run.coinRespawn, function()
-			if part.Parent then
-				part.Transparency = 0
-				part.CanTouch = true
-			end
-		end)
 	end)
 
 	functions.GetOffers.OnServerInvoke = function(player)

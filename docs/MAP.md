@@ -20,7 +20,7 @@ tags count.
 | `TrapPart` *(or `Killzone`)* | Part or Model | Sends the player back to their last checkpoint |
 | `Conveyor` | Part | Conveyor belt: pushes along the front face |
 | `BouncePad` | Part | Trampoline: launches the player upwards |
-| `Coin` | Part | Grants Coins, disappears, comes back |
+| `Coin` | Part | Drawn in and collected, per player, back after 30 s |
 | `SpeedGate` | Solid part | Blocks while the player's Speed is too low |
 | `FinishPad` | Part | Ends a course: pays out and sends the player to the lobby |
 | `ShopPad` | Part | Opens the shop |
@@ -90,18 +90,31 @@ arrive falling or rising.
 | --- | --- | --- | --- |
 | `Value` | number | no | Raw value. Without it, the configured default applies |
 
-A Coin disappears when collected and comes back after a delay set in the
-configuration. Add a visual model if you like: tag **the detection part**, not the
-decoration.
+A Coin is a **marker**. Tag the detection part, not the decoration, and place it
+where a runner will pass; everything else is done for you.
 
 `Value` is the raw value. What the player receives is that value multiplied by the
 Stage they are standing in and by everything they have earned, and the amount thrown
 off the character is the multiplied one — the only number that means anything to
 them.
 
-The server forces a Coin anchored and non-colliding: a coin is run through, not into.
-The turning is done by each client, so it costs nothing on the wire; a Coin built as
-a Model turns around its pivot, so place the pivot at the centre of the disc.
+**Every player has their own Coins.** Nothing that happens to a Coin is replicated:
+each client turns it, draws it in, hides it and brings it back on their own machine.
+A course swept clean by whoever ran it a minute ago is still full for the next
+player, and two friends running it together are never racing for the same pickup.
+
+A Coin comes back **thirty seconds** after it was taken, or **as soon as the player
+respawns** — a fall costs the run, not the money left on it. Both delays live in
+`Balance.run`.
+
+The server forces a Coin anchored, non-colliding and untouchable: a Coin is run
+through, not into, and it is the client that decides when the player reached it. It
+is collected from `Balance.run.coinReach` studs away, plus whatever the Magnet
+upgrade adds — the flight towards the player is that radius made visible.
+
+Cost follows what is on screen: Coins further than 200 studs are not touched at all,
+and the ones nearer are only measured a few times a second. A map may hold hundreds
+of them.
 
 ### `SpeedGate`
 

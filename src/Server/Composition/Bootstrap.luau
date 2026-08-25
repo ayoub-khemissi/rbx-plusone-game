@@ -17,6 +17,7 @@ local RunService = game:GetService("RunService")
 local Shared = require(script.Parent.Parent.Shared)
 local Config = require(Shared.Config)
 local Net = require(Shared.Net)
+local CoinField = require(Shared.Domain.Run.CoinField)
 
 local Container = require(script.Parent.Container)
 local AdaptersFactory = require(script.Parent.Adapters)
@@ -156,13 +157,15 @@ local function bindPlayers(container)
 			container.ports.logger:warn(`Loading the profile of {player.Name}: {result.code}`)
 		end
 
-		-- A fresh character is standing on solid ground: refill the air jumps and
-		-- forget the last sampled position, which belonged to the previous body.
+		-- A fresh character is standing on solid ground: refill the air jumps, forget
+		-- the last sampled position, which belonged to the previous body, and put
+		-- every Coin back — a fall costs the run, not the money on it.
 		player.CharacterAdded:Connect(function()
 			local session = container.sessions:forPlayer(player)
 			if session then
 				session.lastPosition = nil
 				session.lastSampleAt = nil
+				CoinField.clear(session.coins)
 				container.useCases.noteLanded:run(player)
 			end
 		end)

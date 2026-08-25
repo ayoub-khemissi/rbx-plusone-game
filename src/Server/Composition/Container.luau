@@ -264,7 +264,7 @@ function Container.new(options: Options)
 		requestJump = RequestJump.new(deps()),
 		noteLanded = NoteLanded.new(deps()),
 		requestDash = RequestDash.new(deps()),
-		collectCoin = CollectCoin.new(deps()),
+		collectCoin = CollectCoin.new(deps({ tuning = balance.run })),
 		performPrestige = PerformPrestige.new(deps({ save = saveProfile })),
 
 		buyUpgrade = BuyUpgrade.new(deps()),

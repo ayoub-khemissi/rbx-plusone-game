@@ -151,39 +151,26 @@ function MapBindings.bind(container)
 		end
 	end)
 
+	--[[
+		A Coin is a MARKER, and everything the player sees of it happens on their own
+		machine: the turning, the draw towards them, the disappearance, the thirty
+		seconds before it comes back.
+
+		That is not an optimisation, it is the rule. Coins are counted per player, so
+		a course swept by whoever ran it a minute ago still pays the next player, and
+		two friends running together are not racing for the same pickup. A server
+		that hid the part would hide it from everyone at once.
+
+		So no Touched here: the client says which Coin it reached and the server
+		checks the tag, the distance and the player's own field before paying. It
+		still forces the part anchored and untouchable — a Coin is run through, not
+		into, and a solid one blocks the course.
+	]]
 	onTagged(TAGS.coin, function(instance)
 		for _, part in partsOf(instance) do
-			local value = part:GetAttribute("Value")
-			if typeof(value) ~= "number" then
-				value = settings.coinValue
-			end
-
-			-- A coin is something you run through, not into. Forced here rather than
-			-- asked of the map: a solid coin blocks the course, and the mistake is
-			-- invisible until somebody bounces off one mid-jump.
 			part.CanCollide = false
+			part.CanTouch = false
 			part.Anchored = true
-
-			part.Touched:Connect(function(hit)
-				local player = playerFromTouch(hit)
-				if not player or not part.CanTouch then
-					return
-				end
-
-				local result = useCases.collectCoin:run(player, value)
-				if result.ok then
-					container.remotes.events.CollectCoin:FireClient(player, result.value.granted)
-				end
-
-				part.Transparency = 1
-				part.CanTouch = false
-				task.delay(settings.coinRespawn, function()
-					if part.Parent then
-						part.Transparency = 0
-						part.CanTouch = true
-					end
-				end)
-			end)
 		end
 	end)
 

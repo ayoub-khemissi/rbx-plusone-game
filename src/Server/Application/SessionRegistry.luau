@@ -4,7 +4,8 @@
 
 	A session bridges a Roblox player and their domain profile. It also carries
 	everything that must NOT be persisted: the checkpoint they will come back to, the
-	air jumps already spent, the dash cooldown.
+	air jumps already spent, the dash cooldown, the Coins already swept off the
+	course.
 
 	That separation is deliberate. Nothing about a run should survive a reconnection:
 	a save is about progress, never about where you were standing.
@@ -13,6 +14,7 @@
 local Shared = require(script.Parent.Parent.Shared)
 local JumpBudget = require(Shared.Domain.Movement.JumpBudget)
 local DashPolicy = require(Shared.Domain.Movement.DashPolicy)
+local CoinField = require(Shared.Domain.Run.CoinField)
 
 local Ports = require(script.Parent.Ports)
 
@@ -34,6 +36,7 @@ export type Session = {
 	lastSampleAt: number?,
 	jumps: JumpBudget.State,
 	dash: DashPolicy.State,
+	coins: CoinField.State,
 }
 
 local SessionRegistry = {}
@@ -68,6 +71,7 @@ function SessionRegistry.open(
 		lastSampleAt = nil,
 		jumps = JumpBudget.newState(),
 		dash = DashPolicy.newState(),
+		coins = CoinField.newState(),
 	}
 
 	if self._sessions[userId] == nil then
@@ -85,6 +89,7 @@ function SessionRegistry.resetRun(_self: SessionRegistry, session: Session)
 	session.lastSampleAt = nil
 	session.jumps = JumpBudget.newState()
 	session.dash = DashPolicy.newState()
+	CoinField.clear(session.coins)
 end
 
 function SessionRegistry.get(self: SessionRegistry, userId: number): Session?

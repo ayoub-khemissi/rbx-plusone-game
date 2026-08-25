@@ -137,9 +137,9 @@ function Sandbox.build()
 	end
 
 	--[[
-		A row of coins to walk through. They are worth what the map does not say, so
-		they take the value from Balance, which is what a builder gets by dropping a
-		tagged part with no attributes.
+		A row of Coins to run along. They carry no `Value`, so they are worth what
+		Balance says — which is what a builder gets from dropping a tagged part and
+		setting nothing.
 	]]
 	for index = 1, 8 do
 		-- A cylinder's axis runs along X, so a thin X makes a disc standing on edge:

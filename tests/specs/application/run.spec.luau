@@ -50,7 +50,7 @@ describe("SampleMovement", function()
 		expect(session.profile.speed).toBe(0)
 	end)
 
-	-- Courir credite tout de suite et definitivement : une chute ne reprend rien.
+	-- Running credits at once and for good: a fall takes nothing back.
 	it("credits speed and coins straight to the profile", function()
 		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
 
@@ -304,6 +304,48 @@ describe("CollectCoin", function()
 		expect(result.value.granted).toBeCloseTo(120, 1e-9)
 		expect(session.profile.coins).toBeCloseTo(120, 1e-9)
 		expect(ports.publisher.last.coins).toBeCloseTo(120, 1e-9)
+	end)
+
+	--[[
+		The client claims a coin the moment it comes within reach and claims it again
+		on the next tick, while the first answer is still travelling. Without the
+		field, a coin pays for every tick it spends flying towards the player.
+	]]
+	it("pays a coin once until it has come back", function()
+		local container, ports = build()
+		local player = joined(container)
+		local coin = "coin-a"
+
+		expect(container.useCases.collectCoin:run(player, 100, coin).ok).toBe(true)
+		expect(container.useCases.collectCoin:run(player, 100, coin).code).toBe("COIN_TAKEN")
+
+		ports.clock.advance(Config.Balance.run.coinRespawn)
+		expect(container.useCases.collectCoin:run(player, 100, coin).ok).toBe(true)
+	end)
+
+	--[[
+		The whole reason coins are counted per player: a course somebody swept a
+		minute ago still pays the next runner, and two friends running together are
+		not racing for the same pickup.
+	]]
+	it("keeps one player's field out of another's", function()
+		local container = build()
+		local first = joined(container, 1)
+		local second = joined(container, 2)
+
+		container.useCases.collectCoin:run(first, 100, "coin-a")
+		expect(container.useCases.collectCoin:run(second, 100, "coin-a").ok).toBe(true)
+	end)
+
+	-- A fall costs the run, not the money left on it.
+	it("puts the whole course back for a new body", function()
+		local container = build()
+		local player, session = joined(container)
+
+		container.useCases.collectCoin:run(player, 100, "coin-a")
+		container.sessions:resetRun(session)
+
+		expect(container.useCases.collectCoin:run(player, 100, "coin-a").ok).toBe(true)
 	end)
 
 	it("uses the stage multiplier of the checkpoint the player is on", function()
