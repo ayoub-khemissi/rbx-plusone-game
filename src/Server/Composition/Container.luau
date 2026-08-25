@@ -14,6 +14,7 @@ local Shared = require(script.Parent.Parent.Shared)
 
 local UpgradeCatalog = require(Shared.Domain.Economy.UpgradeCatalog)
 local World = require(Shared.Domain.Run.World)
+local CourseReward = require(Shared.Domain.Run.CourseReward)
 local SpeedCurve = require(Shared.Domain.Movement.SpeedCurve)
 local MovementAccounting = require(Shared.Domain.Movement.MovementAccounting)
 local JumpBudget = require(Shared.Domain.Movement.JumpBudget)
@@ -41,6 +42,7 @@ local ReleasePlayer = require(UseCases.ReleasePlayer)
 local SampleMovement = require(UseCases.SampleMovement)
 local ReachCheckpoint = require(UseCases.ReachCheckpoint)
 local FallToCheckpoint = require(UseCases.FallToCheckpoint)
+local FinishCourse = require(UseCases.FinishCourse)
 local RequestJump = require(UseCases.RequestJump)
 local NoteLanded = require(UseCases.NoteLanded)
 local RequestDash = require(UseCases.RequestDash)
@@ -136,6 +138,7 @@ function Container.new(options: Options)
 
 	-- The first world's readings are the defaults, for anything not yet per-world.
 	local firstWorld = worlds:get(config.Worlds[1].id)
+	local courseRewards = CourseReward.new(balance.course)
 	local ladder = firstWorld.ladder
 	local levels = firstWorld.levels
 	local curve = SpeedCurve.new(balance.speedCurve)
@@ -171,6 +174,7 @@ function Container.new(options: Options)
 		ladder = ladder,
 		levels = levels,
 		worlds = worlds,
+		courseRewards = courseRewards,
 		curve = curve,
 		accounting = accounting,
 		jumpBudget = jumpBudget,
@@ -259,6 +263,7 @@ function Container.new(options: Options)
 		sampleMovement = SampleMovement.new(deps()),
 		reachCheckpoint = ReachCheckpoint.new(deps()),
 		fallToCheckpoint = FallToCheckpoint.new(deps()),
+		finishCourse = FinishCourse.new(deps(withRewards)),
 		requestJump = RequestJump.new(deps()),
 		noteLanded = NoteLanded.new(deps()),
 		requestDash = RequestDash.new(deps()),

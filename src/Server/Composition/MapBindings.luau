@@ -31,6 +31,7 @@ MapBindings.TAGS = {
 	shopPad = "ShopPad",
 	prestigePad = "PrestigePad",
 	idlePad = "AfkPad",
+	finishPad = "FinishPad",
 }
 
 local FALL_GRACE_FALLBACK = 1
@@ -235,6 +236,29 @@ function MapBindings.bind(container)
 			useCases.performPrestige:run(player)
 		end)
 	)
+
+	--[[
+		The plate at the end of a course. It reads its own StageId, because the plate
+		is what says a course was CLEARED — a checkpoint only says the player walked
+		in. A plate with no id names no course and is ignored with a warning rather
+		than paying out the wrong one.
+	]]
+	onTagged(TAGS.finishPad, function(instance)
+		local stageId = instance:GetAttribute("StageId")
+		if typeof(stageId) ~= "number" then
+			logger:warn(`A {TAGS.finishPad} has no StageId and will pay nothing: {instance:GetFullName()}`)
+			return
+		end
+
+		for _, part in partsOf(instance) do
+			part.Touched:Connect(function(hit)
+				local player = playerFromTouch(hit)
+				if player and cooled(lastPad, player, PAD_COOLDOWN) then
+					useCases.finishCourse:run(player, stageId)
+				end
+			end)
+		end
+	end)
 
 	-- The idle pad is polled by the sampling loop rather than wired to Touched:
 	-- standing still on a part does not keep firing Touched events.

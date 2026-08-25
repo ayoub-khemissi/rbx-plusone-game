@@ -91,6 +91,24 @@ return table.freeze({
 		cooldown = 2, -- seconds; a dash is a decision, not a resource to dump
 	}),
 
+	--[[
+		What the plate at the end of a course pays.
+
+		`share` is taken from what the NEXT course costs to enter, so the reward
+		scales with the game on its own. It is deliberately modest — roughly what
+		running the course pays anyway — because a plate that beats running turns a
+		platformer into a queue. What makes it worth touching is the Coins and the
+		ride back to the lobby.
+
+		`minimum` exists for the first course, which has almost nothing behind it: a
+		reward of forty would teach a new player that the plate is not worth using.
+	]]
+	course = table.freeze({
+		share = 0.02,
+		minimum = 300,
+		coinsPerSpeed = 0.5,
+	}),
+
 	-- Steps to resources
 	progression = table.freeze({
 		speedPerStep = 1,

@@ -472,3 +472,57 @@ describe("Requirements", function()
 		expect(session.profile.upgrades.dashPower).toBe(1)
 	end)
 end)
+
+describe("FinishCourse", function()
+	local container, ports, player, session
+	beforeEach(function()
+		container, ports = build()
+		player, session = joined(container)
+	end)
+
+	it("pays the course and sends the player home", function()
+		local before = session.profile.speed
+		local result = container.useCases.finishCourse:run(player, 2)
+
+		expect(result.ok).toBe(true)
+		expect(session.profile.speed).toBeGreaterThan(before)
+		expect(session.profile.coins).toBeGreaterThan(0)
+		expect(ports.teleporter.last).never.toBeNil()
+	end)
+
+	--[[
+		The plate is what says a course was CLEARED. A checkpoint only says the
+		player walked in, which is why the deepest course reached is recorded here
+		and nowhere else.
+	]]
+	it("records the course as the deepest one cleared", function()
+		container.useCases.finishCourse:run(player, 4)
+		expect(session.profile.highestStage).toBe(4)
+	end)
+
+	it("never lowers the deepest course on an easier one", function()
+		container.useCases.finishCourse:run(player, 4)
+		container.useCases.finishCourse:run(player, 2)
+		expect(session.profile.highestStage).toBe(4)
+	end)
+
+	--[[
+		The ride home must not be read as distance run. Forgetting this pays the
+		player for the length of the course they just skipped backwards.
+	]]
+	it("does not credit the trip back as running", function()
+		container.useCases.finishCourse:run(player, 3)
+		expect(session.lastPosition).toBeNil()
+	end)
+
+	it("pays a deeper course better", function()
+		local first = container.useCases.finishCourse:run(player, 1).value.reward.speed
+		local last = container.useCases.finishCourse:run(player, #Config.Stages).value.reward.speed
+		expect(last).toBeGreaterThan(first)
+	end)
+
+	it("refuses a plate that names no course", function()
+		expect(container.useCases.finishCourse:run(player, nil).code).toBe("BAD_COURSE")
+		expect(container.useCases.finishCourse:run(player, 99).code).toBe("BAD_COURSE")
+	end)
+end)

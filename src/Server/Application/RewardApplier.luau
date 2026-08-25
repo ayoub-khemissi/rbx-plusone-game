@@ -70,7 +70,7 @@ function RewardApplier.award(self, session, grant, options)
 			local description = self:describe(summary)
 			local prefix = options.title or "Reward"
 			local message = if description ~= "" then `{prefix}: {description}` else prefix
-			self.notifier:notify(session.player, message, options.kind or "success")
+			self.notifier:notify(session.player, message, options.kind or "success", options.cue)
 		end
 	end
 

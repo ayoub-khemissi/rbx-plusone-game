@@ -22,6 +22,7 @@ tags count.
 | `BouncePad` | Part | Trampoline: launches the player upwards |
 | `Coin` | Part | Grants Coins, disappears, comes back |
 | `SpeedGate` | Solid part | Blocks while the player's Speed is too low |
+| `FinishPad` | Part | Ends a course: pays out and sends the player to the lobby |
 | `ShopPad` | Part | Opens the shop |
 | `PrestigePad` | Part | Triggers a Prestige |
 | `AfkPad` | Part | Passive income area |
@@ -106,6 +107,26 @@ enough.
 Leave it `CanCollide = true`. The client makes it **locally passable** as soon as the
 player has the required speed, and the server checks again on its side: there is no
 way through by cheating.
+
+### `FinishPad`
+
+The plate at the end of a course. Touching it pays what the course is worth and
+returns the player to the lobby.
+
+| Attribute | Type | Required | Role |
+| --- | --- | --- | --- |
+| `StageId` | number | **yes** | The course this plate ends |
+
+Touching it is a **choice**. A player may walk straight past and carry on into the
+next course; the plate is there for anyone who would rather bank the reward and
+start again from the lobby.
+
+It is also what records the deepest course a player has cleared — a checkpoint
+only says they walked in, the plate says they got through. Put it after the last
+obstacle, never before one.
+
+Without a `StageId` the plate names no course, so it is ignored and the console
+says so rather than paying out the wrong one.
 
 ### `ShopPad`, `PrestigePad`, `AfkPad`
 
