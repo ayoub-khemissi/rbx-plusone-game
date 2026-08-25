@@ -14,6 +14,8 @@ export type Stage = {
 	id: number,
 	name: string?,
 	requiredSpeed: number,
+	-- What the gate announces. Advisory: nothing enforces it.
+	requiredLevel: number?,
 	coinMultiplier: number,
 }
 

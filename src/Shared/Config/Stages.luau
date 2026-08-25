@@ -1,14 +1,25 @@
 --!strict
 --[[
-	Stages — what each Stage of a course costs to enter and what it pays.
+	Stages — what each Stage of a world costs to enter and what it pays.
 
-	The MAP decides where a Stage begins: a Checkpoint tagged with `StageId = 3`
-	belongs to Stage 3. This file only decides the balance.
+	A world is TEN of these. The MAP decides where one begins: a Checkpoint tagged
+	`StageId = 3` belongs to Stage 3. This file only decides the balance.
 
-	Adding a Stage to a map means adding a line here. Nothing else.
+	`requiredLevel` is what the gate ANNOUNCES, and it is the number the course was
+	built for: the walk speed at that level is what clears its gaps. It is advisory
+	on purpose — anyone may walk into a course early and try, and finding out the
+	hard way is part of it.
 
-	`requiredSpeed` and `coinMultiplier` must both stay STRICTLY rising, which
+	`requiredSpeed` is the same threshold expressed in experience, since that is what
+	the ladder compares against. The two are two readings of one number.
+
+	Both it and `coinMultiplier` must stay STRICTLY rising, which
 	Domain.Run.StageLadder verifies at start-up.
+
+	The levels are not guesses. They come from simulating uninterrupted play against
+	the curve in Balance: course 2 at eight minutes, course 6 at an hour and twenty,
+	course 10 at four and a half hours. Retuning the curve moves these, and the
+	config spec fails when they stop agreeing.
 ]]
 
 local StageLadder = require(script.Parent.Parent.Domain.Run.StageLadder)
@@ -16,11 +27,16 @@ local StageLadder = require(script.Parent.Parent.Domain.Run.StageLadder)
 type Stage = StageLadder.Stage
 
 local stages: { Stage } = {
-	{ id = 1, name = "Warm-up", requiredSpeed = 0, coinMultiplier = 1 },
-	{ id = 2, name = "Ramp", requiredSpeed = 250, coinMultiplier = 1.6 },
-	{ id = 3, name = "Climb", requiredSpeed = 1000, coinMultiplier = 2.4 },
-	{ id = 4, name = "Gauntlet", requiredSpeed = 4000, coinMultiplier = 3.5 },
-	{ id = 5, name = "Summit", requiredSpeed = 15000, coinMultiplier = 5 },
+	{ id = 1, name = "Course 1", requiredLevel = 1, requiredSpeed = 0, coinMultiplier = 1 },
+	{ id = 2, name = "Course 2", requiredLevel = 12, requiredSpeed = 2246, coinMultiplier = 1.3 },
+	{ id = 3, name = "Course 3", requiredLevel = 22, requiredSpeed = 7106, coinMultiplier = 1.65 },
+	{ id = 4, name = "Course 4", requiredLevel = 31, requiredSpeed = 13633, coinMultiplier = 2.1 },
+	{ id = 5, name = "Course 5", requiredLevel = 43, requiredSpeed = 25387, coinMultiplier = 2.65 },
+	{ id = 6, name = "Course 6", requiredLevel = 56, requiredSpeed = 41936, coinMultiplier = 3.35 },
+	{ id = 7, name = "Course 7", requiredLevel = 70, requiredSpeed = 64079, coinMultiplier = 4.2 },
+	{ id = 8, name = "Course 8", requiredLevel = 87, requiredSpeed = 96853, coinMultiplier = 5.3 },
+	{ id = 9, name = "Course 9", requiredLevel = 108, requiredSpeed = 146061, coinMultiplier = 6.6 },
+	{ id = 10, name = "Course 10", requiredLevel = 131, requiredSpeed = 210787, coinMultiplier = 8.3 },
 }
 
 return table.freeze(stages)

@@ -119,14 +119,24 @@ describe("Config.Balance", function()
 		expect(curve:walkSpeedFor(early)).toBeGreaterThan(Config.Balance.speedCurve.baseWalkSpeed)
 		expect(curve:walkSpeedFor(early)).toBeLessThan(24)
 
-		-- At the Prestige threshold: fast, and still short of the ceiling, so the
-		-- levels after it still have something to give. The hard limit is the 60
-		-- below; this bound is the headroom.
+		--[[
+			At the Prestige threshold — the end of a world — the character is fast
+			but the curve has not run out: there has to be headroom left, or the
+			second world would open with nothing to give.
+		]]
 		local prestige = PrestigePolicy.new(Config.Balance.prestige):requirementFor(0)
-		expect(curve:walkSpeedFor(levels:levelFor(prestige))).toBeLessThan(55)
+		local atPrestige = curve:walkSpeedFor(levels:levelFor(prestige))
+		local ceiling = Config.Balance.speedCurve.baseWalkSpeed + Config.Balance.speedCurve.maxBonusWalkSpeed
 
-		-- And the ceiling stays well under what the physics stops tolerating.
-		expect(curve:walkSpeedFor(1e12)).toBeLessThanOrEqual(60)
+		expect(atPrestige).toBeGreaterThan(60)
+		expect(atPrestige).toBeLessThan(ceiling * 0.75)
+
+		--[[
+			The ceiling is the physics limit, and it is what stops the character
+			passing through thin platforms between two frames. At 120 studs/s that
+			is two studs a frame, so anything built at four or more is safe.
+		]]
+		expect(curve:walkSpeedFor(1e12)).toBeLessThanOrEqual(120)
 	end)
 
 	it("leaves an anti-cheat margin above 1", function()
@@ -152,6 +162,45 @@ describe("Config.Balance", function()
 		expect(dash:powerFor(0, starting)).toBeGreaterThan(starting * 2)
 		expect(dash:powerFor(levels, starting)).toBeGreaterThan(dash:powerFor(1, starting))
 		expect(Config.Balance.dash.cooldown).toBeGreaterThan(0)
+	end)
+
+	--[[
+		THE PACING OF A WHOLE WORLD, which is the reason the curve is shaped the way
+		it is: a free player running without pause must not clear ten courses in an
+		afternoon. Everything sold on top — the treadmills — shortens this, and it
+		only means something if the floor is real.
+
+		Simulated rather than reasoned about, because the gain feeds back into
+		itself: running faster earns levels faster, which makes you run faster. Any
+		retune of the level exponent or the speed curve moves this, and that is
+		exactly when someone should be told.
+	]]
+	it("keeps a world out of reach for at least four hours of running", function()
+		local curve = SpeedCurve.new(Config.Balance.speedCurve)
+		local levels = LevelCurve.new(Config.Balance.level)
+		local lastCourse = Config.Stages[#Config.Stages]
+		local perSecond = Config.Balance.progression.speedPerStep / Config.Balance.movement.studsPerStep
+
+		local experience, seconds, step = 0, 0, 5
+		while experience < lastCourse.requiredSpeed and seconds < 20 * 3600 do
+			experience += curve:walkSpeedFor(levels:levelFor(experience)) * perSecond * step
+			seconds += step
+		end
+
+		expect(seconds / 3600).toBeGreaterThan(4)
+		expect(seconds / 3600).toBeLessThan(6)
+	end)
+
+	--[[
+		And the level each course announces has to be the level a player actually
+		holds when they arrive. A gate saying 12 in front of a course built for a
+		speed nobody has at 12 is worse than no gate.
+	]]
+	it("announces a level that matches the experience behind it", function()
+		local levels = LevelCurve.new(Config.Balance.level)
+		for _, stage in Config.Stages do
+			expect(levels:levelFor(stage.requiredSpeed)).toBe(stage.requiredLevel)
+		end
 	end)
 
 	-- Prestige must mean "I finished the course", not "I played a bit".

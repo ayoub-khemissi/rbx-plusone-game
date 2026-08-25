@@ -14,26 +14,23 @@ return table.freeze({
 	-- Level -> actual walk speed
 	speedCurve = table.freeze({
 		baseWalkSpeed = 16, -- Roblox default, and the speed the first jump was designed around
-		-- Ceiling at 60 studs/s. The physics tolerates far more, but an obstacle
-		-- course does not: past that the character overshoots every platform and the
-		-- level design stops mattering. Progress is meant to be a growing NUMBER,
-		-- not a growing problem.
-		maxBonusWalkSpeed = 44,
+		-- Ceiling at 120 studs/s, which is 2 studs between two frames: platforms
+		-- thinner than that can be skipped, and anything built at 4 studs or more is
+		-- safe. It sits high on purpose — a world of ten courses needs the speed to
+		-- keep climbing all the way through, or the last five play like the fifth.
+		maxBonusWalkSpeed = 104,
 		--[[
 			In LEVELS, not in speed, and the one number that decides how fast the
 			game gets fast. Lower bites harder.
 
-			Simulated against real play — the gain rate feeds back into itself,
-			since running faster earns levels faster — this lands at roughly
-			24 studs/s after two minutes, 40 after ten, 53 after thirty. The
-			previous 60 reached only 28 after ten minutes and 39 after thirty,
-			which read as a game that had stopped rewarding.
-
-			It is deliberately not pushed further. Below about 22 the curve meets
-			the ceiling within half an hour, and every level after that adds
-			nothing — which breaks the one promise the level makes.
+			Stretched to span a whole world. Simulated against real play — the gain
+			rate feeds back into itself, since running faster earns levels faster —
+			the character runs at 23 after eight minutes, 47 after an hour and 20,
+			and 75 by the end of the tenth course at four and a half hours. It is
+			still climbing there, which is what keeps the last courses different
+			from the middle ones.
 		]]
-		softness = 30,
+		softness = 155,
 		baseJumpPower = 50,
 		jumpPowerPerLevel = 2.5,
 		maxJumpPower = 140,
@@ -113,13 +110,19 @@ return table.freeze({
 	]]
 	level = table.freeze({
 		base = 20,
-		exponent = 1.7,
+		-- 1.9 rather than 1.7: the exponent is what decides how long a world takes.
+		-- At 1.7 the tenth course fell at forty minutes; at 1.9 it lands at four and
+		-- a half hours of uninterrupted running, which is the floor a free player
+		-- should meet.
+		exponent = 1.9,
 	}),
 
 	-- The long loop. The requirement matches the last Stage: prestige is what you do
 	-- once the course has nothing left to show you.
 	prestige = table.freeze({
-		baseRequirement = 15000,
+		-- The experience the tenth course sits behind: a prestige means the world
+		-- is finished, not that an afternoon was spent.
+		baseRequirement = 215000,
 		requirementGrowth = 2.4,
 		multiplierPerPrestige = 0.4,
 		resetsUpgrades = true,
