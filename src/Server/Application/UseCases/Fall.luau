@@ -1,10 +1,10 @@
 --!strict
 --[[
-	FallToCheckpoint — a hole, a hazard, a bad jump.
+	Fall — a hole, a hazard, a bad jump.
 
 	The whole promise of the game lives here: a fall costs TIME, never progress.
-	Speed and Coins are untouched, and the player comes back on the last checkpoint
-	they crossed.
+	Speed and Coins are untouched, and the player comes back at the Hub to run the
+	course again.
 
 	IT KILLS RATHER THAN TELEPORTS. Snatching a falling character back to solid
 	ground reads as a glitch — the fall is cut off mid-air and the player is left
@@ -12,21 +12,21 @@
 	to read, and the seconds before the new body are the cost.
 
 	So this half only ends the run. Where the player comes back is decided by
-	SpawnAtCheckpoint, because it has to be decided for EVERY new body — including
-	the first one, and the one after a Roblox-side reset this server never saw.
+	RespawnPlayer, because it has to be decided for EVERY new body — including the
+	first one, and the one after a Roblox-side reset this server never saw.
 ]]
 
 local Shared = require(script.Parent.Parent.Parent.Shared)
 local Result = require(Shared.Domain.Support.Result)
 
-local FallToCheckpoint = {}
-FallToCheckpoint.__index = FallToCheckpoint
+local Fall = {}
+Fall.__index = Fall
 
-function FallToCheckpoint.new(dependencies)
-	return setmetatable(table.clone(dependencies), FallToCheckpoint)
+function Fall.new(dependencies)
+	return setmetatable(table.clone(dependencies), Fall)
 end
 
-function FallToCheckpoint.run(self, player)
+function Fall.run(self, player)
 	local session = self.sessions:forPlayer(player)
 	if not session then
 		return Result.err("NO_SESSION", "No open session")
@@ -44,8 +44,7 @@ function FallToCheckpoint.run(self, player)
 	self.notifier:cue(player, "fall")
 	self.publisher:publish(player, self.snapshots:build(session))
 
-	local destination = session.checkpoint or self.hubPoint
-	return Result.ok({ destination = destination, atCheckpoint = session.checkpoint ~= nil })
+	return Result.ok({ destination = self.hubPoint })
 end
 
-return FallToCheckpoint
+return Fall

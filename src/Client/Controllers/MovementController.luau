@@ -9,7 +9,8 @@
 	server, which keeps the authoritative count for the interface.
 
 	That is safe because jumping pays nothing. Speed is credited from ground distance
-	measured server side, and entering a locked Stage is refused at the checkpoint,
+	measured server side, and what a Stage pays is decided by Speed rather than by
+	where the character is standing,
 	server side too. A tampered client can jump more; it cannot earn more, and it
 	cannot go anywhere its Speed has not already unlocked.
 

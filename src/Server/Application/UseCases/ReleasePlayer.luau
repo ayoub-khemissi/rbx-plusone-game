@@ -2,7 +2,7 @@
 --[[
 	ReleasePlayer — saves then frees the session when a player leaves.
 
-	The run in progress is simply dropped: a checkpoint is a position, not progress,
+	The run in progress is simply dropped: a position is not progress,
 	and nothing about it deserves to survive a reconnection.
 ]]
 

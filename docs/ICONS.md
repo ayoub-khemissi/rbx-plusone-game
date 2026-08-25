@@ -111,7 +111,6 @@ reads as a hole rather than a symbol.
 | `coins` | Currency/Coin/Golden Coin 1st Outline | HUD counter |
 | `prestige` | Main/Rebirth and Auto Open/Rebirth 1st Outline | HUD counter and sidebar |
 | `stage` | Main/Star/Golden Star 1st Outline | Stage names |
-| `checkpoint` | Item/Location Pin/Location Pin 1st Outline | Checkpoint notifications |
 | `hub` | Main/House/Blue House 1st Outline | Starting area |
 | `charm` | Item/Potion/Purple Potion 1st Outline | Reserved for a later milestone |
 

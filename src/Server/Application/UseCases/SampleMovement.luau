@@ -42,7 +42,7 @@ function SampleMovement.run(self, player, sample)
 		distance = distance,
 		deltaTime = deltaTime,
 		currentWalkSpeed = sample.walkSpeed,
-		stage = self.ladder:get(session.stageId),
+		stage = self.ladder:reachedBy(session.profile.speed),
 		passes = session.passes,
 		boosts = self.boosts:multipliersFor(profile, self.clock.now()),
 	})

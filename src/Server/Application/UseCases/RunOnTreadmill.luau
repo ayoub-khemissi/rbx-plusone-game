@@ -37,7 +37,7 @@ function RunOnTreadmill.run(self, player, multiplier: number, elapsed: number)
 
 	local profile = session.profile
 	local bonuses = self.multipliers:compute(profile, {
-		stage = self.ladder:get(session.stageId),
+		stage = self.ladder:reachedBy(session.profile.speed),
 		passes = session.passes,
 		boosts = self.boosts:multipliersFor(profile, self.clock.now()),
 	})

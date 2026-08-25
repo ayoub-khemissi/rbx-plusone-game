@@ -40,7 +40,7 @@ function CollectCoin.run(self, player, value, coin)
 
 	local profile = session.profile
 	local granted = self.progression:collectCoin(profile, if typeof(value) == "number" then value else 0, {
-		stage = self.ladder:get(session.stageId),
+		stage = self.ladder:reachedBy(session.profile.speed),
 		passes = session.passes,
 		boosts = self.boosts:multipliersFor(profile, self.clock.now()),
 	})

@@ -28,8 +28,8 @@ local CharacterProbe = require(script.Parent.Parent.Adapters.Roblox.CharacterPro
 local Bootstrap = {}
 
 --[[
-	The Hub is wherever the map put its SpawnLocation. Falling with no checkpoint
-	sends the player there, so the server has to find it rather than assume it.
+	The Hub is wherever the map put its SpawnLocation. Falling sends the player
+	there, so the server has to find it rather than assume it.
 ]]
 local function findHubPoint(container, logger)
 	local spawn = nil
@@ -41,7 +41,7 @@ local function findHubPoint(container, logger)
 	end
 
 	if not spawn then
-		logger:warn("No SpawnLocation in the map: falls with no checkpoint will land at the origin")
+		logger:warn("No SpawnLocation in the map: falls will land at the origin")
 		return
 	end
 
@@ -163,7 +163,7 @@ local function bindPlayers(container)
 		-- Every new body, whatever ended the last one, goes back to the run where it
 		-- left off.
 		player.CharacterAdded:Connect(function()
-			container.useCases.spawnAtCheckpoint:run(player)
+			container.useCases.respawnPlayer:run(player)
 		end)
 	end
 

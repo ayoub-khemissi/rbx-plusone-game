@@ -5,7 +5,9 @@
 
 	Doing it client side removes any latency from a barrier the player runs into at
 	full speed. It is safe because the server decides separately: entering a Stage is
-	validated when the checkpoint behind the gate is touched, so forcing a gate open
+	nothing to win by forcing one: what a course pays is decided by Speed, so a
+	player who walks through a shut gate arrives somewhere that pays them exactly
+	what standing still would. Forcing a gate open
 	leads nowhere.
 ]]
 

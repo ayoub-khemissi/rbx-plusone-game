@@ -18,9 +18,9 @@
 	    answered. Guessing it from a balance that failed to move would catch every
 	    frame the player simply could not afford something;
 
-	  * a checkpoint and a fall play on a cue the SERVER names, since neither has
-	    a client-side signal worth trusting. The server names the moment, never the
-	    clip — which sound it makes stays a client decision.
+	  * a fall plays on a cue the SERVER names, since it has no client-side signal
+	    worth trusting. The server names the moment, never the clip — which sound it
+	    makes stays a client decision.
 
 	Nothing here sends anything. This controller only listens.
 ]]

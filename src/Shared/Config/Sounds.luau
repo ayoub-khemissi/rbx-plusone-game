@@ -52,7 +52,6 @@ local sounds: { [string]: Cue } = {
 	dash = { id = "rbxassetid://3809085996", volume = 0.4 },
 
 	-- Stage events.
-	checkpoint = { id = "rbxassetid://4612384434", volume = 0.5 },
 	fall = { id = "rbxassetid://4612384231", volume = 0.45 },
 
 	-- Economy. `buy` carries a cash register, which is the sound a purchase is

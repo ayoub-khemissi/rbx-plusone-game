@@ -90,6 +90,18 @@ function StageLadder.highestUnlocked(self: StageLadder, speed: number): number
 end
 
 --[[ Progress in [0, 1] between this gate and the next one. ]]
+--[[
+	The Stage a given Speed is in: the deepest one it has unlocked.
+
+	DERIVED, NEVER RECORDED. A Stage used to be whatever marker the player last
+	touched, which meant a piece of session state that could disagree with the
+	profile it was supposed to describe — and a coin multiplier that depended on
+	standing in the right place rather than on having earned the right to.
+]]
+function StageLadder.reachedBy(self: StageLadder, speed: number): Stage?
+	return self:get(self:highestUnlocked(speed))
+end
+
 function StageLadder.progressToNext(self: StageLadder, stageId: number, speed: number): number
 	local stage = self._byId[stageId]
 	local nextStage = self:nextOf(stageId)

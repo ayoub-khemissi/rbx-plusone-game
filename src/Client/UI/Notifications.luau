@@ -11,12 +11,12 @@
 	and without stopping — which is the only way any of these are ever read.
 
 	And it is only as WIDE as what it says. A full-width bar around the word
-	"Checkpoint" reads as a banner rather than as a message, and covers more of the
+	A short word reads as a banner rather than as a message, and covers more of the
 	course than the message is worth.
 
 	THE STACK IS A PERSPECTIVE, NOT A LIST. The newest message sits on top at full
 	size; the ones under it shrink and fade with depth, and only three are ever
-	visible. Coins, checkpoints and boosts can all fire within a second of each
+	visible. Coins, stages and boosts can all fire within a second of each
 	other, and an unbounded stack would walk down the screen and bury the game. The
 	depth ranking also answers "which of these just happened" without reading any of
 	them.

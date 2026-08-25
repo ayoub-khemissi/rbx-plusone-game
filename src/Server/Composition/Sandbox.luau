@@ -94,13 +94,6 @@ function Sandbox.build()
 	spawn.Color = Color3.fromRGB(247, 197, 37)
 	spawn.Parent = folder
 
-	-- A checkpoint at the spawn, so a fall has somewhere to return to.
-	local checkpoint = part(folder, "Checkpoint", PAD, Vector3.new(0, 2.5, 44), COLOURS.floor)
-	checkpoint.Transparency = 0.6
-	checkpoint.CanCollide = false
-	checkpoint:SetAttribute("StageId", 1)
-	CollectionService:AddTag(checkpoint, MapBindings.TAGS.checkpoint)
-
 	local pads = {
 		{ name = "ShopPad", tag = MapBindings.TAGS.shopPad, colour = COLOURS.shop, x = -60, text = "SHOP" },
 		{

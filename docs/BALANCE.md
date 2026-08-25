@@ -204,7 +204,7 @@ A change that moves one of these is not necessarily wrong. It is necessarily
 ## What a fall costs, and what it does not
 
 A fall costs **time**: the character dies and comes back after
-`run.respawnDelay` (2 s) on the last checkpoint. It costs no Speed, no Coins and no
+`run.respawnDelay` (2 s) at the Hub. It costs no Speed, no Coins and no
 Stage. The Coins on the course come back with the player, per player — see
 `docs/MAP.md`.
 

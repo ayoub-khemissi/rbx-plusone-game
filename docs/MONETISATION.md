@@ -25,7 +25,7 @@ occasions to buy.
 | Session chest | every 5 min | Keep them here now |
 | AFK area | during the session | Keep servers populated |
 | Promo codes | occasional | Acquisition through social media |
-| Checkpoints | continuous | Make failure cheap |
+| Cheap deaths | continuous | Make failure cost time, never progress |
 
 **On the AFK area.** It is the waiting system of the game, and it is deliberately
 mediocre: the income is slow and **capped per session**. Its job is to keep servers
@@ -33,7 +33,7 @@ populated — which matters for Roblox recommendations — without ever becoming
 strategy than playing. The day standing still pays more than running, the game is
 dead.
 
-**On checkpoints.** A fall costs neither Speed nor Coins, only time. That is an
+**On failure.** A fall costs neither Speed nor Coins, only time. That is an
 economic choice as much as a design one: a player who loses their progress closes the
 game, a player who loses thirty seconds starts again.
 

@@ -10,7 +10,7 @@
 	prestiges, stages) so a theme can rename anything for display without touching a
 	single line of code.
 
-	What is NOT stored here: anything that belongs to a single run — the checkpoint
+	What is NOT stored here: anything that belongs to a single run — the position
 	the player is standing on, the air jumps already spent. Those live in the session.
 ]]
 
@@ -20,7 +20,6 @@ export type Totals = {
 	coinsEarned: number,
 	prestiges: number,
 	falls: number,
-	checkpoints: number,
 }
 
 export type Purchases = {
@@ -56,7 +55,7 @@ export type Profile = {
 
 local Profile = {}
 
-Profile.SCHEMA_VERSION = 5
+Profile.SCHEMA_VERSION = 6
 
 local function positiveNumber(value: any, default: number): number
 	if typeof(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then
@@ -108,7 +107,6 @@ function Profile.create(): Profile
 			coinsEarned = 0,
 			prestiges = 0,
 			falls = 0,
-			checkpoints = 0,
 		},
 
 		boosts = {},

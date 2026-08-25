@@ -43,8 +43,8 @@ function FinishStage.run(self, player, stageId)
 	end
 
 	--[[
-		Deepest stage reached is recorded here rather than at a checkpoint: a
-		checkpoint says the player walked in, the plate says they got through it.
+		Deepest stage reached is recorded here and nowhere else: reaching a Speed
+		says the course is OPEN to the player, the plate says they got through it.
 	]]
 	if stageId > (session.profile.highestStage or 0) then
 		session.profile.highestStage = stageId
@@ -58,7 +58,6 @@ function FinishStage.run(self, player, stageId)
 	-- Back to the lobby, and the sampler must not read the trip as distance run.
 	session.lastPosition = nil
 	session.lastSampleAt = nil
-	session.checkpoint = nil
 	self.body:sendTo(player, self.hubPoint)
 
 	return Result.ok({ stageId = stageId, reward = reward })

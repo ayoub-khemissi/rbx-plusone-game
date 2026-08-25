@@ -196,7 +196,7 @@ return table.freeze({
 		-- How close a Coin has to be before it is drawn in. The Magnet upgrade adds
 		-- to this; without it a player still picks up what they run through.
 		coinReach = 7,
-		respawnHeight = 4, -- studs above a checkpoint where the player reappears
+		respawnHeight = 4, -- studs above the Hub where the player reappears
 		-- How long a fall costs. Long enough to be felt as a mistake, short enough
 		-- that the player is running again before they reach for the mouse.
 		respawnDelay = 2,

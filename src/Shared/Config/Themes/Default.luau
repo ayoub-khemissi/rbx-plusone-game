@@ -3,7 +3,7 @@
 	Default theme — the display layer.
 
 	THE POINT OF THIS FILE: the code only ever knows neutral concepts — speed, coins,
-	prestige, stage, checkpoint, hub. A theme decides what the player reads and sees.
+	prestige, stage, hub. A theme decides what the player reads and sees.
 
 	Swapping theme is a data change: copy this file, rename the labels, repoint the
 	images, repaint the palette, then point `Config.activeTheme` at it. No game rule
@@ -61,14 +61,8 @@ local theme: Theme = {
 		},
 		-- Speed read as a rank: what the progress bar announces.
 		level = { name = "Level", plural = "Levels", icon = "⚡", image = "rbxassetid://112003667186542" }, -- icon:speed
-		-- A segment of the course, delimited by checkpoints in the map.
+		-- A segment of the course, opened by reaching the Speed it asks for.
 		stage = { name = "Stage", plural = "Stages", icon = "🚩", image = "rbxassetid://122962606025816" }, -- icon:stage
-		checkpoint = {
-			name = "Checkpoint",
-			plural = "Checkpoints",
-			icon = "🏁",
-			image = "rbxassetid://133175370281266", -- icon:checkpoint
-		},
 		-- The safe area with the shop, the prestige pad and the treadmills.
 		hub = { name = "Hub", icon = "🏠", image = "rbxassetid://103151849319813" }, -- icon:hub
 		-- The passive collection, kept in the vocabulary for a later milestone.

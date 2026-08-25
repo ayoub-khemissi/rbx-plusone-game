@@ -6,8 +6,10 @@
 	the rank experience buys, and the two are counted separately on purpose — "Stage
 	3" says where you are, "Level 37" says how far you have come.
 
-	A world is TEN of these. The MAP decides where one begins: a Checkpoint tagged
-	`StageId = 3` belongs to Stage 3. This file only decides the balance.
+	A world is TEN of these. The MAP lays them out and this file prices them: a Stage
+	OPENS when the player's Speed passes what it asks for, and the one they are IN is
+	the deepest one they have opened. Nothing in the map records that — there is no
+	marker to touch and nothing to fall out of step with.
 
 	No stage carries a name. The word is the theme's — `labels.stage` — and a stage
 	is announced as that word and its number, so renaming Stage to Zone renames all

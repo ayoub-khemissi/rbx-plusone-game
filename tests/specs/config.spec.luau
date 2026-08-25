@@ -392,7 +392,7 @@ end)
 describe("Config.Theme", function()
 	-- A theme carries presentation only: never a balancing number.
 	it("names every core concept", function()
-		for _, key in { "speed", "coins", "prestige", "stage", "checkpoint", "hub" } do
+		for _, key in { "speed", "coins", "prestige", "stage", "hub" } do
 			local label = Config.Theme.labels[key]
 			expect(label).never.toBeNil()
 			expect(label.name).toBeA("string")
@@ -468,7 +468,7 @@ describe("Config.Products and Passes", function()
 		than as an error anybody notices.
 	]]
 	it("names every concept the interface speaks", function()
-		for _, key in { "level", "stage", "coins", "prestige", "checkpoint", "hub" } do
+		for _, key in { "level", "stage", "coins", "prestige", "hub" } do
 			local label = Config.Theme.labels[key]
 			expect(label).never.toBeNil()
 			expect(label.name).toBeA("string")

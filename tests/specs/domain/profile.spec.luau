@@ -52,7 +52,6 @@ describe("Profile", function()
 	-- Rien de ce qui appartient a une course ne doit survivre a une reconnexion.
 	it("stores nothing about the current run", function()
 		local profile = Profile.create()
-		expect(profile.checkpoint).toBeNil()
 		expect(profile.airJumpsUsed).toBeNil()
 		expect(profile.dashCooldown).toBeNil()
 	end)

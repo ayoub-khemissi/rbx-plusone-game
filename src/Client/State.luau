@@ -48,7 +48,7 @@ local NUMBERS = {
 	"NextStageRequirement",
 }
 
-local FLAGS = { "HasCheckpoint", "DashUnlocked" }
+local FLAGS = { "DashUnlocked" }
 
 local TABLES = { "ActiveBoosts" }
 

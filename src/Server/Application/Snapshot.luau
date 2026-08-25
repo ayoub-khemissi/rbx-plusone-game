@@ -40,7 +40,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 
 	local boostBonuses = self.boosts:multipliersFor(profile, now)
 	local bonuses = self.multipliers:compute(profile, {
-		stage = self.ladder:get(session.stageId),
+		stage = self.ladder:reachedBy(profile.speed),
 		passes = session.passes,
 		boosts = boostBonuses,
 	})
@@ -61,8 +61,7 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 		passes = table.clone(session.passes),
 
 		-- Current run
-		stageId = session.stageId,
-		hasCheckpoint = session.checkpoint ~= nil,
+		stageId = reachedStage,
 
 		-- Movement
 		walkSpeed = movement.walkSpeed,

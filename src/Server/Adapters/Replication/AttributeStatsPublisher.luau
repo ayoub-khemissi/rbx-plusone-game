@@ -49,7 +49,6 @@ local NUMBERS = {
 
 local FLAGS = {
 	DashUnlocked = "dashUnlocked",
-	HasCheckpoint = "hasCheckpoint",
 }
 
 -- Attributes cannot hold tables: these travel as JSON.

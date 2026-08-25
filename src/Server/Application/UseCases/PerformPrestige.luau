@@ -23,8 +23,7 @@ function PerformPrestige.run(self, player)
 		return result
 	end
 
-	-- The course starts over too: keeping a deep checkpoint would skip it all. The
-	-- CHARACTER does not move — a rebirth is taken standing on a pad the player
+	-- The run in progress is dropped. The CHARACTER does not move — a rebirth is taken standing on a pad the player
 	-- chose to step on, and snatching them to the hub for it takes the moment away
 	-- from them. The Speed is gone either way, so every gate ahead is shut again.
 	self.sessions:resetRun(session)

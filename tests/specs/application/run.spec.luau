@@ -105,62 +105,43 @@ describe("SampleMovement", function()
 	end)
 end)
 
-describe("ReachCheckpoint", function()
-	local container, ports, player, session
+describe("The Stage a player is in", function()
+	local container, player, session
 	beforeEach(function()
-		container, ports = build()
+		container = build()
 		player, session = joined(container)
 	end)
 
-	it("records where the player will come back", function()
-		local result = container.useCases.reachCheckpoint:run(player, {
-			stageId = 1,
-			position = { x = 100, y = 10, z = 0 },
-		})
+	--[[
+		DERIVED FROM SPEED, never recorded. It used to be whatever marker the player
+		last touched, which meant a piece of session state that could disagree with
+		the profile it described — and a Coin multiplier that depended on standing in
+		the right place rather than on having earned the right to.
+	]]
+	it("is the deepest one the player has opened", function()
+		expect(container.snapshots:build(session).stageId).toBe(1)
 
-		expect(result.ok).toBe(true)
-		expect(session.checkpoint.x).toBe(100)
-		expect(session.stageId).toBe(1)
-		expect(session.profile.totals.checkpoints).toBe(1)
+		session.profile.speed = Config.Stages[3].requiredSpeed
+		expect(container.snapshots:build(session).stageId).toBe(3)
 	end)
 
-	it("remembers the deepest stage reached", function()
-		session.profile.speed = Config.Stages[2].requiredSpeed
-		container.useCases.reachCheckpoint:run(player, { stageId = 2, position = { x = 0, y = 0, z = 0 } })
-		expect(session.profile.highestStage).toBe(2)
+	it("pays the Coin multiplier of that Stage", function()
+		session.profile.speed = Config.Stages[3].requiredSpeed
+		local result = container.useCases.collectCoin:run(player, 100)
+
+		expect(result.value.granted).toBeCloseTo(100 * Config.Stages[3].coinMultiplier, 1e-9)
 	end)
 
-	-- La barriere de vitesse : le client la rend traversable, le serveur tranche.
-	it("refuses a stage the player is too slow for", function()
-		local result = container.useCases.reachCheckpoint:run(player, {
-			stageId = 2,
-			position = { x = 500, y = 10, z = 0 },
-		})
+	-- A rebirth takes the Speed, so it takes the Stage with it.
+	it("falls back to the first Stage when the Speed goes", function()
+		session.profile.speed = Config.Stages[5].requiredSpeed
+		session.profile.speed = 0
 
-		expect(result.code).toBe("STAGE_LOCKED")
-		expect(session.stageId).toBe(1)
-		-- Answered, not written: the player hears the refusal.
-		expect(ports.notifier:cues()[1]).toBe("refused")
-	end)
-
-	it("stays quiet when the same checkpoint is touched again", function()
-		local checkpoint = { stageId = 1, position = { x = 100, y = 10, z = 0 } }
-		container.useCases.reachCheckpoint:run(player, checkpoint)
-		local again = container.useCases.reachCheckpoint:run(player, checkpoint)
-
-		expect(again.value.unchanged).toBe(true)
-		expect(session.profile.totals.checkpoints).toBe(1)
-	end)
-
-	it("rejects a malformed checkpoint from the map", function()
-		expect(container.useCases.reachCheckpoint:run(player, { position = { x = 0, y = 0, z = 0 } }).ok).toBe(
-			false
-		)
-		expect(container.useCases.reachCheckpoint:run(player, { stageId = "2" }).ok).toBe(false)
+		expect(container.snapshots:build(session).stageId).toBe(1)
 	end)
 end)
 
-describe("FallToCheckpoint", function()
+describe("Fall", function()
 	local container, ports, player, session
 	beforeEach(function()
 		container, ports = build()
@@ -173,8 +154,7 @@ describe("FallToCheckpoint", function()
 		the new body are what the fall costs.
 	]]
 	it("ends the run rather than snatching the character back", function()
-		container.useCases.reachCheckpoint:run(player, { stageId = 1, position = { x = 100, y = 10, z = 0 } })
-		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.fall:run(player)
 
 		expect(ports.body.kills).toBe(1)
 		expect(ports.body.last).toBeNil()
@@ -186,7 +166,7 @@ describe("FallToCheckpoint", function()
 		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
 		local speed, coins = session.profile.speed, session.profile.coins
 
-		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.fall:run(player)
 
 		expect(session.profile.speed).toBe(speed)
 		expect(session.profile.coins).toBe(coins)
@@ -195,30 +175,25 @@ describe("FallToCheckpoint", function()
 	-- The plunge covers ground, and none of it is run.
 	it("forgets where the old body was", function()
 		run(container, player, { x = 0, y = 5, z = 0 }, { x = 8, y = 5, z = 0 }, 10)
-		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.fall:run(player)
 
 		expect(session.lastPosition).toBeNil()
 	end)
 end)
 
-describe("SpawnAtCheckpoint", function()
+describe("RespawnPlayer", function()
 	local container, ports, player, session
 	beforeEach(function()
 		container, ports = build()
 		player, session = joined(container)
 	end)
 
-	it("puts the new body on the last checkpoint", function()
-		container.useCases.reachCheckpoint:run(player, { stageId = 1, position = { x = 100, y = 10, z = 0 } })
-		container.useCases.spawnAtCheckpoint:run(player)
-
-		expect(ports.body.last.x).toBe(100)
-	end)
-
-	it("falls back to the hub when no checkpoint was reached", function()
-		local result = container.useCases.spawnAtCheckpoint:run(player)
-
-		expect(result.value.atCheckpoint).toBe(false)
+	--[[
+		The Hub, always. There is no marker to come back to any more: a fall costs the
+		run, and the run starts where every run starts.
+	]]
+	it("puts the new body back at the hub", function()
+		container.useCases.respawnPlayer:run(player)
 		expect(ports.body.last).never.toBeNil()
 	end)
 
@@ -226,7 +201,7 @@ describe("SpawnAtCheckpoint", function()
 		session.profile.upgrades.jump = 2
 		container.useCases.requestJump:run(player)
 		container.useCases.requestJump:run(player)
-		container.useCases.spawnAtCheckpoint:run(player)
+		container.useCases.respawnPlayer:run(player)
 
 		expect(container.useCases.requestJump:run(player).ok).toBe(true)
 	end)
@@ -238,7 +213,7 @@ describe("SpawnAtCheckpoint", function()
 	]]
 	it("puts the coins back on the course", function()
 		container.useCases.collectCoin:run(player, 100, "coin-a")
-		container.useCases.spawnAtCheckpoint:run(player)
+		container.useCases.respawnPlayer:run(player)
 
 		expect(container.useCases.collectCoin:run(player, 100, "coin-a").ok).toBe(true)
 	end)
@@ -392,16 +367,6 @@ describe("CollectCoin", function()
 
 		expect(container.useCases.collectCoin:run(player, 100, "coin-a").ok).toBe(true)
 	end)
-
-	it("uses the stage multiplier of the checkpoint the player is on", function()
-		local container = build()
-		local player, session = joined(container)
-		session.profile.speed = Config.Stages[3].requiredSpeed
-		container.useCases.reachCheckpoint:run(player, { stageId = 3, position = { x = 0, y = 0, z = 0 } })
-
-		local result = container.useCases.collectCoin:run(player, 100)
-		expect(result.value.granted).toBeCloseTo(100 * Config.Stages[3].coinMultiplier, 1e-9)
-	end)
 end)
 
 describe("PerformPrestige", function()
@@ -442,7 +407,6 @@ describe("PerformPrestige", function()
 		expect(result.ok).toBe(true)
 		expect(session.profile.prestiges).toBe(1)
 		expect(session.profile.speed).toBe(0)
-		expect(session.checkpoint).toBeNil()
 	end)
 
 	--[[
@@ -528,11 +492,11 @@ end)
 	cover have no signal the client could trust on its own.
 ]]
 describe("Sound cues", function()
-	it("names the moment when a player falls back to a checkpoint", function()
+	it("names the moment when a player falls", function()
 		local container, ports = build()
 		local player = joined(container)
 
-		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.fall:run(player)
 
 		expect(ports.notifier:cues()).toContain("fall")
 	end)
@@ -543,8 +507,8 @@ describe("Sound cues", function()
 		local container, ports = build()
 		local player = joined(container)
 
-		container.useCases.fallToCheckpoint:run(player)
-		container.useCases.fallToCheckpoint:run(player)
+		container.useCases.fall:run(player)
+		container.useCases.fall:run(player)
 
 		expect(#ports.notifier:cues()).toBe(2)
 	end)
@@ -607,7 +571,7 @@ describe("FinishStage", function()
 	end)
 
 	--[[
-		The plate is what says a stage was CLEARED. A checkpoint only says the
+		The plate is what says a stage was CLEARED. Opening one only says the
 		player walked in, which is why the deepest course reached is recorded here
 		and nowhere else.
 	]]

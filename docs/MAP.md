@@ -16,52 +16,43 @@ tags count.
 
 | Tag | Put it on | What the server does with it |
 | --- | --- | --- |
-| `Checkpoint` | Part **or Model** | Records where the player respawns |
-| `TrapPart` *(or `Killzone`)* | Part or Model | Kills; back on the last checkpoint after 2 s |
+| `TrapPart` *(or `Killzone`)* | Part or Model | Kills; back at the Hub after 2 s |
 | `Conveyor` | Part | Conveyor belt: pushes along the front face |
 | `BouncePad` | Part | Trampoline: launches the player upwards |
 | `Coin` | Part | Drawn in and collected, per player, back after 30 s |
 | `SpeedGate` | Solid part | Blocks while the player's Speed is too low |
 | `FinishPad` | Part | Ends a course: pays out and sends the player to the lobby |
 | `ShopPad` | Part | Opens the shop |
-| `PrestigePad` | Part | Triggers a Prestige |
+| `PrestigePad` | Part | Opens the Rebirth window |
 | `Treadmill` | Part | Pays as if running on the spot, multiplied |
 
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
-lets a decorated checkpoint be tagged once instead of six times.
+lets a decorated pad be tagged once instead of six times.
 
-Only `Checkpoint` and some way to die are genuinely needed. The rest is added when
-you want it.
+Only some way to die is genuinely needed, and the void provides that for free. The
+rest is added when you want it.
 
 ---
 
 ## Each tag in detail
 
-### `Checkpoint`
+### Where a Stage begins
 
-The backbone of the course: it cuts the map into **Stages** and defines where the
-player comes back.
+**Nowhere in the map.** A Stage opens when the player's Speed passes what
+`Config/Stages.luau` asks of it, and the Stage they are IN is the deepest one they
+have opened. There is no marker to place, nothing to tag, and nothing that can fall
+out of step with the profile.
 
-| Attribute | Type | Required | Role |
-| --- | --- | --- | --- |
-| `StageId` | number | no | The Stage this checkpoint belongs to. **Without it, Stage 1** |
-
-A single-Stage map therefore declares nothing. `StageId` only becomes useful the day
-you want a speed gate between two sections.
-
-**Placement.** Make it a wide, thin part laid across the course, `CanCollide = false`,
-`Transparency = 1` if you would rather not see it — put visible scenery beside it. The
-player reappears **above the centre of the part**, so put it on flat ground.
-
-The first checkpoint of a Stage doubles as that Stage's entry point.
+So lay the course out in order and put a `SpeedGate` where each section begins. The
+gate is the announcement; the Speed is the rule.
 
 ### `TrapPart` *(or `Killzone`)*
 
 Anything lethal: lava, spikes, a deadly obstacle. Both names are accepted.
 
 No attributes. The character **dies**, comes back after `Balance.run.respawnDelay`
-seconds — two — on their last `Checkpoint`, **keeps their Speed and their Coins**, and
-loses only time.
+seconds — two — at the Hub, **keeps their Speed and their Coins**, and loses only
+time.
 
 It kills rather than teleports. Snatching a falling character back onto solid ground
 reads as a glitch; a death is punctuation the player already knows how to read, and
@@ -153,7 +144,7 @@ Touching it is a **choice**. A player may walk straight past and carry on into t
 next course; the plate is there for anyone who would rather bank the reward and
 start again from the lobby.
 
-It is also what records the deepest course a player has cleared — a checkpoint
+It is also what records the deepest course a player has cleared — opening one
 only says they walked in, the plate says they got through. Put it after the last
 obstacle, never before one.
 
@@ -197,7 +188,7 @@ This is the split that keeps your hands free:
 
 | The **map** decides | The **configuration** decides |
 | --- | --- |
-| Where the checkpoints, the gaps and the Coins are | What a Coin is worth, how fast it comes back |
+| Where the gaps and the Coins are | What a Coin is worth, how fast it comes back |
 | Where the gates are, and their `RequiredSpeed` | The Coin multiplier of each Stage |
 | The geometry, the scenery, the mood | The speed curve, the upgrade prices |
 | How many Stages there are | The Prestige threshold |
@@ -212,10 +203,9 @@ Nothing else.
 For the game to be playable you need, at a minimum:
 
 1. A standard Roblox **SpawnLocation** (no tag, Roblox handles it)
-2. A first `Checkpoint` at the entrance to the course
 
-That is all. Without a checkpoint the player simply respawns at the spawn point; the
-void takes care of itself.
+That is all. A player who falls comes back there, and the void needs no tag of its
+own.
 
 When you want the full economic loop, add a `ShopPad`, a `PrestigePad` and a
 `Treadmill` or two to the starting area.
@@ -241,8 +231,7 @@ the server with a map, only get partial behaviour.
 At start-up the server writes what it found to the console:
 
 ```
-[Runner] Map loaded: 6 checkpoints, 11 hazards, 0 coins, 4 conveyors, 1 bounce pads, 7 treadmills
-[Runner] 6 checkpoints without a StageId, assigned to Stage 1
+[Runner] Map loaded: 11 hazards, 24 coins, 4 conveyors, 1 bounce pads, 7 treadmills
 [Runner] Void level set to -184 studs
 ```
 
@@ -259,6 +248,6 @@ It lists every tagged part with its position and attributes, the SpawnLocation, 
 void level, and the scripts embedded in the place. It is the fastest answer to "why
 does this obstacle do nothing": if it is not in the list, the tag is missing.
 
-> ⚠️ If the place contains **your own manager scripts** (a `CheckpointManager`, a
+> ⚠️ If the place contains **your own manager scripts** (a `StageManager`, a
 > `TrapManager`…), they run **at the same time** as the server, which reads the same
 > tags. Two teleports, two velocities. The probe reports them; delete them.

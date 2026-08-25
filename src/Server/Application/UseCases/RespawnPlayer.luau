@@ -1,12 +1,11 @@
 --!strict
 --[[
-	SpawnAtCheckpoint — a new body arrives; put it where the run left off.
+	RespawnPlayer — a new body arrives; put it back at the start.
 
 	EVERY new character comes through here, not just the ones a fall killed. A player
 	can die in ways this server never decided — a hazard someone built, a reset from
 	the Roblox menu, the first spawn of the session — and all of them owe the player
-	the same thing: the checkpoint they had reached, or the Hub if they had reached
-	none.
+	the same thing: the Hub, and a course to run again.
 
 	Everything tied to the old body is dropped with it. The air jumps come back, the
 	last sampled position is forgotten — it belonged to a character that no longer
@@ -19,14 +18,14 @@ local Shared = require(script.Parent.Parent.Parent.Shared)
 local CoinField = require(Shared.Domain.Run.CoinField)
 local Result = require(Shared.Domain.Support.Result)
 
-local SpawnAtCheckpoint = {}
-SpawnAtCheckpoint.__index = SpawnAtCheckpoint
+local RespawnPlayer = {}
+RespawnPlayer.__index = RespawnPlayer
 
-function SpawnAtCheckpoint.new(dependencies)
-	return setmetatable(table.clone(dependencies), SpawnAtCheckpoint)
+function RespawnPlayer.new(dependencies)
+	return setmetatable(table.clone(dependencies), RespawnPlayer)
 end
 
-function SpawnAtCheckpoint.run(self, player)
+function RespawnPlayer.run(self, player)
 	local session = self.sessions:forPlayer(player)
 	if not session then
 		return Result.err("NO_SESSION", "No open session")
@@ -38,11 +37,10 @@ function SpawnAtCheckpoint.run(self, player)
 	session.lastPosition = nil
 	session.lastSampleAt = nil
 
-	local destination = session.checkpoint or self.hubPoint
-	self.body:sendTo(player, destination)
+	self.body:sendTo(player, self.hubPoint)
 	self.publisher:publish(player, self.snapshots:build(session))
 
-	return Result.ok({ destination = destination, atCheckpoint = session.checkpoint ~= nil })
+	return Result.ok({ destination = self.hubPoint })
 end
 
-return SpawnAtCheckpoint
+return RespawnPlayer

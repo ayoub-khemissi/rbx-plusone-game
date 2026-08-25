@@ -20,7 +20,6 @@ local Players = game:GetService("Players")
 local MapBindings = {}
 
 MapBindings.TAGS = {
-	checkpoint = "Checkpoint",
 	-- Killzone and TrapPart are the same idea; both names are accepted so a map can
 	-- use whichever word its author already had in mind.
 	killzone = { "Killzone", "TrapPart" },
@@ -42,7 +41,6 @@ local PAD_COOLDOWN = 1
 	floor — so this one is deliberately tight.
 ]]
 local TREADMILL_MARGIN = 2
-local DEFAULT_STAGE = 1
 local DEFAULT_BOUNCE = 200
 local DEFAULT_CONVEYOR = 10
 
@@ -95,7 +93,6 @@ function MapBindings.bind(container)
 	local lastFall: { [Player]: number } = {}
 	local lastPad: { [Player]: number } = {}
 	local treadmills: { { part: BasePart, multiplier: number } } = {}
-	local missingStageId = 0
 
 	local function cooled(memory, player: Player, delay: number): boolean
 		local now = os.clock()
@@ -106,39 +103,12 @@ function MapBindings.bind(container)
 		return true
 	end
 
-	--[[ Sends the player back to their checkpoint, once per grace period. ]]
+	--[[ Ends the run, once per grace period. ]]
 	local function fall(player: Player)
 		if cooled(lastFall, player, settings.fallGrace or FALL_GRACE_FALLBACK) then
-			useCases.fallToCheckpoint:run(player)
+			useCases.fall:run(player)
 		end
 	end
-
-	onTagged(TAGS.checkpoint, function(instance)
-		-- A checkpoint with no StageId belongs to the first Stage: most maps have
-		-- only one, and demanding the attribute would break them for nothing.
-		local stageId = instance:GetAttribute("StageId")
-		if typeof(stageId) ~= "number" then
-			stageId = DEFAULT_STAGE
-			missingStageId += 1
-		end
-
-		for _, part in partsOf(instance) do
-			part.Touched:Connect(function(hit)
-				local player = playerFromTouch(hit)
-				if not player then
-					return
-				end
-				useCases.reachCheckpoint:run(player, {
-					stageId = stageId,
-					position = {
-						x = part.Position.X,
-						y = part.Position.Y + settings.respawnHeight,
-						z = part.Position.Z,
-					},
-				})
-			end)
-		end
-	end)
 
 	onTagged(TAGS.killzone, function(instance)
 		for _, part in partsOf(instance) do
@@ -247,7 +217,7 @@ function MapBindings.bind(container)
 
 	--[[
 		The plate at the end of a course. It reads its own StageId, because the plate
-		is what says a course was CLEARED — a checkpoint only says the player walked
+		is what says a course was CLEARED — walking in only says the player walked
 		in. A plate with no id names no course and is ignored with a warning rather
 		than paying out the wrong one.
 	]]
@@ -317,16 +287,10 @@ function MapBindings.bind(container)
 	--[[ The report announced in docs/MAP.md: what the server actually found. ]]
 	local function report()
 		logger:info(
-			`Map loaded: {countTagged(TAGS.checkpoint)} checkpoints, {countTagged(TAGS.killzone)} hazards, `
+			`Map loaded: {countTagged(TAGS.killzone)} hazards, `
 				.. `{countTagged(TAGS.coin)} coins, {countTagged(TAGS.conveyor)} conveyors, `
 				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#treadmills} treadmills`
 		)
-		if missingStageId > 0 then
-			logger:info(`{missingStageId} checkpoints without a StageId, assigned to Stage {DEFAULT_STAGE}`)
-		end
-		if countTagged(TAGS.checkpoint) == 0 then
-			logger:warn("No Checkpoint in the map: players will always respawn at the Hub")
-		end
 	end
 
 	return { treadmillAt = treadmillAt, fall = fall, report = report }

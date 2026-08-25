@@ -39,13 +39,12 @@ local LoadPlayerProfile = require(UseCases.LoadPlayerProfile)
 local SavePlayerProfile = require(UseCases.SavePlayerProfile)
 local ReleasePlayer = require(UseCases.ReleasePlayer)
 local SampleMovement = require(UseCases.SampleMovement)
-local ReachCheckpoint = require(UseCases.ReachCheckpoint)
-local FallToCheckpoint = require(UseCases.FallToCheckpoint)
+local Fall = require(UseCases.Fall)
 local FinishStage = require(UseCases.FinishStage)
 local RunOnTreadmill = require(UseCases.RunOnTreadmill)
 local RequestJump = require(UseCases.RequestJump)
 local NoteLanded = require(UseCases.NoteLanded)
-local SpawnAtCheckpoint = require(UseCases.SpawnAtCheckpoint)
+local RespawnPlayer = require(UseCases.RespawnPlayer)
 local RequestDash = require(UseCases.RequestDash)
 local CollectCoin = require(UseCases.CollectCoin)
 local PerformPrestige = require(UseCases.PerformPrestige)
@@ -206,7 +205,7 @@ function Container.new(options: Options)
 		clock = clock,
 	})
 
-	-- Where a player goes with no checkpoint yet. The map owns the real position:
+	-- Where a player goes when they fall or die. The map owns the real position:
 	-- Bootstrap mutates this table once it has found the SpawnLocation.
 	local hubPoint = { x = 0, y = 0, z = 0 }
 
@@ -263,9 +262,8 @@ function Container.new(options: Options)
 		releasePlayer = ReleasePlayer.new(deps({ save = saveProfile })),
 
 		sampleMovement = SampleMovement.new(deps()),
-		reachCheckpoint = ReachCheckpoint.new(deps()),
-		fallToCheckpoint = FallToCheckpoint.new(deps()),
-		spawnAtCheckpoint = SpawnAtCheckpoint.new(deps()),
+		fall = Fall.new(deps()),
+		respawnPlayer = RespawnPlayer.new(deps()),
 		finishStage = FinishStage.new(deps(withRewards)),
 		runOnTreadmill = RunOnTreadmill.new(deps({ tuning = balance.movement })),
 		requestJump = RequestJump.new(deps()),

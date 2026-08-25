@@ -28,7 +28,7 @@ export type StatsPublisher = {
 --[[
 	Short messages shown to the player.
 
-	`cue` names a MOMENT the client may answer with a sound — "checkpoint", "fall".
+	`cue` names a MOMENT the client may answer with a sound — "fall", "refused".
 	The server never names a clip: which sound a moment makes, or whether it makes
 	one at all, is the client's business and a theme's to change.
 ]]

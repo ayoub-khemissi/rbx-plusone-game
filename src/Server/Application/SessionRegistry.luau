@@ -3,9 +3,12 @@
 	SessionRegistry — in-memory state of the connected players.
 
 	A session bridges a Roblox player and their domain profile. It also carries
-	everything that must NOT be persisted: the checkpoint they will come back to, the
-	air jumps already spent, the dash cooldown, the Coins already swept off the
-	course.
+	everything that must NOT be persisted: the air jumps already spent, the dash
+	cooldown, the Coins already swept off the course.
+
+	It holds no PLACE. Where a player is in the course is answered by their Speed
+	through the Stage ladder, so there is nothing here to fall out of step with the
+	profile.
 
 	That separation is deliberate. Nothing about a run should survive a reconnection:
 	a save is about progress, never about where you were standing.
@@ -30,8 +33,6 @@ export type Session = {
 	joinedAt: number?,
 
 	-- Current run, all of it volatile
-	stageId: number,
-	checkpoint: Point?,
 	lastPosition: Point?,
 	lastSampleAt: number?,
 	jumps: JumpBudget.State,
@@ -65,8 +66,6 @@ function SessionRegistry.open(
 		savable = true,
 		joinedAt = nil,
 
-		stageId = 1,
-		checkpoint = nil,
 		lastPosition = nil,
 		lastSampleAt = nil,
 		jumps = JumpBudget.newState(),
@@ -83,8 +82,6 @@ end
 
 --[[ Clears everything tied to the current position on the course. ]]
 function SessionRegistry.resetRun(_self: SessionRegistry, session: Session)
-	session.stageId = 1
-	session.checkpoint = nil
 	session.lastPosition = nil
 	session.lastSampleAt = nil
 	session.jumps = JumpBudget.newState()
