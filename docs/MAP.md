@@ -29,6 +29,26 @@ tags count.
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
 lets a decorated pad be tagged once instead of six times.
 
+## Rebuilding a map to run on
+
+If you have no map yet — or you have just cleared one — this builds a complete,
+playable one. Paste it into the Studio **command bar** (View → Command Bar) with
+the project synced:
+
+```lua
+require(game.ServerScriptService.Server.Composition.Sandbox).build()
+```
+
+A floor, a spawn, ten finish plates, seven treadmills, a shop pad, a rebirth pad
+and a row of Coins — every one of them tagged and wired, so the game is playable
+the moment you press Play. If the place already holds a tagged Coin model, the row
+is built from THAT, so you get your own coin rather than a cylinder.
+
+It **clears the Workspace first**, and run from the command bar it builds into the
+place you are editing: what it makes is yours to keep, save and decorate, and what
+it replaced is gone. It is the fastest way to a map you can run on, and the fastest
+way to lose one you had.
+
 > ⚠️ **The test platform wipes the map.** It only runs in Studio, and only while
 > the Workspace carries a `Sandbox` attribute set to `true` — but while it does, it
 > clears the Workspace at every launch and lays its own platform over it. Once you

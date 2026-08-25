@@ -154,7 +154,41 @@ local function label(anchor: BasePart, text: string)
 	title.Parent = billboard
 end
 
+--[[
+	Somewhere to say things when nobody passed a logger.
+
+	`build` is called by Bootstrap with the real one, and by a human from the Studio
+	command bar with nothing at all — and the second caller is the one that most
+	needs to be told what happened.
+]]
+local function loggerOr(logger)
+	if logger then
+		return logger
+	end
+	return {
+		info = function(_self, message)
+			print(`[Sandbox] {message}`)
+		end,
+		warn = function(_self, message)
+			warn(`[Sandbox] {message}`)
+		end,
+	}
+end
+
+--[[
+	Builds the platform, clearing whatever was there.
+
+	CALLED TWO WAYS. Bootstrap calls it at server start, behind the attribute, and
+	then it lives only as long as the session. From the Studio command bar it builds
+	into the place you are EDITING, where it stays and where saving keeps it:
+
+		require(game.ServerScriptService.Server.Composition.Sandbox).build()
+
+	That is the difference worth knowing before pressing it. The first is a test
+	platform; the second replaces your map with one.
+]]
 function Sandbox.build(logger)
+	logger = loggerOr(logger)
 	-- Taken aside before the wipe: see `taggedCoin`.
 	local template = taggedCoin()
 
