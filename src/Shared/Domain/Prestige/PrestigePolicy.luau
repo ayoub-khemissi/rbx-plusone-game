@@ -6,6 +6,9 @@
 	on every future gain. The requirement grows geometrically, so each prestige is a
 	real decision rather than a formality.
 
+	It is a loop INSIDE a world, not the end of one: several of them open the next
+	world, and the requirement restarts there rather than compounding forever.
+
 	Named after the mechanic, never after a theme: a theme may display it as Rebirth,
 	Ascension or anything else, but the code only knows Prestige.
 ]]
@@ -19,6 +22,8 @@ type Profile = Profile.Profile
 export type Tuning = {
 	baseRequirement: number,
 	requirementGrowth: number,
+	-- How many rebirths a world is made of. The requirement restarts at each one.
+	rebirthsPerWorld: number?,
 	multiplierPerPrestige: number,
 	resetsUpgrades: boolean,
 	keptCoinRatio: number?,
@@ -33,9 +38,20 @@ function PrestigePolicy.new(tuning: Tuning): PrestigePolicy
 	return setmetatable({ tuning = tuning }, PrestigePolicy)
 end
 
---[[ Speed needed to go from `prestiges` to `prestiges + 1`. ]]
-function PrestigePolicy.requirementFor(self: PrestigePolicy, prestiges: number): number
-	return math.floor(self.tuning.baseRequirement * self.tuning.requirementGrowth ^ math.max(prestiges, 0))
+--[[
+	Experience needed to go from `prestiges` to `prestiges + 1`.
+
+	The growth applies WITHIN a world: the count restarts at each new one, and the
+	world's `scale` carries the whole ladder up. Compounding across every rebirth
+	ever taken would put the thirty-fifth out of reach by a factor of millions,
+	which is not a long loop but a wall.
+]]
+function PrestigePolicy.requirementFor(self: PrestigePolicy, prestiges: number, scale: number?): number
+	local taken = math.max(math.floor(prestiges or 0), 0)
+	local perWorld = self.tuning.rebirthsPerWorld
+	local cycle = if perWorld and perWorld > 0 then taken % perWorld else taken
+
+	return math.floor(self.tuning.baseRequirement * (scale or 1) * self.tuning.requirementGrowth ^ cycle)
 end
 
 function PrestigePolicy.multiplierFor(self: PrestigePolicy, prestiges: number): number

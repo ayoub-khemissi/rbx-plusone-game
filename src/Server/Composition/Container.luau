@@ -13,8 +13,7 @@
 local Shared = require(script.Parent.Parent.Shared)
 
 local UpgradeCatalog = require(Shared.Domain.Economy.UpgradeCatalog)
-local StageLadder = require(Shared.Domain.Run.StageLadder)
-local LevelCurve = require(Shared.Domain.Run.LevelCurve)
+local World = require(Shared.Domain.Run.World)
 local SpeedCurve = require(Shared.Domain.Movement.SpeedCurve)
 local MovementAccounting = require(Shared.Domain.Movement.MovementAccounting)
 local JumpBudget = require(Shared.Domain.Movement.JumpBudget)
@@ -125,8 +124,20 @@ function Container.new(options: Options)
 	local clock = ports.clock or { now = os.time, monotonic = os.clock }
 
 	local catalog = UpgradeCatalog.new(config.Upgrades)
-	local ladder = StageLadder.new(config.Stages)
-	local levels = LevelCurve.new(balance.level)
+	--[[
+		Worlds are built once and shared. Two players in the same world read the same
+		ladder, and a world is only built when somebody reaches it.
+	]]
+	local worlds = World.registry(config.Worlds, {
+		stages = config.Stages,
+		level = balance.level,
+		rebirthsPerWorld = balance.prestige.rebirthsPerWorld,
+	})
+
+	-- The first world's readings are the defaults, for anything not yet per-world.
+	local firstWorld = worlds:get(config.Worlds[1].id)
+	local ladder = firstWorld.ladder
+	local levels = firstWorld.levels
 	local curve = SpeedCurve.new(balance.speedCurve)
 	local accounting = MovementAccounting.new(balance.movement)
 	local jumpBudget = JumpBudget.new(balance.movement)
@@ -159,6 +170,7 @@ function Container.new(options: Options)
 		catalog = catalog,
 		ladder = ladder,
 		levels = levels,
+		worlds = worlds,
 		curve = curve,
 		accounting = accounting,
 		jumpBudget = jumpBudget,

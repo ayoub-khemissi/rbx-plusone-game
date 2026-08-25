@@ -15,6 +15,7 @@ local ACTIVE_THEME = "Default"
 return table.freeze({
 	Balance = require(script.Balance),
 	Stages = require(script.Stages),
+	Worlds = require(script.Worlds),
 	Upgrades = require(script.Upgrades),
 	Passes = require(script.Passes),
 	Products = require(script.Products),

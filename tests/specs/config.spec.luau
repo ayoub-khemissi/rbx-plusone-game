@@ -120,16 +120,16 @@ describe("Config.Balance", function()
 		expect(curve:walkSpeedFor(early)).toBeLessThan(24)
 
 		--[[
-			At the Prestige threshold — the end of a world — the character is fast
-			but the curve has not run out: there has to be headroom left, or the
-			second world would open with nothing to give.
+			At the last course of a world the character is fast, but the curve has
+			not run out: there has to be headroom left, or the courses after it
+			would have nothing to give.
 		]]
-		local prestige = PrestigePolicy.new(Config.Balance.prestige):requirementFor(0)
-		local atPrestige = curve:walkSpeedFor(levels:levelFor(prestige))
+		local lastCourse = Config.Stages[#Config.Stages]
+		local atLastCourse = curve:walkSpeedFor(levels:levelFor(lastCourse.requiredSpeed))
 		local ceiling = Config.Balance.speedCurve.baseWalkSpeed + Config.Balance.speedCurve.maxBonusWalkSpeed
 
-		expect(atPrestige).toBeGreaterThan(60)
-		expect(atPrestige).toBeLessThan(ceiling * 0.75)
+		expect(atLastCourse).toBeGreaterThan(60)
+		expect(atLastCourse).toBeLessThan(ceiling * 0.75)
 
 		--[[
 			The ceiling is the physics limit, and it is what stops the character
@@ -178,13 +178,22 @@ describe("Config.Balance", function()
 	it("keeps a world out of reach for at least four hours of running", function()
 		local curve = SpeedCurve.new(Config.Balance.speedCurve)
 		local levels = LevelCurve.new(Config.Balance.level)
-		local lastCourse = Config.Stages[#Config.Stages]
+		local policy = PrestigePolicy.new(Config.Balance.prestige)
 		local perSecond = Config.Balance.progression.speedPerStep / Config.Balance.movement.studsPerStep
+		local perWorld = Config.Balance.prestige.rebirthsPerWorld
 
-		local experience, seconds, step = 0, 0, 5
-		while experience < lastCourse.requiredSpeed and seconds < 20 * 3600 do
-			experience += curve:walkSpeedFor(levels:levelFor(experience)) * perSecond * step
-			seconds += step
+		-- The seven cycles of reset-and-climb a world is made of. Each is quicker
+		-- than the last, because the multiplier keeps what the reset takes away.
+		local seconds, step = 0, 5
+		for taken = 0, perWorld - 1 do
+			local target = policy:requirementFor(taken)
+			local multiplier = policy:multiplierFor(taken)
+			local experience = 0
+
+			while experience < target and seconds < 20 * 3600 do
+				experience += curve:walkSpeedFor(levels:levelFor(experience)) * perSecond * multiplier * step
+				seconds += step
+			end
 		end
 
 		expect(seconds / 3600).toBeGreaterThan(4)
@@ -203,11 +212,32 @@ describe("Config.Balance", function()
 		end
 	end)
 
-	-- Prestige must mean "I finished the course", not "I played a bit".
-	it("asks for the last stage before the first prestige", function()
+	--[[
+		A rebirth is a loop inside a world, so its first requirement sits in the
+		MIDDLE of the course ladder: early enough that the loop starts before a
+		player has seen everything, late enough to be a decision rather than a
+		formality on the first climb.
+	]]
+	it("places the first rebirth in the middle of a world", function()
 		local policy = PrestigePolicy.new(Config.Balance.prestige)
-		expect(policy:requirementFor(0)).toBeGreaterThanOrEqual(Config.Stages[#Config.Stages].requiredSpeed)
+		local first = policy:requirementFor(0)
+
+		expect(first).toBeGreaterThan(Config.Stages[3].requiredSpeed)
+		expect(first).toBeLessThan(Config.Stages[7].requiredSpeed)
 		expect(policy:multiplierFor(1)).toBeGreaterThan(1)
+	end)
+
+	--[[
+		And the ladder RESTARTS at each world rather than compounding forever.
+		Growth applied across every rebirth ever taken puts the thirty-fifth out of
+		reach by a factor of millions, which is a wall rather than a long loop.
+	]]
+	it("restarts the rebirth ladder in each world", function()
+		local policy = PrestigePolicy.new(Config.Balance.prestige)
+		local perWorld = Config.Balance.prestige.rebirthsPerWorld
+
+		expect(policy:requirementFor(perWorld)).toBe(policy:requirementFor(0))
+		expect(policy:requirementFor(perWorld - 1)).toBeGreaterThan(policy:requirementFor(0))
 	end)
 end)
 
