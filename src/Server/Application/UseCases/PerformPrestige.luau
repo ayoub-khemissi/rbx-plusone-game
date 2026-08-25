@@ -33,6 +33,9 @@ function PerformPrestige.run(self, player)
 	self.sessions:resetRun(session)
 
 	self.body:sendTo(player, self.hubPoint)
+	-- Played on the server, so the room sees it. A rebirth is the one moment in the
+	-- game whose whole point is being watched.
+	self.effects:celebrate(player, "rebirth")
 	self.publisher:publish(player, self.snapshots:build(session))
 	self.notifier:notify(
 		player,

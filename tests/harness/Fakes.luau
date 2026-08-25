@@ -147,6 +147,17 @@ function Fakes.body()
 	return fake
 end
 
+function Fakes.effects()
+	local fake = { celebrations = {} }
+
+	function fake:celebrate(playerRef, kind)
+		table.insert(self.celebrations, kind)
+		self.last = kind
+	end
+
+	return fake
+end
+
 function Fakes.passGateway(owned: { [string]: boolean }?)
 	local fake = { owned = owned or {} }
 

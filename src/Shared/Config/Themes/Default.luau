@@ -150,6 +150,13 @@ local theme: Theme = {
 		-- surface a grain instead of a colour. Any seamless texture works — see
 		-- docs/TEXTURES.md for the ones already available.
 		panelPattern = "rbxassetid://4621488899",
+		--[[
+			The confetti thrown when a player takes a Rebirth. Left unset, the engine's
+			own sparkle texture is used, which ships with every Roblox install — so the
+			celebration never waits on an upload. Set it to a small square of confetti
+			and the burst reads as paper rather than light.
+		]]
+		confetti = nil,
 	},
 }
 

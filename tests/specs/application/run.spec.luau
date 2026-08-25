@@ -15,6 +15,7 @@ local function build(options)
 		notifier = Fakes.notifier(),
 		actuator = Fakes.actuator(),
 		body = Fakes.body(),
+		effects = Fakes.effects(),
 		passGateway = Fakes.passGateway(),
 		marketplace = Fakes.marketplace(),
 		clock = Fakes.clock(1000),
@@ -412,6 +413,24 @@ describe("PerformPrestige", function()
 	it("refuses below the requirement", function()
 		expect(container.useCases.performPrestige:run(player).code).toBe("SPEED_TOO_LOW")
 		expect(session.profile.prestiges).toBe(0)
+	end)
+
+	--[[
+		The one moment in the game whose point is being SEEN. Everything else the
+		interface says is said to the player who earned it; this is said to the room,
+		which is why it goes through a port the server owns rather than a client
+		drawing something for itself.
+	]]
+	it("celebrates where everyone can see it", function()
+		session.profile.speed = container.domain.prestigePolicy:requirementFor(0)
+		container.useCases.performPrestige:run(player)
+
+		expect(ports.effects.last).toBe("rebirth")
+	end)
+
+	it("celebrates nothing when the rebirth is refused", function()
+		container.useCases.performPrestige:run(player)
+		expect(#ports.effects.celebrations).toBe(0)
 	end)
 
 	it("resets progress, grants the multiplier and sends the player home", function()

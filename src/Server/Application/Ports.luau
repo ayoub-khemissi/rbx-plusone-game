@@ -50,6 +50,16 @@ export type Body = {
 	kill: (self: Body, player: PlayerRef) -> (),
 }
 
+--[[
+	Something the room can see: a celebration played ON a character.
+
+	A port rather than a call into Roblox, because what a rebirth IS belongs to the
+	use case and what it LOOKS like does not — and because a test has no particles.
+]]
+export type Effects = {
+	celebrate: (self: Effects, player: PlayerRef, kind: string) -> (),
+}
+
 --[[ Gamepass ownership and purchase prompts. ]]
 export type PassGateway = {
 	ownedPasses: (self: PassGateway, player: PlayerRef) -> { [string]: boolean },

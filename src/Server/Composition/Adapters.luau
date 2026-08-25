@@ -19,6 +19,7 @@ local AttributeStatsPublisher = require(Adapters.Replication.AttributeStatsPubli
 local RemoteNotifier = require(Adapters.Replication.RemoteNotifier)
 local CharacterActuator = require(Adapters.Roblox.CharacterActuator)
 local CharacterBody = require(Adapters.Roblox.CharacterBody)
+local CharacterEffects = require(Adapters.Roblox.CharacterEffects)
 local MarketplaceGateway = require(Adapters.Roblox.MarketplaceGateway)
 local Logger = require(Adapters.Roblox.Logger)
 
@@ -56,6 +57,7 @@ function AdaptersFactory.build(remotes)
 		notifier = RemoteNotifier.new(remotes.events.Notify, { now = os.clock }),
 		actuator = CharacterActuator.new(),
 		body = CharacterBody.new(),
+		effects = CharacterEffects.new(),
 		passGateway = MarketplaceGateway.new(Config.Passes, logger),
 		clock = { now = os.time, monotonic = os.clock },
 		logger = logger,
