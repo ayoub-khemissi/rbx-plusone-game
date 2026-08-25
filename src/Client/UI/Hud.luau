@@ -372,10 +372,6 @@ function Hud.render(self)
 	for _, boost in state:list("ActiveBoosts") do
 		table.insert(parts, `{math.ceil((boost.remaining or 0) / 60)}m`)
 	end
-	if state:flag("IdleActive") then
-		table.insert(parts, "AFK")
-	end
-
 	self.boosts.frame.Visible = #parts > 0
 	self.boosts.value.Text = table.concat(parts, " ")
 end

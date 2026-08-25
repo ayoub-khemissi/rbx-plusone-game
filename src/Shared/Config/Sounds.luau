@@ -51,7 +51,7 @@ local sounds: { [string]: Cue } = {
 	airJump = { id = "rbxassetid://3809085250", volume = 0.3 },
 	dash = { id = "rbxassetid://3809085996", volume = 0.4 },
 
-	-- Course events.
+	-- Stage events.
 	checkpoint = { id = "rbxassetid://4612384434", volume = 0.5 },
 	fall = { id = "rbxassetid://4612384231", volume = 0.45 },
 

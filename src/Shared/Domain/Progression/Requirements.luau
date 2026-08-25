@@ -2,8 +2,8 @@
 --[[
 	Requirements — what has to be true before something opens.
 
-	ONE EVALUATOR FOR THE WHOLE GAME. An upgrade that needs another upgrade, an idle
-	pad that needs a level, the next map that needs a prestige: all of them are the
+	ONE EVALUATOR FOR THE WHOLE GAME. An upgrade that needs another upgrade, a belt
+	that needs a level, the next world that needs seven rebirths: all of them are the
 	same question asked of the same profile. Writing that question once means a new
 	gate is a line of DATA rather than a new branch somewhere in a use case.
 

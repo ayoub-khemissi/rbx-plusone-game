@@ -25,7 +25,6 @@ export type Dependencies = {
 	jumpBudget: any,
 	dashPolicy: any,
 	boosts: any,
-	idle: any,
 	clock: any,
 }
 
@@ -64,8 +63,6 @@ function Snapshot.build(self: SnapshotFactory, session: Session)
 		-- Current run
 		stageId = session.stageId,
 		hasCheckpoint = session.checkpoint ~= nil,
-		idleActive = session.idleActive,
-		idleRemaining = self.idle:remainingFor(session.idle),
 
 		-- Movement
 		walkSpeed = movement.walkSpeed,

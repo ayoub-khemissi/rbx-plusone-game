@@ -435,7 +435,7 @@ describe("Sound cues", function()
 end)
 
 --[[
-	The gate the whole game will hang off: an upgrade, an idle pad, the next map.
+	The gate the whole game will hang off: an upgrade, a treadmill, the next world.
 	These cover the seam rather than the conditions themselves, which have their own
 	spec — what matters here is that a use case cannot buy past it.
 ]]
@@ -473,16 +473,16 @@ describe("Requirements", function()
 	end)
 end)
 
-describe("FinishCourse", function()
+describe("FinishStage", function()
 	local container, ports, player, session
 	beforeEach(function()
 		container, ports = build()
 		player, session = joined(container)
 	end)
 
-	it("pays the course and sends the player home", function()
+	it("pays the stage and sends the player home", function()
 		local before = session.profile.speed
-		local result = container.useCases.finishCourse:run(player, 2)
+		local result = container.useCases.finishStage:run(player, 2)
 
 		expect(result.ok).toBe(true)
 		expect(session.profile.speed).toBeGreaterThan(before)
@@ -491,39 +491,39 @@ describe("FinishCourse", function()
 	end)
 
 	--[[
-		The plate is what says a course was CLEARED. A checkpoint only says the
+		The plate is what says a stage was CLEARED. A checkpoint only says the
 		player walked in, which is why the deepest course reached is recorded here
 		and nowhere else.
 	]]
-	it("records the course as the deepest one cleared", function()
-		container.useCases.finishCourse:run(player, 4)
+	it("records the stage as the deepest one cleared", function()
+		container.useCases.finishStage:run(player, 4)
 		expect(session.profile.highestStage).toBe(4)
 	end)
 
-	it("never lowers the deepest course on an easier one", function()
-		container.useCases.finishCourse:run(player, 4)
-		container.useCases.finishCourse:run(player, 2)
+	it("never lowers the deepest stage on an easier one", function()
+		container.useCases.finishStage:run(player, 4)
+		container.useCases.finishStage:run(player, 2)
 		expect(session.profile.highestStage).toBe(4)
 	end)
 
 	--[[
 		The ride home must not be read as distance run. Forgetting this pays the
-		player for the length of the course they just skipped backwards.
+		player for the length of the stage they just skipped backwards.
 	]]
 	it("does not credit the trip back as running", function()
-		container.useCases.finishCourse:run(player, 3)
+		container.useCases.finishStage:run(player, 3)
 		expect(session.lastPosition).toBeNil()
 	end)
 
-	it("pays a deeper course better", function()
-		local first = container.useCases.finishCourse:run(player, 1).value.reward.speed
-		local last = container.useCases.finishCourse:run(player, #Config.Stages).value.reward.speed
+	it("pays a deeper stage better", function()
+		local first = container.useCases.finishStage:run(player, 1).value.reward.speed
+		local last = container.useCases.finishStage:run(player, #Config.Stages).value.reward.speed
 		expect(last).toBeGreaterThan(first)
 	end)
 
-	it("refuses a plate that names no course", function()
-		expect(container.useCases.finishCourse:run(player, nil).code).toBe("BAD_COURSE")
-		expect(container.useCases.finishCourse:run(player, 99).code).toBe("BAD_COURSE")
+	it("refuses a plate that names no stage", function()
+		expect(container.useCases.finishStage:run(player, nil).code).toBe("BAD_STAGE")
+		expect(container.useCases.finishStage:run(player, 99).code).toBe("BAD_STAGE")
 	end)
 end)
 

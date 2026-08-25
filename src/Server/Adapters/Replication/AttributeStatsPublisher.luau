@@ -45,13 +45,11 @@ local NUMBERS = {
 	PrestigeProgress = "prestigeProgress",
 	StageProgress = "stageProgress",
 	NextStageRequirement = "nextStageRequirement",
-	IdleRemaining = "idleRemaining",
 }
 
 local FLAGS = {
 	DashUnlocked = "dashUnlocked",
 	HasCheckpoint = "hasCheckpoint",
-	IdleActive = "idleActive",
 }
 
 -- Attributes cannot hold tables: these travel as JSON.

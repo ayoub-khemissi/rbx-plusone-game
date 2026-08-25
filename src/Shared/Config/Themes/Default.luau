@@ -63,7 +63,7 @@ local theme: Theme = {
 			icon = "🏁",
 			image = "rbxassetid://133175370281266", -- icon:checkpoint
 		},
-		-- The safe area with the shop, the prestige pad and the idle zone.
+		-- The safe area with the shop, the prestige pad and the treadmills.
 		hub = { name = "Hub", icon = "🏠", image = "rbxassetid://103151849319813" }, -- icon:hub
 		-- The passive collection, kept in the vocabulary for a later milestone.
 		charm = { name = "Charm", plural = "Charms", icon = "🔮", image = "rbxassetid://109982212844429" }, -- icon:charm

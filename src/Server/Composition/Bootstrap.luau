@@ -6,7 +6,7 @@
 	docs/MAP.md. The server only discovers what the map declares.
 
 	Three loops:
-	  1. SAMPLING — measures the real displacement, credits it, and feeds the idle pad;
+	  1. SAMPLING — measures the real displacement, or pays the belt underfoot;
 	  2. AUTOSAVE — writes the profiles periodically;
 	  3. SHUTDOWN — saves everyone before the server closes.
 ]]
@@ -128,12 +128,6 @@ local function startSampling(container, map, voidLevel: number)
 							at = now,
 						})
 					end
-
-					container.useCases.accrueIdleReward:run(
-						player,
-						map.isOnIdlePad(reading.position),
-						elapsed
-					)
 				end
 			end
 		end

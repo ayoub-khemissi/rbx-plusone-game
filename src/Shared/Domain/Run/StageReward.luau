@@ -1,6 +1,6 @@
 --!strict
 --[[
-	CourseReward — what touching the plate at the end of a course pays.
+	StageReward — what touching the plate at the end of a course pays.
 
 	IT IS A SHARE OF WHAT THE NEXT COURSE COSTS. That figure is the only one that
 	says how big this stretch of the game is, so a reward drawn from it scales on
@@ -26,21 +26,21 @@ export type Reward = {
 	coins: number,
 }
 
-local CourseReward = {}
-CourseReward.__index = CourseReward
+local StageReward = {}
+StageReward.__index = StageReward
 
-export type CourseReward = typeof(setmetatable({} :: Tuning, CourseReward))
+export type StageReward = typeof(setmetatable({} :: Tuning, StageReward))
 
-function CourseReward.new(tuning: Tuning): CourseReward
+function StageReward.new(tuning: Tuning): StageReward
 	return setmetatable({
 		share = tuning.share,
 		minimum = tuning.minimum,
 		coinsPerSpeed = tuning.coinsPerSpeed,
-	}, CourseReward)
+	}, StageReward)
 end
 
 --[[ What finishing `stage` pays, `nextStage` being the one after it if any. ]]
-function CourseReward.forStage(self: CourseReward, stage: any, nextStage: any): Reward?
+function StageReward.forStage(self: StageReward, stage: any, nextStage: any): Reward?
 	if not stage then
 		return nil
 	end
@@ -55,4 +55,4 @@ function CourseReward.forStage(self: CourseReward, stage: any, nextStage: any): 
 	return { speed = speed, coins = coins }
 end
 
-return CourseReward
+return StageReward

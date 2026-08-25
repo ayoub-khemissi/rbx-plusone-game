@@ -1,5 +1,5 @@
 --!nocheck
-local CourseReward = require(Domain.Run.CourseReward)
+local StageReward = require(Domain.Run.StageReward)
 
 local TUNING = { share = 0.02, minimum = 300, coinsPerSpeed = 0.5 }
 local STAGES = {
@@ -8,43 +8,43 @@ local STAGES = {
 	{ id = 3, requiredSpeed = 40000, coinMultiplier = 3 },
 }
 
-describe("CourseReward", function()
+describe("StageReward", function()
 	local rewards
 	beforeEach(function()
-		rewards = CourseReward.new(TUNING)
+		rewards = StageReward.new(TUNING)
 	end)
 
 	--[[
-		A course pays a share of what the NEXT one costs to enter, which is the only
+		A stage pays a share of what the NEXT one costs to enter, which is the only
 		figure that says how big this stretch of the game is. Paying a flat amount
-		would make the first course the best one to farm forever.
+		would make the first stage the best one to farm forever.
 	]]
-	it("pays out of what the next course costs", function()
+	it("pays out of what the next stage costs", function()
 		local reward = rewards:forStage(STAGES[2], STAGES[3])
 		expect(reward.speed).toBe(math.floor(40000 * TUNING.share))
 	end)
 
-	it("pays more for a course further in", function()
+	it("pays more for a stage further in", function()
 		local first = rewards:forStage(STAGES[1], STAGES[2])
 		local second = rewards:forStage(STAGES[2], STAGES[3])
 		expect(second.speed).toBeGreaterThan(first.speed)
 	end)
 
-	-- The first course has almost nothing behind it, and no reward at all would
+	-- The first stage has almost nothing behind it, and no reward at all would
 	-- teach a new player that the plate is not worth touching.
 	it("never pays less than the floor", function()
 		expect(rewards:forStage(STAGES[1], STAGES[2]).speed).toBe(TUNING.minimum)
 	end)
 
-	-- The last course has no next one; it is worth what it cost to reach.
-	it("pays the last course out of its own cost", function()
+	-- The last stage has no next one; it is worth what it cost to reach.
+	it("pays the last stage out of its own cost", function()
 		local reward = rewards:forStage(STAGES[3], nil)
 		expect(reward.speed).toBe(math.floor(40000 * TUNING.share))
 	end)
 
 	--[[
 		Coins follow the experience and then take the stage multiplier, so a deeper
-		course pays twice over — once for being bigger, once for being deeper.
+		stage pays twice over — once for being bigger, once for being deeper.
 	]]
 	it("scales the coins with the stage multiplier", function()
 		local reward = rewards:forStage(STAGES[2], STAGES[3])

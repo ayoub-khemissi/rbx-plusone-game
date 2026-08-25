@@ -46,10 +46,9 @@ local NUMBERS = {
 	"PrestigeProgress",
 	"StageProgress",
 	"NextStageRequirement",
-	"IdleRemaining",
 }
 
-local FLAGS = { "HasCheckpoint", "IdleActive", "DashUnlocked" }
+local FLAGS = { "HasCheckpoint", "DashUnlocked" }
 
 local TABLES = { "ActiveBoosts" }
 

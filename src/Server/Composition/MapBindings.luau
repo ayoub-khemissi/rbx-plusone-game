@@ -30,18 +30,16 @@ MapBindings.TAGS = {
 	bouncePad = "BouncePad",
 	shopPad = "ShopPad",
 	prestigePad = "PrestigePad",
-	idlePad = "AfkPad",
 	finishPad = "FinishPad",
 	treadmill = "Treadmill",
 }
 
 local FALL_GRACE_FALLBACK = 1
 local PAD_COOLDOWN = 1
-local IDLE_PAD_MARGIN = 6
 --[[
-	Tighter than an idle pad on purpose. A belt is something you stand ON, and the
-	idle pad's generous box let a player walk clear of one and still be counted on
-	it — which left the run animation playing over an empty floor.
+	A belt is something you stand ON. A generous box lets a player walk clear of one
+	and still be counted on it, which leaves the run animation playing over an empty
+	floor — so this one is deliberately tight.
 ]]
 local TREADMILL_MARGIN = 2
 local DEFAULT_STAGE = 1
@@ -96,7 +94,6 @@ function MapBindings.bind(container)
 
 	local lastFall: { [Player]: number } = {}
 	local lastPad: { [Player]: number } = {}
-	local idlePads: { BasePart } = {}
 	local treadmills: { { part: BasePart, multiplier: number } } = {}
 	local missingStageId = 0
 
@@ -262,17 +259,9 @@ function MapBindings.bind(container)
 			part.Touched:Connect(function(hit)
 				local player = playerFromTouch(hit)
 				if player and cooled(lastPad, player, PAD_COOLDOWN) then
-					useCases.finishCourse:run(player, stageId)
+					useCases.finishStage:run(player, stageId)
 				end
 			end)
-		end
-	end)
-
-	-- The idle pad is polled by the sampling loop rather than wired to Touched:
-	-- standing still on a part does not keep firing Touched events.
-	onTagged(TAGS.idlePad, function(instance)
-		for _, part in partsOf(instance) do
-			table.insert(idlePads, part)
 		end
 	end)
 
@@ -298,22 +287,6 @@ function MapBindings.bind(container)
 		lastPad[player] = nil
 	end)
 
-	local function isOnIdlePad(position: { x: number, y: number, z: number }): boolean
-		for _, pad in idlePads do
-			if pad.Parent then
-				local size, centre = pad.Size, pad.Position
-				local withinX = math.abs(position.x - centre.X) <= size.X / 2 + IDLE_PAD_MARGIN
-				local withinZ = math.abs(position.z - centre.Z) <= size.Z / 2 + IDLE_PAD_MARGIN
-				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + IDLE_PAD_MARGIN * 2
-
-				if withinX and withinY and withinZ then
-					return true
-				end
-			end
-		end
-		return false
-	end
-
 	--[[
 		The multiplier of the belt under a player, or nil if there is none.
 
@@ -328,7 +301,7 @@ function MapBindings.bind(container)
 				local size, centre = part.Size, part.Position
 				local withinX = math.abs(position.x - centre.X) <= size.X / 2 + TREADMILL_MARGIN
 				local withinZ = math.abs(position.z - centre.Z) <= size.Z / 2 + TREADMILL_MARGIN
-				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + IDLE_PAD_MARGIN
+				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + TREADMILL_MARGIN * 3
 
 				if withinX and withinY and withinZ and (best == nil or belt.multiplier > best) then
 					best = belt.multiplier
@@ -343,8 +316,7 @@ function MapBindings.bind(container)
 		logger:info(
 			`Map loaded: {countTagged(TAGS.checkpoint)} checkpoints, {countTagged(TAGS.killzone)} hazards, `
 				.. `{countTagged(TAGS.coin)} coins, {countTagged(TAGS.conveyor)} conveyors, `
-				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#idlePads} idle pads, `
-				.. `{#treadmills} treadmills`
+				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#treadmills} treadmills`
 		)
 		if missingStageId > 0 then
 			logger:info(`{missingStageId} checkpoints without a StageId, assigned to Stage {DEFAULT_STAGE}`)
@@ -354,7 +326,7 @@ function MapBindings.bind(container)
 		end
 	end
 
-	return { isOnIdlePad = isOnIdlePad, treadmillAt = treadmillAt, fall = fall, report = report }
+	return { treadmillAt = treadmillAt, fall = fall, report = report }
 end
 
 return MapBindings

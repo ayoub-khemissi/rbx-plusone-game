@@ -4,7 +4,7 @@
 
 	Four pillars, each proven on Roblox:
 
-	  1. FREE AND STICKY  : daily streak, session chest, idle zone;
+	  1. FREE AND STICKY  : daily streak, session chest, the free treadmill;
 	  2. PERMANENT        : gamepasses, bought once, high perceived value;
 	  3. REPEATABLE       : consumable products bought at every hard step — the main
 	     source of revenue;

@@ -6,7 +6,7 @@
 	convenient one. The distinction matters more than it looks:
 
 	  * a Coin plays where it is caught, in MagnetController, not when the counter
-	    moves. The counter also moves on idle income and on rewards, and it is
+	    moves. The counter also moves on treadmill income and on rewards, and it
 	    written on every sampling tick — hanging the sound off it would turn a run
 	    into a metronome;
 

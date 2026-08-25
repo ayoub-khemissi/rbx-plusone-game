@@ -14,7 +14,7 @@ local Shared = require(script.Parent.Parent.Shared)
 
 local UpgradeCatalog = require(Shared.Domain.Economy.UpgradeCatalog)
 local World = require(Shared.Domain.Run.World)
-local CourseReward = require(Shared.Domain.Run.CourseReward)
+local StageReward = require(Shared.Domain.Run.StageReward)
 local SpeedCurve = require(Shared.Domain.Movement.SpeedCurve)
 local MovementAccounting = require(Shared.Domain.Movement.MovementAccounting)
 local JumpBudget = require(Shared.Domain.Movement.JumpBudget)
@@ -22,7 +22,6 @@ local DashPolicy = require(Shared.Domain.Movement.DashPolicy)
 local Multipliers = require(Shared.Domain.Movement.Multipliers)
 local Progression = require(Shared.Domain.Movement.Progression)
 local PrestigePolicy = require(Shared.Domain.Prestige.PrestigePolicy)
-local IdleAccrual = require(Shared.Domain.Idle.IdleAccrual)
 local BoostStack = require(Shared.Domain.Monetization.BoostStack)
 local ProductCatalog = require(Shared.Domain.Monetization.ProductCatalog)
 local RewardSchedule = require(Shared.Domain.Monetization.RewardSchedule)
@@ -42,14 +41,13 @@ local ReleasePlayer = require(UseCases.ReleasePlayer)
 local SampleMovement = require(UseCases.SampleMovement)
 local ReachCheckpoint = require(UseCases.ReachCheckpoint)
 local FallToCheckpoint = require(UseCases.FallToCheckpoint)
-local FinishCourse = require(UseCases.FinishCourse)
+local FinishStage = require(UseCases.FinishStage)
 local RunOnTreadmill = require(UseCases.RunOnTreadmill)
 local RequestJump = require(UseCases.RequestJump)
 local NoteLanded = require(UseCases.NoteLanded)
 local RequestDash = require(UseCases.RequestDash)
 local CollectCoin = require(UseCases.CollectCoin)
 local PerformPrestige = require(UseCases.PerformPrestige)
-local AccrueIdleReward = require(UseCases.AccrueIdleReward)
 local BuyUpgrade = require(UseCases.BuyUpgrade)
 local ProcessReceipt = require(UseCases.ProcessReceipt)
 local ClaimDailyReward = require(UseCases.ClaimDailyReward)
@@ -139,7 +137,7 @@ function Container.new(options: Options)
 
 	-- The first world's readings are the defaults, for anything not yet per-world.
 	local firstWorld = worlds:get(config.Worlds[1].id)
-	local courseRewards = CourseReward.new(balance.course)
+	local stageRewards = StageReward.new(balance.stage)
 	local ladder = firstWorld.ladder
 	local levels = firstWorld.levels
 	local curve = SpeedCurve.new(balance.speedCurve)
@@ -162,7 +160,6 @@ function Container.new(options: Options)
 		tuning = balance.progression,
 	})
 
-	local idle = IdleAccrual.new(balance.afk)
 	local boosts = BoostStack.new(monetization.boosts)
 	local products = ProductCatalog.new(config.Products)
 	local daily = RewardSchedule.new(monetization.daily)
@@ -175,7 +172,7 @@ function Container.new(options: Options)
 		ladder = ladder,
 		levels = levels,
 		worlds = worlds,
-		courseRewards = courseRewards,
+		stageRewards = stageRewards,
 		curve = curve,
 		accounting = accounting,
 		jumpBudget = jumpBudget,
@@ -183,7 +180,6 @@ function Container.new(options: Options)
 		multipliers = multipliers,
 		progression = progression,
 		prestigePolicy = prestigePolicy,
-		idle = idle,
 		boosts = boosts,
 		products = products,
 		daily = daily,
@@ -202,7 +198,6 @@ function Container.new(options: Options)
 		jumpBudget = jumpBudget,
 		dashPolicy = dashPolicy,
 		boosts = boosts,
-		idle = idle,
 		clock = clock,
 	})
 
@@ -264,14 +259,13 @@ function Container.new(options: Options)
 		sampleMovement = SampleMovement.new(deps()),
 		reachCheckpoint = ReachCheckpoint.new(deps()),
 		fallToCheckpoint = FallToCheckpoint.new(deps()),
-		finishCourse = FinishCourse.new(deps(withRewards)),
+		finishStage = FinishStage.new(deps(withRewards)),
 		runOnTreadmill = RunOnTreadmill.new(deps({ tuning = balance.movement })),
 		requestJump = RequestJump.new(deps()),
 		noteLanded = NoteLanded.new(deps()),
 		requestDash = RequestDash.new(deps()),
 		collectCoin = CollectCoin.new(deps()),
 		performPrestige = PerformPrestige.new(deps({ save = saveProfile })),
-		accrueIdleReward = AccrueIdleReward.new(deps(withRewards)),
 
 		buyUpgrade = BuyUpgrade.new(deps()),
 		processReceipt = ProcessReceipt.new(deps(withRewards)),

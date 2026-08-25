@@ -187,7 +187,7 @@ enabled by the composition root.**
 
 Walking on a mechanic is the only way to judge it, and hand-building a lobby to
 try one out is a poor use of an afternoon. A bare platform carrying every pad —
-finish plates, treadmills, shop, rebirth, idle — can be built at start-up:
+finish plates, treadmills, shop, rebirth — can be built at start-up:
 
 1. Select `Workspace` in Studio
 2. Add a **boolean attribute** named `Sandbox`, set to true

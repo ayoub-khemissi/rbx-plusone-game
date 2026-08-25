@@ -92,18 +92,18 @@ return table.freeze({
 	}),
 
 	--[[
-		What the plate at the end of a course pays.
+		What the plate at the end of a stage pays.
 
-		`share` is taken from what the NEXT course costs to enter, so the reward
+		`share` is taken from what the NEXT stage costs to enter, so the reward
 		scales with the game on its own. It is deliberately modest — roughly what
-		running the course pays anyway — because a plate that beats running turns a
+		running the stage pays anyway — because a plate that beats running turns a
 		platformer into a queue. What makes it worth touching is the Coins and the
 		ride back to the lobby.
 
-		`minimum` exists for the first course, which has almost nothing behind it: a
+		`minimum` exists for the first stage, which has almost nothing behind it: a
 		reward of forty would teach a new player that the plate is not worth using.
 	]]
-	course = table.freeze({
+	stage = table.freeze({
 		share = 0.02,
 		minimum = 300,
 		coinsPerSpeed = 0.5,
@@ -170,12 +170,6 @@ return table.freeze({
 		respawnHeight = 4, -- studs above a checkpoint where the player reappears
 		fallGrace = 1, -- seconds of immunity after respawning, so a hazard cannot loop
 		voidMargin = 80, -- studs under the lowest part of the map: below that, it is a fall
-	}),
-
-	afk = table.freeze({
-		coinsPerMinute = 240,
-		payoutInterval = 60,
-		sessionCapSeconds = 4 * 3600,
 	}),
 
 	persistence = table.freeze({

@@ -30,7 +30,6 @@ local COLOURS = {
 	floor = Color3.fromRGB(74, 82, 104),
 	shop = Color3.fromRGB(229, 51, 60),
 	prestige = Color3.fromRGB(59, 178, 240),
-	idle = Color3.fromRGB(152, 156, 172),
 	finish = Color3.fromRGB(92, 201, 74),
 	belt = Color3.fromRGB(150, 60, 220),
 }
@@ -116,7 +115,6 @@ function Sandbox.build()
 			x = -30,
 			text = "REBIRTH",
 		},
-		{ name = "AfkPad", tag = MapBindings.TAGS.idlePad, colour = COLOURS.idle, x = 0, text = "AFK" },
 	}
 
 	for _, pad in pads do

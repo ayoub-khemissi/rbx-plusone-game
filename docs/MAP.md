@@ -25,7 +25,6 @@ tags count.
 | `FinishPad` | Part | Ends a course: pays out and sends the player to the lobby |
 | `ShopPad` | Part | Opens the shop |
 | `PrestigePad` | Part | Triggers a Prestige |
-| `AfkPad` | Part | Passive income area |
 | `Treadmill` | Part | Pays as if running on the spot, multiplied |
 
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
@@ -149,15 +148,14 @@ against what is physically reachable because the client reports where it went; a
 belt is the server deciding how far the character ran, so there is no claim to
 check.
 
-### `ShopPad`, `PrestigePad`, `AfkPad`
+### `ShopPad`, `PrestigePad`
 
 The three pads of the starting area. No attributes.
 
 - **`ShopPad`** — opens the upgrade shop when the player steps on it.
 - **`PrestigePad`** — triggers a Prestige. The server declines politely if the
   threshold is not met, so there is nothing to handle on your side.
-- **`AfkPad`** — while the player stands on it, they earn Coins at a slow, capped
-  rate. Make it a comfortable area, with seats if you like.
+
 
 ---
 
@@ -187,8 +185,8 @@ For the game to be playable you need, at a minimum:
 That is all. Without a checkpoint the player simply respawns at the spawn point; the
 void takes care of itself.
 
-When you want the full economic loop, add a `ShopPad`, a `PrestigePad` and an
-`AfkPad` to the starting area.
+When you want the full economic loop, add a `ShopPad`, a `PrestigePad` and a
+`Treadmill` or two to the starting area.
 
 ---
 
@@ -211,7 +209,7 @@ the server with a map, only get partial behaviour.
 At start-up the server writes what it found to the console:
 
 ```
-[Runner] Map loaded: 6 checkpoints, 11 hazards, 0 coins, 4 conveyors, 1 bounce pads, 0 idle pads
+[Runner] Map loaded: 6 checkpoints, 11 hazards, 0 coins, 4 conveyors, 1 bounce pads, 7 treadmills
 [Runner] 6 checkpoints without a StageId, assigned to Stage 1
 [Runner] Void level set to -184 studs
 ```

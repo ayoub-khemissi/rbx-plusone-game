@@ -1,6 +1,6 @@
 --!strict
 --[[
-	FinishCourse — the plate at the end of a course: bank it and go home.
+	FinishStage — the plate at the end of a course: bank it and go home.
 
 	Touching it is a CHOICE, not the end of the course. A player may walk past and
 	carry straight on into the next one; the plate is there for anyone who would
@@ -14,36 +14,36 @@
 local Shared = require(script.Parent.Parent.Parent.Shared)
 local Result = require(Shared.Domain.Support.Result)
 
-local FinishCourse = {}
-FinishCourse.__index = FinishCourse
+local FinishStage = {}
+FinishStage.__index = FinishStage
 
-function FinishCourse.new(dependencies)
-	return setmetatable(table.clone(dependencies), FinishCourse)
+function FinishStage.new(dependencies)
+	return setmetatable(table.clone(dependencies), FinishStage)
 end
 
-function FinishCourse.run(self, player, stageId)
+function FinishStage.run(self, player, stageId)
 	local session = self.sessions:forPlayer(player)
 	if not session then
 		return Result.err("NO_SESSION", "No open session")
 	end
 	-- The id comes off a part in the map, which anyone may have mistagged.
 	if typeof(stageId) ~= "number" then
-		return Result.err("BAD_COURSE", "That plate does not name a course")
+		return Result.err("BAD_STAGE", "That plate does not name a stage")
 	end
 
 	local world = self.worlds:forProfile(session.profile)
 	local stage = world.ladder:get(stageId)
 	if not stage then
-		return Result.err("BAD_COURSE", `Unknown course {stageId}`)
+		return Result.err("BAD_STAGE", `Unknown stage {stageId}`)
 	end
 
-	local reward = self.courseRewards:forStage(stage, world.ladder:nextOf(stageId))
+	local reward = self.stageRewards:forStage(stage, world.ladder:nextOf(stageId))
 	if not reward then
-		return Result.err("BAD_COURSE", `Course {stageId} pays nothing`)
+		return Result.err("BAD_STAGE", `Stage {stageId} pays nothing`)
 	end
 
 	--[[
-		Deepest course reached is recorded here rather than at a checkpoint: a
+		Deepest stage reached is recorded here rather than at a checkpoint: a
 		checkpoint says the player walked in, the plate says they got through it.
 	]]
 	if stageId > (session.profile.highestStage or 0) then
@@ -51,7 +51,7 @@ function FinishCourse.run(self, player, stageId)
 	end
 
 	self.rewards:award(session, reward, {
-		title = `{stage.name or `Course {stageId}`} complete`,
+		title = `{self.labels.stage.name} {stageId} complete`,
 		cue = "reward",
 	})
 
@@ -64,4 +64,4 @@ function FinishCourse.run(self, player, stageId)
 	return Result.ok({ stageId = stageId, reward = reward })
 end
 
-return FinishCourse
+return FinishStage
