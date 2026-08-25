@@ -86,10 +86,9 @@ local HOVER_LIFT = 0.16
 local PRESS_DROP = 0.14
 -- How much darker than its fill a button's outline sits.
 local EDGE_DROP = 0.45
--- How far the gloss falls from top to bottom, and how dark the grain shades. Both
--- are deliberately light: they stack, and each one is drawn over the whole face.
+-- How far the gloss falls from top to bottom. Light, because the grain shades the
+-- same face and the two stack.
 local BUTTON_GLOSS = 0.14
-local GRAIN_DEPTH = 0.3
 local HOVER_TWEEN = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 -- How wide the transparency jump of a progress bar is, and how fast the bar chases
@@ -223,20 +222,19 @@ end
 	margin of flat colour. Giving the padding to the widget that owns the surface is
 	what makes the compensation exact.
 
-	IT MUST DARKEN, NEVER LIGHTEN. The tiles in the pack are light images, and laying
-	one over a saturated fill washes the fill out — which costs the white text on top
-	of it exactly the contrast the texture was supposed to be worth. `tint` multiplies
-	the tile, so passing a darker shade of the surface's OWN colour turns the grain
-	into shading of that colour: it deepens the fill, keeps its hue, and the text gains
-	contrast instead of losing it.
+	`tint` MULTIPLIES THE TILE, and the right tint is the surface's OWN colour.
 
-	Pure black is not that tint. Multiplying by zero flattens every pixel of the tile
-	to the same black and the pattern disappears with the lightness — the tint has to
-	keep enough of itself for the texture's own variation to survive it.
+	Every tile in the pack is a light image. Left white it bleaches whatever it lies
+	on; multiplied by the surface's colour, its white areas come back as that exact
+	colour — invisible — and only its dark areas draw, as darker shades of the same
+	hue. The grain can then only ever deepen, never lighten, and it does it in the
+	colour of the thing it is on.
 
-	On a button it lies over the glyphs as well, because a TextButton draws its own
-	text and no child can get underneath that. Darkening is what makes that harmless:
-	a lightening veil is precisely what the glyphs cannot afford.
+	IT MUST NOT BE A DARKER SHADE OF THAT COLOUR, which was the first attempt and is
+	the trap worth naming. Multiplying a mostly-white tile by a mid grey lands every
+	pixel of it near that grey: the surface goes uniformly darker and the pattern
+	goes with it. The tint is what the texture's HIGHLIGHTS become, so anything less
+	than the full colour spends the texture's contrast before it is drawn.
 ]]
 function Widgets.surface(parent: GuiObject, options): ImageLabel?
 	if not options.image then
@@ -296,9 +294,9 @@ function Widgets.card(parent: Instance, options): Frame
 			radius = radius,
 			tile = Theme.texture.panelTile,
 			transparency = 1 - Theme.texture.panelOpacity,
-			-- A shade of the card's own colour, so the grain reads as the grid
-			-- pressed into a white plate rather than a grey film laid over it.
-			tint = deepen(card.BackgroundColor3, 0.55),
+			-- The card's own colour: the tile's white becomes the card and only its
+			-- lines draw, so it reads as a grid pressed into the plate.
+			tint = card.BackgroundColor3,
 		})
 	end
 
@@ -315,7 +313,7 @@ function Widgets.card(parent: Instance, options): Frame
 			radius = radius,
 			tile = Theme.texture.buttonTile,
 			transparency = 1 - Theme.texture.buttonOpacity,
-			tint = deepen(card.BackgroundColor3, GRAIN_DEPTH),
+			tint = card.BackgroundColor3,
 		})
 	end
 
@@ -407,7 +405,7 @@ function Widgets.button(parent: Instance, options): TextButton
 			tile = Theme.texture.buttonTile,
 			transparency = 1 - Theme.texture.buttonOpacity,
 			-- Tinted by `paint` below, which owns every colour the button wears.
-			tint = deepen(button.BackgroundColor3, GRAIN_DEPTH),
+			tint = button.BackgroundColor3,
 		})
 	end
 	--[[
@@ -466,7 +464,7 @@ function Widgets.button(parent: Instance, options): TextButton
 		-- The grain is shading in the button's own hue, so it follows the hue.
 		local grain = button:FindFirstChild("Surface")
 		if grain and grain:IsA("ImageLabel") then
-			TweenService:Create(grain, HOVER_TWEEN, { ImageColor3 = deepen(base, GRAIN_DEPTH) }):Play()
+			TweenService:Create(grain, HOVER_TWEEN, { ImageColor3 = base }):Play()
 		end
 	end
 

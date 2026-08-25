@@ -183,16 +183,14 @@ local theme: Theme = {
 			Too faint and the grain is a rumour nobody sees; too strong and it becomes
 			a pattern the eye reads instead of the words on top of it.
 
-			The grain DARKENS the surface it lies on — it is tinted with a shade of
-			that surface's own colour — so these numbers buy depth rather than haze.
-			A light tile laid on top would bleach a saturated button and take the
-			contrast of the white text with it.
+			The grain is tinted with the surface's own colour, so the tile's white
+			comes back as that colour — invisible — and only its dark areas draw, as
+			shading in the same hue. It can only ever deepen a surface, which is why
+			these numbers can be this high: they buy pattern, not haze.
 
-			The panels carry twice what the buttons do, and can. Their grain is drawn
-			UNDER their content, so it costs the text nothing however strong it gets;
-			a button draws its own words over its own face and has to leave room. It
-			also has more to cover — a near-white plate the size of a window reads as
-			blank paper long after the same value has textured a button.
+			The panels carry more than the buttons because they have more to cover. A
+			near-white plate the size of a window reads as blank paper long after the
+			same value has textured a button.
 
 			A tile wants to be large enough that a button shows one or two repeats
 			rather than a mosaic of them — the texture should read as the surface the
@@ -202,10 +200,10 @@ local theme: Theme = {
 			either to nil and that surface goes smooth again.
 		]]
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-		panelOpacity = 0.35,
+		panelOpacity = 0.85,
 		panelTile = 64,
 		buttonPattern = "rbxassetid://4549727994", -- metal
-		buttonOpacity = 0.22,
+		buttonOpacity = 0.55,
 		buttonTile = 96,
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's

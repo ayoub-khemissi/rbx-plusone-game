@@ -221,10 +221,10 @@ the look every simulator interface is after. Two lines in
 ```lua
 textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-	panelOpacity = 0.35,
+	panelOpacity = 0.85,
 	panelTile = 64,
 	buttonPattern = "rbxassetid://4549727994", -- metal
-	buttonOpacity = 0.22,
+	buttonOpacity = 0.55,
 	buttonTile = 96,
 },
 ```
@@ -233,22 +233,25 @@ textures = {
 faint and the grain is a rumour nobody sees; too strong and it becomes a pattern the
 eye reads instead of the words on top of it.
 
-The panels carry twice what the buttons do. Their grain is drawn **under** their
-content, so it costs the text nothing however strong it gets, while a button draws
-its own words over its own face and has to leave room. A near-white plate the size
-of a window also reads as blank paper long after the same value has textured a
-button.
+The panels carry more than the buttons because they have more to cover: a near-white
+plate the size of a window reads as blank paper long after the same value has
+textured a button. Both grains are drawn **under** their content — a button writes in
+a child label — so neither costs the text anything however strong it gets.
 
 A tile wants to be large enough that a button shows one or two repeats rather than a
 mosaic of them: the texture should read as the surface the thing is made of, not as
 something printed on it.
 
 **The grain darkens; it never lightens.** Every tile in this pack is a light image,
-and laying one over a saturated fill bleaches it — which costs the white text on top
-exactly the contrast the texture was meant to be worth. Each surface tints its own
-grain with a darker shade of its own colour, so a button gains shading in its own hue
-and the text gains contrast rather than losing it. That is also why the veil over a
-button's glyphs is harmless: it darkens them slightly, and they are white.
+and laying one over a saturated fill bleaches it. Each surface therefore tints its
+grain with **its own colour**: the tile's white comes back as that exact colour and
+disappears, and only its dark areas draw, as shading in the same hue.
+
+Tinting with a *darker shade* of that colour was the first attempt and is the trap
+worth naming — multiplying a mostly-white tile by a mid grey lands every pixel of it
+near that grey, so the surface goes uniformly darker and the pattern goes with it.
+The tint is what the texture's highlights become; anything less than the full colour
+spends the texture's contrast before it is drawn.
 
 **They are chosen for what they sit on.** The panels wear a grid of large squares —
 the plate a simulator window is built from, and a motif that reads well across a wide
