@@ -32,18 +32,13 @@ local COLOURS = {
 	prestige = Color3.fromRGB(59, 178, 240),
 	finish = Color3.fromRGB(92, 201, 74),
 	belt = Color3.fromRGB(150, 60, 220),
+	coin = Color3.fromRGB(247, 197, 37),
 }
 
 --[[ The belts to lay out, in the order the shop will eventually sell them. ]]
 local BELTS = { 1.5, 3, 10, 50, 100, 200, 500 }
 
-local function part(
-	parent: Instance,
-	name: string,
-	size: Vector3,
-	position: Vector3,
-	colour: Color3
-): BasePart
+local function part(parent: Instance, name: string, size: Vector3, position: Vector3, colour: Color3): Part
 	local block = Instance.new("Part")
 	block.Name = name
 	block.Size = size
@@ -139,6 +134,27 @@ function Sandbox.build()
 		plate:SetAttribute("StageId", stageId)
 		CollectionService:AddTag(plate, MapBindings.TAGS.finishPad)
 		label(plate, `FINISH {stageId}`)
+	end
+
+	--[[
+		A row of coins to walk through. They are worth what the map does not say, so
+		they take the value from Balance, which is what a builder gets by dropping a
+		tagged part with no attributes.
+	]]
+	for index = 1, 8 do
+		-- A cylinder's axis runs along X, so a thin X makes a disc standing on edge:
+		-- the client's turn around Y then reads as a coin spinning, not a wheel
+		-- rolling.
+		local coin = part(
+			folder,
+			`Coin{index}`,
+			Vector3.new(0.6, 3, 3),
+			Vector3.new(-42 + (index - 1) * 12, 5, 4),
+			COLOURS.coin
+		)
+		coin.Shape = Enum.PartType.Cylinder
+		coin.Material = Enum.Material.Metal
+		CollectionService:AddTag(coin, MapBindings.TAGS.coin)
 	end
 
 	for index, multiplier in BELTS do

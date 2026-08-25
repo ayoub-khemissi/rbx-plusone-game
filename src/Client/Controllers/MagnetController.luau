@@ -7,8 +7,6 @@
 ]]
 
 local CollectionService = game:GetService("CollectionService")
-
-local Sound = require(script.Parent.Parent.Sound)
 local RunService = game:GetService("RunService")
 
 local COIN_TAG = "Coin"
@@ -53,11 +51,10 @@ function MagnetController._update(self, deltaTime: number)
 	for _, instance in CollectionService:GetTagged(COIN_TAG) do
 		local coin = instance :: BasePart
 		if coin.Parent and coin.CanTouch and (coin.Position - root.Position).Magnitude <= radius then
+			-- The answer comes back on the same remote, with the amount. Sounding it
+			-- here as well would double every pickup, and CoinController is the one
+			-- place that knows what the coin was actually worth.
 			self.remotes.events.CollectCoin:FireServer(coin)
-			-- Answered here rather than on the server's confirmation: the pickup is
-			-- the moment the player felt, and a reply a round trip later reads as
-			-- lag. The server still decides what it pays.
-			Sound.playRepeating("coin")
 		end
 	end
 end

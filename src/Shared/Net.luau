@@ -21,7 +21,7 @@ local EVENTS = {
 	"ClaimDaily", -- client -> server: daily reward
 	"ClaimChest", -- client -> server: session chest
 	"PromptPurchase", -- client -> server: open a purchase window
-	"CollectCoin", -- client -> server: coin caught by the magnet
+	"CollectCoin", -- both ways: the client claims a coin, the server answers its value
 	"RequestJump", -- client -> server: ask for an air jump
 	"RequestDash", -- client -> server: ask for a dash
 	"Landed", -- client -> server: the character touched the ground

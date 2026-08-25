@@ -88,7 +88,14 @@ function RemoteBindings.bind(container, remotes)
 		end
 
 		local value = part:GetAttribute("Value") or container.config.Balance.run.coinValue
-		useCases.collectCoin:run(player, value)
+		local result = useCases.collectCoin:run(player, value)
+
+		-- Answered on the same remote, the other way round: the client asked whether
+		-- it could have this coin, and this is what it was actually worth after the
+		-- multipliers. It is the only place that number exists.
+		if result.ok then
+			events.CollectCoin:FireClient(player, result.value.granted)
+		end
 
 		part.Transparency = 1
 		part.CanTouch = false

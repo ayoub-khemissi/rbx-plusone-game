@@ -21,6 +21,7 @@ local MagnetController = require(script.Controllers.MagnetController)
 local EffectsController = require(script.Controllers.EffectsController)
 local GainController = require(script.Controllers.GainController)
 local TreadmillController = require(script.Controllers.TreadmillController)
+local CoinController = require(script.Controllers.CoinController)
 local SoundController = require(script.Controllers.SoundController)
 
 local player = Players.LocalPlayer
@@ -36,3 +37,4 @@ EffectsController.new(player, state)
 SoundController.new(state, remotes)
 GainController.new(state, ui.popups)
 TreadmillController.new(player)
+CoinController.new(ui.popups)

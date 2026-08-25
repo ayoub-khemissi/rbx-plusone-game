@@ -33,7 +33,7 @@ local sounds: { [string]: Cue } = {
 			"rbxassetid://4612374937",
 			"rbxassetid://4612375051",
 		},
-		volume = 0.35,
+		volume = 0.22,
 	},
 
 	-- The reward moment. Louder than everything else on purpose: it is the one

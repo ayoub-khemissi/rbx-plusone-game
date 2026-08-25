@@ -94,6 +94,15 @@ A Coin disappears when collected and comes back after a delay set in the
 configuration. Add a visual model if you like: tag **the detection part**, not the
 decoration.
 
+`Value` is the raw value. What the player receives is that value multiplied by the
+Stage they are standing in and by everything they have earned, and the amount thrown
+off the character is the multiplied one — the only number that means anything to
+them.
+
+The server forces a Coin anchored and non-colliding: a coin is run through, not into.
+The turning is done by each client, so it costs nothing on the wire; a Coin built as
+a Model turns around its pivot, so place the pivot at the centre of the disc.
+
 ### `SpeedGate`
 
 The barrier guarding the entrance to a Stage. The player only passes if they are fast

@@ -158,13 +158,22 @@ function MapBindings.bind(container)
 				value = settings.coinValue
 			end
 
+			-- A coin is something you run through, not into. Forced here rather than
+			-- asked of the map: a solid coin blocks the course, and the mistake is
+			-- invisible until somebody bounces off one mid-jump.
+			part.CanCollide = false
+			part.Anchored = true
+
 			part.Touched:Connect(function(hit)
 				local player = playerFromTouch(hit)
 				if not player or not part.CanTouch then
 					return
 				end
 
-				useCases.collectCoin:run(player, value)
+				local result = useCases.collectCoin:run(player, value)
+				if result.ok then
+					container.remotes.events.CollectCoin:FireClient(player, result.value.granted)
+				end
 
 				part.Transparency = 1
 				part.CanTouch = false
