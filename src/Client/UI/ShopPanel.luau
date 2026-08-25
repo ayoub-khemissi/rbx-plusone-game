@@ -35,6 +35,15 @@ local TEXT_LEFT = 68 -- clear of the 52px icon, with air between the two
 ]]
 local BUY_WIDTH = 0.24
 local TEXT_WIDTH = 0.72
+--[[
+	Keeps the price clear of the button's edges.
+
+	The SAME on every side, and that is the point: a UIPadding shrinks the box every
+	child is measured against, so padding one side alone moves the middle. The
+	padlock and the word MAX are both centred in that box, and both would sit half a
+	padding to the left of where they belong.
+]]
+local BUY_PADDING = 14
 
 local ShopPanel = {}
 ShopPanel.__index = ShopPanel
@@ -125,22 +134,22 @@ function ShopPanel._row(self, parent: Instance, definition, order: number)
 		color = Theme.color.positive,
 		-- Given to the button rather than added afterwards: a padding added later
 		-- shrinks the grain it carries and leaves a bare margin around it.
-		paddingRight = 14,
+		padding = BUY_PADDING,
 		onClick = function()
 			self.remotes.events.BuyUpgrade:FireServer(definition.id)
 		end,
 	})
 
 	-- The currency is shown, not spelled: an emoji would need a font the button does
-	-- not have, and the pack already has the very icon the counter uses. Only the
-	-- RIGHT side is padded: padding the left would push this icon along with the
-	-- text, and it reads as a price tag exactly where it was put.
+	-- not have, and the pack already has the very icon the counter uses. It hangs on
+	-- the left of the padded box while the price is right-aligned in it, which is
+	-- what makes the pair read as a price tag.
 	local price = Widgets.icon(buy, {
 		name = "Currency",
 		image = LABELS.coins.image,
 		fallback = LABELS.coins.icon,
 		size = UDim2.fromOffset(26, 26),
-		position = UDim2.fromOffset(12, 28),
+		position = UDim2.fromScale(0, 0.5),
 		anchorPoint = Vector2.new(0, 0.5),
 	});
 	(price :: any).Active = false

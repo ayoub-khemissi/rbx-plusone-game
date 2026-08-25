@@ -212,8 +212,8 @@ rule.
 
 ## Textures in the interface
 
-The theme lays two of these textures over the interface, at around a third
-opacity.
+The theme lays two of these textures over the interface, at around a quarter
+opacity, tinted with a darker shade of whatever they lie on.
 Colour alone renders as vinyl; a grain under it reads as a moulded object, which is
 the look every simulator interface is after. Two lines in
 `src/Shared/Config/Themes/Default.luau`:
@@ -221,10 +221,10 @@ the look every simulator interface is after. Two lines in
 ```lua
 textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-	panelOpacity = 0.28,
+	panelOpacity = 0.18,
 	panelTile = 64,
 	buttonPattern = "rbxassetid://4549727994", -- metal
-	buttonOpacity = 0.34,
+	buttonOpacity = 0.28,
 	buttonTile = 96,
 },
 ```
@@ -239,6 +239,13 @@ A tile wants to be large enough that a button shows one or two repeats rather th
 mosaic of them: the texture should read as the surface the thing is made of, not as
 something printed on it.
 
+**The grain darkens; it never lightens.** Every tile in this pack is a light image,
+and laying one over a saturated fill bleaches it — which costs the white text on top
+exactly the contrast the texture was meant to be worth. Each surface tints its own
+grain with a darker shade of its own colour, so a button gains shading in its own hue
+and the text gains contrast rather than losing it. That is also why the veil over a
+button's glyphs is harmless: it darkens them slightly, and they are white.
+
 **They are chosen for what they sit on.** The panels wear a grid of large squares —
 the plate a simulator window is built from, and a motif that reads well across a wide
 surface. The buttons wear a fine rough plaster, because a grid on something the size
@@ -252,7 +259,7 @@ An interface pattern must be **seamless and low contrast**. A brick or wood text
 works badly here: the motif shows through, and the text sits on top of it.
 
 One consequence worth knowing: a button draws its own text, and no child can get
-underneath that — so the grain lies over the glyphs as well. A light tile at a
-quarter opacity is harmless over white glyphs wearing a dark stroke. If you ever want
-it heavier than that, or a darker tile, moving a button's text into a child label of
-its own is the fix.
+underneath that, and a TextButton already spends its single UIStroke on its border —
+so button text cannot wear an outline of its own. If you ever want a grain heavy
+enough to trouble the glyphs, moving a button's text into a child label is the fix,
+and the outline comes with it.

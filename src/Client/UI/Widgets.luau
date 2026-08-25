@@ -179,9 +179,20 @@ end
 	margin of flat colour. Giving the padding to the widget that owns the surface is
 	what makes the compensation exact.
 
+	IT MUST DARKEN, NEVER LIGHTEN. The tiles in the pack are light images, and laying
+	one over a saturated fill washes the fill out — which costs the white text on top
+	of it exactly the contrast the texture was supposed to be worth. `tint` multiplies
+	the tile, so passing a darker shade of the surface's OWN colour turns the grain
+	into shading of that colour: it deepens the fill, keeps its hue, and the text gains
+	contrast instead of losing it.
+
+	Pure black is not that tint. Multiplying by zero flattens every pixel of the tile
+	to the same black and the pattern disappears with the lightness — the tint has to
+	keep enough of itself for the texture's own variation to survive it.
+
 	On a button it lies over the glyphs as well, because a TextButton draws its own
-	text and no child can get underneath that. At this opacity the veil is nothing;
-	at a heavier one it would be the reason to move the text into a child.
+	text and no child can get underneath that. Darkening is what makes that harmless:
+	a lightening veil is precisely what the glyphs cannot afford.
 ]]
 function Widgets.surface(parent: GuiObject, options): ImageLabel?
 	if not options.image then
@@ -196,6 +207,7 @@ function Widgets.surface(parent: GuiObject, options): ImageLabel?
 	grain.ScaleType = Enum.ScaleType.Tile
 	grain.TileSize = UDim2.fromOffset(options.tile or 64, options.tile or 64)
 	grain.ImageTransparency = options.transparency or 0.92
+	grain.ImageColor3 = options.tint or Color3.new(1, 1, 1)
 	grain.Position = UDim2.fromOffset(-inset.left, -inset.top)
 	grain.Size = UDim2.new(1, inset.left + inset.right, 1, inset.top + inset.bottom)
 	grain.ZIndex = options.zIndex or 0
@@ -235,6 +247,9 @@ function Widgets.card(parent: Instance, options): Frame
 			radius = radius,
 			tile = Theme.texture.panelTile,
 			transparency = 1 - Theme.texture.panelOpacity,
+			-- A shade of the card's own colour, so the grain reads as the grid
+			-- pressed into a white plate rather than a grey film laid over it.
+			tint = card.BackgroundColor3:Lerp(Color3.new(0, 0, 0), 0.55),
 		})
 	end
 
@@ -335,6 +350,9 @@ function Widgets.button(parent: Instance, options): TextButton
 			inset = inset,
 			tile = Theme.texture.buttonTile,
 			transparency = 1 - Theme.texture.buttonOpacity,
+			-- Shading in the button's own hue: it deepens the fill instead of
+			-- bleaching it, which is what the white text on top needs.
+			tint = button.BackgroundColor3:Lerp(Color3.new(0, 0, 0), 0.6),
 		})
 	end
 	if options.gradient ~= false then

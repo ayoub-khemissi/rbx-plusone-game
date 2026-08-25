@@ -153,9 +153,12 @@ local theme: Theme = {
 
 			The opacities are the dial, and the tiles are how big one repeat is drawn.
 			Too faint and the grain is a rumour nobody sees; too strong and it becomes
-			a pattern the eye reads instead of the words on top of it. The buttons
-			carry more than the panels: they are small, saturated and glossy, and the
-			same value on both leaves the buttons looking bare next to the windows.
+			a pattern the eye reads instead of the words on top of it.
+
+			The grain DARKENS the surface it lies on — it is tinted with a shade of
+			that surface's own colour — so these numbers buy depth rather than haze.
+			A light tile laid on top would bleach a saturated button and take the
+			contrast of the white text with it.
 
 			A tile wants to be large enough that a button shows one or two repeats
 			rather than a mosaic of them — the texture should read as the surface the
@@ -165,10 +168,10 @@ local theme: Theme = {
 			either to nil and that surface goes smooth again.
 		]]
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-		panelOpacity = 0.28,
+		panelOpacity = 0.18,
 		panelTile = 64,
 		buttonPattern = "rbxassetid://4549727994", -- metal
-		buttonOpacity = 0.34,
+		buttonOpacity = 0.28,
 		buttonTile = 96,
 		--[[
 			The confetti thrown when a player takes a Rebirth. Left unset, the engine's
