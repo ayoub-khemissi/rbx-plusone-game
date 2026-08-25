@@ -75,6 +75,17 @@ end
 	this is the part of the window a player is meant to read from across the room.
 ]]
 local function pill(parent: Instance, options)
+	--[[
+		Two frames, like the badge on the HUD, and for the same two reasons.
+
+		The grain is a CHILD of whatever wears it. A frame that lays its children out
+		would arrange the grain along with them — one more item in the row, shoving
+		the icon and the value out of the pill — and a padding on that frame would
+		shrink the grain to leave a bare margin of flat colour around it.
+
+		So the outer frame carries the fill, the grain and the shape and arranges
+		nothing; the inner one holds the padding and the row.
+	]]
 	local frame = Widgets.card(parent, {
 		name = options.name,
 		size = UDim2.new(0.5, -COLUMN_GAP / 2, 0, ROW_HEIGHT),
@@ -90,26 +101,33 @@ local function pill(parent: Instance, options)
 	frame.ZIndex = 7
 	Widgets.gradient(frame, 0.18)
 
+	local content = Instance.new("Frame")
+	content.Name = "Content"
+	content.Size = UDim2.fromScale(1, 1)
+	content.BackgroundTransparency = 1
+	content.ZIndex = 8
+	content.Parent = frame
+
 	local padding = Instance.new("UIPadding")
 	padding.PaddingLeft = UDim.new(0, 10)
 	padding.PaddingRight = UDim.new(0, 14)
-	padding.Parent = frame
+	padding.Parent = content
 
-	Widgets.list(frame, {
+	Widgets.list(content, {
 		direction = Enum.FillDirection.Horizontal,
 		padding = 12,
 		verticalAlignment = Enum.VerticalAlignment.Center,
 	})
 
-	local icon = Widgets.icon(frame, {
+	local icon = Widgets.icon(content, {
 		image = options.image,
 		fallback = options.fallback,
 		size = UDim2.fromOffset(ROW_HEIGHT - 12, ROW_HEIGHT - 12),
 		layoutOrder = 1,
 	})
-	icon.ZIndex = 8
+	icon.ZIndex = 9
 
-	local value = Widgets.label(frame, {
+	local value = Widgets.label(content, {
 		name = "Value",
 		size = UDim2.new(1, -(ROW_HEIGHT + 14), 1, 0),
 		font = Theme.font.title,
@@ -119,7 +137,7 @@ local function pill(parent: Instance, options)
 		outline = Theme.stroke.textHeavy,
 		layoutOrder = 2,
 	})
-	value.ZIndex = 8
+	value.ZIndex = 9
 
 	return value
 end

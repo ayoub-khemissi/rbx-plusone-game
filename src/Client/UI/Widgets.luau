@@ -279,11 +279,16 @@ function Widgets.card(parent: Instance, options): Frame
 	Widgets.stroke(card, options.edge or Theme.color.panelEdge, options.edgeThickness)
 
 	--[[
-		The tile is OPT-IN, and only windows ask for it.
+		Both surfaces are OPT-IN, and both are CHILDREN of the card.
 
-		A card's padding lives on an inner content frame rather than on the card, so
-		there is nothing here for the grain to compensate for; a chip that padded
-		itself would have to say so.
+		That is the whole contract. A card that lays its own children out would
+		arrange the surface along with them — one more item in the row, shoving the
+		content aside — and a padding on the card itself would shrink the surface and
+		leave a bare margin of flat colour around it.
+
+		So a card that asks for either gives its content an inner frame, and puts the
+		padding and the layout on that. Windows already work that way; a chip has to
+		be built that way to ask.
 	]]
 	if options.pattern == true then
 		Widgets.surface(card, {
