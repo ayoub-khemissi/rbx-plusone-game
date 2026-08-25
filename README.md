@@ -108,6 +108,19 @@ chest · Instant prestige · Starter Pack
 
 ---
 
+## Documentation
+
+| Document | What it covers |
+| --- | --- |
+| [`docs/BALANCE.md`](docs/BALANCE.md) | The economy: levels, worlds, rebirths, shop prices, and how to retune any of it |
+| [`docs/MAP.md`](docs/MAP.md) | Building a map: every tag, every attribute |
+| [`docs/MONETISATION.md`](docs/MONETISATION.md) | The business model and what is sold |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How the code is laid out |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Working on it: tests, lint, the loop |
+| [`docs/ICONS.md`](docs/ICONS.md), [`docs/TEXTURES.md`](docs/TEXTURES.md) | Art assets and how they are uploaded |
+
+---
+
 ## Several themes, one game
 
 The rules know only neutral notions — speed, currency, prestige, segment, checkpoint.

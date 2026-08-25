@@ -26,10 +26,10 @@ return table.freeze({
 
 			Stretched to span a whole world. Simulated against real play — the gain
 			rate feeds back into itself, since running faster earns levels faster —
-			the character runs at 23 after eight minutes, 47 after an hour and 20,
-			and 75 by the end of the tenth course at four and a half hours. It is
-			still climbing there, which is what keeps the last courses different
-			from the middle ones.
+			the character runs at 22 after eight minutes, 41 after an hour, 53 at the
+			first rebirth, 76 halfway up the world and 119 at level 200, where a
+			world ends and the clamp bites. It climbs the whole way, which is what
+			keeps the last courses different from the middle ones.
 		]]
 		softness = 275,
 		-- Play-tested: the fastest the character should ever run.
