@@ -38,6 +38,12 @@ MapBindings.TAGS = {
 local FALL_GRACE_FALLBACK = 1
 local PAD_COOLDOWN = 1
 local IDLE_PAD_MARGIN = 6
+--[[
+	Tighter than an idle pad on purpose. A belt is something you stand ON, and the
+	idle pad's generous box let a player walk clear of one and still be counted on
+	it — which left the run animation playing over an empty floor.
+]]
+local TREADMILL_MARGIN = 2
 local DEFAULT_STAGE = 1
 local DEFAULT_BOUNCE = 200
 local DEFAULT_CONVEYOR = 10
@@ -320,9 +326,9 @@ function MapBindings.bind(container)
 			local part = belt.part
 			if part.Parent then
 				local size, centre = part.Size, part.Position
-				local withinX = math.abs(position.x - centre.X) <= size.X / 2 + IDLE_PAD_MARGIN
-				local withinZ = math.abs(position.z - centre.Z) <= size.Z / 2 + IDLE_PAD_MARGIN
-				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + IDLE_PAD_MARGIN * 2
+				local withinX = math.abs(position.x - centre.X) <= size.X / 2 + TREADMILL_MARGIN
+				local withinZ = math.abs(position.z - centre.Z) <= size.Z / 2 + TREADMILL_MARGIN
+				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + IDLE_PAD_MARGIN
 
 				if withinX and withinY and withinZ and (best == nil or belt.multiplier > best) then
 					best = belt.multiplier

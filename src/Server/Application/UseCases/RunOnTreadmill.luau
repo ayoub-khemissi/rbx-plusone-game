@@ -52,6 +52,14 @@ function RunOnTreadmill.run(self, player, multiplier: number, elapsed: number)
 	local gained = self.progression:credit(profile, steps, bonuses, elapsed)
 	profile.totals.distance += distance
 
+	--[[
+		And TELL the client. A belt replaces the sampling that normally publishes, so
+		without this the profile climbs on the server and nothing on screen knows:
+		no counter, no level, no popups. From the player's seat that is a treadmill
+		that does nothing at all.
+	]]
+	self.publisher:publish(player, self.snapshots:build(session))
+
 	return Result.ok({ steps = steps, speedGained = gained.speedGained, coinsGained = gained.coinsGained })
 end
 

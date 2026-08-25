@@ -543,6 +543,22 @@ describe("RunOnTreadmill", function()
 		expect(session.profile.coins).toBeGreaterThan(0)
 	end)
 
+	--[[
+		And it must SAY so. A belt replaces the sampling that normally publishes, so
+		without this the profile climbs on the server while nothing on screen knows —
+		which from the player's seat is a treadmill that does nothing at all.
+	]]
+	it("tells the client what it credited", function()
+		local fresh, ports = build()
+		local other, otherSession = joined(fresh)
+		local before = #ports.publisher.snapshots
+
+		fresh.useCases.runOnTreadmill:run(other, 3, 1)
+
+		expect(#ports.publisher.snapshots).toBeGreaterThan(before)
+		expect(ports.publisher.last.speed).toBe(otherSession.profile.speed)
+	end)
+
 	-- The multiplier is the thing being sold, so it has to actually multiply.
 	it("pays a stronger belt more", function()
 		container.useCases.runOnTreadmill:run(player, 1, 1)
