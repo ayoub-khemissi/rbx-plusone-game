@@ -188,6 +188,12 @@ local theme: Theme = {
 			A light tile laid on top would bleach a saturated button and take the
 			contrast of the white text with it.
 
+			The panels carry twice what the buttons do, and can. Their grain is drawn
+			UNDER their content, so it costs the text nothing however strong it gets;
+			a button draws its own words over its own face and has to leave room. It
+			also has more to cover — a near-white plate the size of a window reads as
+			blank paper long after the same value has textured a button.
+
 			A tile wants to be large enough that a button shows one or two repeats
 			rather than a mosaic of them — the texture should read as the surface the
 			thing is made of, not as something printed on it.
@@ -196,7 +202,7 @@ local theme: Theme = {
 			either to nil and that surface goes smooth again.
 		]]
 		panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-		panelOpacity = 0.18,
+		panelOpacity = 0.35,
 		panelTile = 64,
 		buttonPattern = "rbxassetid://4549727994", -- metal
 		buttonOpacity = 0.22,

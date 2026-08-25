@@ -221,7 +221,7 @@ the look every simulator interface is after. Two lines in
 ```lua
 textures = {
 	panelPattern = "rbxassetid://4621488899", -- large_square_pattern
-	panelOpacity = 0.18,
+	panelOpacity = 0.35,
 	panelTile = 64,
 	buttonPattern = "rbxassetid://4549727994", -- metal
 	buttonOpacity = 0.22,
@@ -231,9 +231,13 @@ textures = {
 
 **The opacities are the dial, and the tiles are how big one repeat is drawn.** Too
 faint and the grain is a rumour nobody sees; too strong and it becomes a pattern the
-eye reads instead of the words on top of it. The buttons carry more than the panels —
-they are small, saturated and glossy, and the same value on both leaves them looking
-bare beside the windows.
+eye reads instead of the words on top of it.
+
+The panels carry twice what the buttons do. Their grain is drawn **under** their
+content, so it costs the text nothing however strong it gets, while a button draws
+its own words over its own face and has to leave room. A near-white plate the size
+of a window also reads as blank paper long after the same value has textured a
+button.
 
 A tile wants to be large enough that a button shows one or two repeats rather than a
 mosaic of them: the texture should read as the surface the thing is made of, not as
