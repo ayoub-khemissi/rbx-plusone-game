@@ -273,13 +273,22 @@ function MapBindings.bind(container)
 	]]
 	local function treadmillAt(position: { x: number, y: number, z: number }): number?
 		local best: number? = nil
+		local point = Vector3.new(position.x, position.y, position.z)
 		for _, belt in treadmills do
 			local part = belt.part
 			if part.Parent then
-				local size, centre = part.Size, part.Position
-				local withinX = math.abs(position.x - centre.X) <= size.X / 2 + TREADMILL_MARGIN
-				local withinZ = math.abs(position.z - centre.Z) <= size.Z / 2 + TREADMILL_MARGIN
-				local withinY = math.abs(position.y - centre.Y) <= size.Y / 2 + TREADMILL_MARGIN * 3
+				--[[
+					Measured in the PART'S OWN space, not the world's. A belt laid along
+					the X axis and one turned to face the room have the same Size and
+					different footprints; comparing world distances against Size.X and
+					Size.Z reads the turned one sideways, and a player standing on it is
+					counted on its neighbour instead — which paid x3 on the x1.5 belt.
+				]]
+				local offset = part.CFrame:PointToObjectSpace(point)
+				local half = part.Size / 2
+				local withinX = math.abs(offset.X) <= half.X + TREADMILL_MARGIN
+				local withinZ = math.abs(offset.Z) <= half.Z + TREADMILL_MARGIN
+				local withinY = math.abs(offset.Y) <= half.Y + TREADMILL_MARGIN * 3
 
 				if withinX and withinY and withinZ and (best == nil or belt.multiplier > best) then
 					best = belt.multiplier
