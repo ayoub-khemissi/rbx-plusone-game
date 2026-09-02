@@ -65,23 +65,29 @@ local function walls(folder: Folder)
 	local colour = MapKit.COLOURS.wall
 	local y = FLOOR_TOP + WALL_HEIGHT / 2
 	local halfX, halfZ = ROOM.X / 2, ROOM.Z / 2
+	local built: { BasePart } = {}
+	local function wall(...)
+		local block = MapKit.part(...)
+		table.insert(built, block)
+		return block
+	end
 
 	-- Back wall, and the two side walls.
-	MapKit.part(
+	wall(
 		folder,
 		"WallBack",
 		Vector3.new(ROOM.X + WALL_THICKNESS * 2, WALL_HEIGHT, WALL_THICKNESS),
 		Vector3.new(0, y, halfZ + WALL_THICKNESS / 2),
 		colour
 	)
-	MapKit.part(
+	wall(
 		folder,
 		"WallLeft",
 		Vector3.new(WALL_THICKNESS, WALL_HEIGHT, ROOM.Z),
 		Vector3.new(-halfX - WALL_THICKNESS / 2, y, 0),
 		colour
 	)
-	MapKit.part(
+	wall(
 		folder,
 		"WallRight",
 		Vector3.new(WALL_THICKNESS, WALL_HEIGHT, ROOM.Z),
@@ -95,7 +101,7 @@ local function walls(folder: Folder)
 	local z = -halfZ - WALL_THICKNESS / 2
 	for _, side in { -1, 1 } do
 		local x = side * (DOOR_WIDTH / 2 + sideWidth / 2)
-		MapKit.part(
+		wall(
 			folder,
 			"WallFront",
 			Vector3.new(sideWidth, WALL_HEIGHT, WALL_THICKNESS),
@@ -104,7 +110,7 @@ local function walls(folder: Folder)
 		)
 	end
 	local lintelHeight = WALL_HEIGHT - 12
-	MapKit.part(
+	wall(
 		folder,
 		"Lintel",
 		Vector3.new(DOOR_WIDTH, lintelHeight, WALL_THICKNESS),
@@ -142,6 +148,11 @@ local function walls(folder: Folder)
 		Vector3.new(halfX + WALL_THICKNESS / 2, trimY, 0),
 		MapKit.COLOURS.trim
 	)
+
+	-- Brick, on every wall at once, and only the walls: the trim stays gold plastic.
+	for _, block in built do
+		MapKit.surface(block, "LobbyWall", Color3.fromRGB(190, 176, 168))
+	end
 end
 
 --[[
@@ -173,13 +184,14 @@ end
 local function course(folder: Folder, template: PVInstance?)
 	-- A landing outside the door, so the first jump is not taken from a doorway.
 	local z = -ROOM.Z / 2 - 12
-	MapKit.part(
+	local landing = MapKit.part(
 		folder,
 		"Landing",
 		Vector3.new(20, 2, 20),
 		Vector3.new(0, FLOOR_TOP - 1, z),
 		MapKit.COLOURS.floor
 	)
+	MapKit.surface(landing, "CourseWood")
 	z -= 10
 
 	local x, y = 0, FLOOR_TOP - 1
@@ -189,7 +201,8 @@ local function course(folder: Folder, template: PVInstance?)
 		y += step.dy
 		local platform =
 			MapKit.part(folder, `Platform{index}`, PLATFORM, Vector3.new(x, y, z), MapKit.COLOURS.floor)
-		platform.Color = if index % 2 == 0 then MapKit.COLOURS.floor else MapKit.COLOURS.wall
+		-- Planks, and every other one a shade darker so the eye counts them.
+		MapKit.surface(platform, "CourseWood", if index % 2 == 0 then nil else Color3.fromRGB(200, 190, 178))
 		z -= PLATFORM.Z / 2
 
 		if index % 2 == 1 then
@@ -201,6 +214,7 @@ local function course(folder: Folder, template: PVInstance?)
 	z -= 10 + 12
 	local finishFloor =
 		MapKit.part(folder, "FinishFloor", Vector3.new(24, 2, 24), Vector3.new(x, y, z), MapKit.COLOURS.floor)
+	MapKit.surface(finishFloor, "FinishStone")
 	local plate = MapKit.part(
 		folder,
 		"FinishPad1",
@@ -221,15 +235,30 @@ function Lobby.build(logger)
 	local template, source = MapKit.coinTemplate(logger, { FOLDER, Sandbox.FOLDER })
 	MapKit.clearWorkspace(logger, "Lobby")
 
+	MapKit.materials()
+
 	local folder = Instance.new("Folder")
 	folder.Name = FOLDER
 	folder.Parent = workspace
 
-	MapKit.part(folder, "Floor", ROOM, Vector3.new(0, 0, 0), MapKit.COLOURS.floor)
+	local floor = MapKit.part(folder, "Floor", ROOM, Vector3.new(0, 0, 0), MapKit.COLOURS.floor)
+	MapKit.surface(floor, "LobbyFloor")
 	walls(folder)
 
 	-- Dead centre. The Hub is wherever this is, and a fall comes back here.
-	MapKit.spawn(folder, Vector3.new(0, FLOOR_TOP + 0.5, 0), 10)
+	local spawn = MapKit.spawn(folder, Vector3.new(0, FLOOR_TOP + 0.5, 0), 10)
+
+	-- A strip of light from the spawn to the door: the one direction that matters.
+	local runway = MapKit.part(
+		folder,
+		"Runway",
+		Vector3.new(3, 0.2, ROOM.Z / 2 - 8),
+		Vector3.new(0, FLOOR_TOP + 0.1, -(ROOM.Z / 4) - 3),
+		MapKit.COLOURS.trim
+	)
+	runway.Material = Enum.Material.Neon
+	runway.CanCollide = false
+	MapKit.light(spawn, Color3.fromRGB(255, 236, 190), 1.2, 60)
 
 	scoreboard(folder)
 

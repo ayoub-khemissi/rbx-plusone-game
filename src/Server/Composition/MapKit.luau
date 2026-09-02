@@ -15,6 +15,7 @@
 
 local CollectionService = game:GetService("CollectionService")
 local InsertService = game:GetService("InsertService")
+local MaterialService = game:GetService("MaterialService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared").Config)
@@ -36,6 +37,62 @@ MapKit.COLOURS = {
 	beltSurface = Color3.fromRGB(28, 30, 40),
 	beltBase = Color3.fromRGB(96, 102, 124),
 }
+
+--[[
+	The surfaces a built map is made of, as Material Variants.
+
+	A variant is a material the engine tiles across every face of a part on its own,
+	whatever the part's size — one instance in MaterialService, and any number of
+	parts wearing it by name. The textures are the ones in docs/TEXTURES.md, already
+	in the place; nothing is fetched.
+
+	Flat colour was the difference between a room and a diagram. A floor that is
+	tiles, a wall that is brick and a belt that is steel read as a place somebody
+	could stand in, before a single prop is added.
+]]
+MapKit.SURFACES = {
+	{ name = "LobbyFloor", map = "rbxassetid://4621495999", studs = 8 }, -- large_floor_tiles
+	{ name = "LobbyWall", map = "rbxassetid://4621497703", studs = 6 }, -- brick_floor
+	{ name = "CourseWood", map = "rbxassetid://4621506509", studs = 6 }, -- planks_brown
+	{ name = "Steel", map = "rbxassetid://4549727994", studs = 4 }, -- metal
+	{ name = "FinishStone", map = "rbxassetid://4621489901", studs = 8 }, -- marble
+}
+
+--[[ Declares every surface once. Safe to call again: existing ones are kept. ]]
+function MapKit.materials()
+	for _, surface in MapKit.SURFACES do
+		if not MaterialService:FindFirstChild(surface.name) then
+			local variant = Instance.new("MaterialVariant")
+			variant.Name = surface.name
+			variant.BaseMaterial = Enum.Material.Plastic
+			variant.ColorMap = surface.map
+			variant.StudsPerTile = surface.studs
+			variant.Parent = MaterialService
+		end
+	end
+end
+
+--[[
+	Dresses a part in a surface. The colour goes to near white, because a variant's
+	texture is MULTIPLIED by the part's colour: brick tinted navy is navy, and the
+	whole point was to stop painting things navy.
+]]
+function MapKit.surface(part: BasePart, name: string, tint: Color3?)
+	part.Material = Enum.Material.Plastic
+	part.MaterialVariant = name
+	part.Color = tint or Color3.fromRGB(235, 232, 226)
+end
+
+--[[ A soft light, for a room that would otherwise be lit only by the sky. ]]
+function MapKit.light(parent: BasePart, colour: Color3, brightness: number, range: number): PointLight
+	local light = Instance.new("PointLight")
+	light.Color = colour
+	light.Brightness = brightness
+	light.Range = range
+	light.Shadows = false
+	light.Parent = parent
+	return light
+end
 
 --[[
 	Somewhere to say things when nobody passed a logger.
@@ -256,6 +313,7 @@ function MapKit.treadmill(parent: Instance, multiplier: number, position: Vector
 
 	local base = MapKit.part(model, "Base", Vector3.new(8, 1, 16), position, MapKit.COLOURS.beltBase)
 	place(base, Vector3.zero)
+	MapKit.surface(base, "Steel", Color3.fromRGB(200, 204, 214))
 	base:SetAttribute("Multiplier", multiplier)
 	CollectionService:AddTag(base, MapBindings.TAGS.treadmill)
 
@@ -284,8 +342,15 @@ function MapKit.treadmill(parent: Instance, multiplier: number, position: Vector
 	-- the end they step on from. At the near end it stood between the room and the
 	-- belt and hid the thing it was meant to dress.
 	local console = MapKit.part(model, "Console", Vector3.new(7, 3.2, 1), position, colour)
-	console.Material = Enum.Material.Metal
+	MapKit.surface(console, "Steel", colour)
 	place(console, Vector3.new(0, 2, 8.2))
+
+	-- A neon bar along the top of the console and a light in its colour: the
+	-- machine is on, and a row of them reads as a row of machines from the door.
+	local bar = MapKit.part(model, "Glow", Vector3.new(7, 0.35, 0.35), position, colour)
+	bar.Material = Enum.Material.Neon
+	place(bar, Vector3.new(0, 3.8, 8.2))
+	MapKit.light(bar, colour, 1.6, 16)
 
 	model.PrimaryPart = base
 	MapKit.label(base, `x{multiplier}`, 30)

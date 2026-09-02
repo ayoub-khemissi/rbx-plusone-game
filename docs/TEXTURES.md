@@ -210,6 +210,16 @@ rule.
 
 ---
 
+## Textures in the built maps
+
+The lobby and the test platform dress their parts in **Material Variants** declared
+from this catalogue — `MapKit.SURFACES` names them: tiles on the lobby floor, brick
+on its walls, planks on the course, steel on the belts, marble under the finish. A
+variant is one instance in `MaterialService` that the engine tiles across every face
+of any part wearing its name, so a floor and a doorstep get the same texture at the
+same scale without either being sized for it. Change a line there and every surface
+of that kind changes with it.
+
 ## Textures in the interface
 
 The theme lays two of these textures over the interface, at around a quarter
