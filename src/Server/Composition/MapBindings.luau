@@ -31,6 +31,7 @@ MapBindings.TAGS = {
 	prestigePad = "PrestigePad",
 	finishPad = "FinishPad",
 	treadmill = "Treadmill",
+	scoreboard = "Scoreboard",
 }
 
 local FALL_GRACE_FALLBACK = 1
@@ -43,6 +44,10 @@ local PAD_COOLDOWN = 1
 local TREADMILL_MARGIN = 2
 local DEFAULT_BOUNCE = 200
 local DEFAULT_CONVEYOR = 10
+-- How often a scoreboard is rewritten, and how many names it holds. Five seconds
+-- is well inside how often anybody looks at one; ten rows fill a wall panel.
+local SCOREBOARD_INTERVAL = 5
+local SCOREBOARD_ROWS = 10
 
 local function playerFromTouch(hit: BasePart): Player?
 	local character = hit.Parent
@@ -284,12 +289,120 @@ function MapBindings.bind(container)
 		return best
 	end
 
+	--[[
+		A scoreboard: a panel the map places, that the server writes the ranking on.
+
+		THE MAP DRAWS NOTHING. It tags a part and says which face; the server builds
+		the SurfaceGui and fills it, so every board in every map reads the same and a
+		builder cannot misspell a column. The ranking is read from leaderstats, which
+		the publisher already keeps current for the player list — one source for both.
+
+		Rebuilt on a timer rather than on every change: ten players earning levels
+		is dozens of changes a second, and a board is looked at once a minute.
+	]]
+	local boards: { BasePart } = {}
+	local labelsOf = container.config.Theme.labels
+
+	local function buildBoard(panel: BasePart)
+		local face = panel:GetAttribute("Face")
+		local gui = Instance.new("SurfaceGui")
+		gui.Name = "Scoreboard"
+		gui.Face = if typeof(face) == "string" and Enum.NormalId[face]
+			then Enum.NormalId[face]
+			else Enum.NormalId.Right
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 40
+		gui.LightInfluence = 0
+		gui.Parent = panel
+
+		local title = Instance.new("TextLabel")
+		title.Name = "Title"
+		title.Size = UDim2.new(1, 0, 0, 120)
+		title.BackgroundTransparency = 1
+		title.Font = Enum.Font.FredokaOne
+		title.TextScaled = true
+		title.TextColor3 = Color3.fromRGB(247, 197, 37)
+		title.TextStrokeTransparency = 0
+		title.Text = "TOP RUNNERS"
+		title.Parent = gui
+
+		for row = 1, SCOREBOARD_ROWS do
+			local line = Instance.new("TextLabel")
+			line.Name = `Row{row}`
+			line.Size = UDim2.new(1, -60, 0, 48)
+			line.Position = UDim2.fromOffset(30, 130 + (row - 1) * 50)
+			line.BackgroundTransparency = 1
+			line.Font = Enum.Font.GothamBold
+			line.TextScaled = true
+			line.TextXAlignment = Enum.TextXAlignment.Left
+			line.TextColor3 = Color3.new(1, 1, 1)
+			line.TextStrokeTransparency = 0.4
+			line.Text = ""
+			line.Parent = gui
+		end
+	end
+
+	local function refreshBoards()
+		local ranked = {}
+		for _, player in Players:GetPlayers() do
+			local stats = player:FindFirstChild("leaderstats")
+			local level = stats and stats:FindFirstChild("Level")
+			local prestiges = stats and stats:FindFirstChild("Prestige")
+			table.insert(ranked, {
+				name = player.DisplayName,
+				level = if level then (level :: IntValue).Value else 0,
+				prestiges = if prestiges then (prestiges :: IntValue).Value else 0,
+			})
+		end
+		-- Rebirths first: a level is only comparable inside the same world.
+		table.sort(ranked, function(a, b)
+			if a.prestiges ~= b.prestiges then
+				return a.prestiges > b.prestiges
+			end
+			return a.level > b.level
+		end)
+
+		for _, panel in boards do
+			local gui = panel:FindFirstChild("Scoreboard")
+			if not gui then
+				continue
+			end
+			for row = 1, SCOREBOARD_ROWS do
+				local line = gui:FindFirstChild(`Row{row}`) :: TextLabel?
+				local entry = ranked[row]
+				if line then
+					line.Text = if entry
+						then `{row}.  {entry.name}   {labelsOf.level.name} {entry.level}   {labelsOf.prestige.name} {entry.prestiges}`
+						else ""
+				end
+			end
+		end
+	end
+
+	onTagged(TAGS.scoreboard, function(instance)
+		for _, part in partsOf(instance) do
+			buildBoard(part)
+			table.insert(boards, part)
+		end
+		refreshBoards()
+	end)
+
+	task.spawn(function()
+		while true do
+			task.wait(SCOREBOARD_INTERVAL)
+			if #boards > 0 then
+				refreshBoards()
+			end
+		end
+	end)
+
 	--[[ The report announced in docs/MAP.md: what the server actually found. ]]
 	local function report()
 		logger:info(
 			`Map loaded: {countTagged(TAGS.killzone)} hazards, `
 				.. `{countTagged(TAGS.coin)} coins, {countTagged(TAGS.conveyor)} conveyors, `
-				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#treadmills} treadmills`
+				.. `{countTagged(TAGS.bouncePad)} bounce pads, {#treadmills} treadmills, `
+				.. `{#boards} scoreboards`
 		)
 	end
 

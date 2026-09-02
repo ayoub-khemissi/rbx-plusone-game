@@ -25,9 +25,38 @@ tags count.
 | `ShopPad` | Part | Opens the shop |
 | `PrestigePad` | Part | Opens the Rebirth window |
 | `Treadmill` | Part | Pays as if running on the spot, multiplied |
+| `Scoreboard` | Part | The server draws the ranking on it, refreshed every 5 s |
 
 **A tag can be placed on a Model**: every part inside it is then wired. That is what
 lets a decorated pad be tagged once instead of six times.
+
+## The starting lobby
+
+The lobby is built in code, so it is versioned and identical every time. With the
+project synced, paste into the Studio **command bar**:
+
+```lua
+require(game.ServerScriptService.Server.Composition.Lobby).build()
+```
+
+An enclosed room with the spawn dead centre, the scoreboard on the left wall, the
+seven treadmills along the right, and a doorway ahead opening onto **Stage 1** — a
+course built for levels 1 to 20, with Coins along it and Finish 1 at the end. No shop
+pad and no rebirth pad: those windows open from the sidebar.
+
+It **clears the Workspace first** and builds into the place you are editing, where
+it stays. Decorate what it makes; do not decorate first. A tagged Coin model already
+in the place is used for its Coins.
+
+### `Scoreboard`
+
+| Attribute | Type | Required | Role |
+| --- | --- | --- | --- |
+| `Face` | string | no | Which face carries the board: `Right`, `Front`... **Default `Right`** |
+
+Tag a flat part. The server builds the SurfaceGui and writes the top ten players on
+it — rebirths first, then level — every five seconds. The map draws nothing itself,
+so every board in every map reads the same.
 
 ## Rebuilding a map to run on
 
