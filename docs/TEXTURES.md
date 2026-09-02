@@ -212,13 +212,24 @@ rule.
 
 ## Textures in the built maps
 
-The lobby and the test platform dress their parts in **Material Variants** declared
-from this catalogue — `MapKit.SURFACES` names them: tiles on the lobby floor, brick
-on its walls, planks on the course, steel on the belts, marble under the finish. A
-variant is one instance in `MaterialService` that the engine tiles across every face
-of any part wearing its name, so a floor and a doorstep get the same texture at the
-same scale without either being sized for it. Change a line there and every surface
-of that kind changes with it.
+The lobby and the test platform dress their parts in **Material Variants** —
+`MapKit.SURFACES` names them: tiles on the lobby floor, brick on its walls, planks on
+the course, steel on the belts, marble under the finish. A variant is one instance in
+`MaterialService` that the engine tiles across every face of any part wearing its
+name, so a floor and a doorstep get the same texture at the same scale without either
+being sized for it.
+
+**They are not from this catalogue.** Everything above is a photograph of a real
+material, and a lobby dressed in photographs looked like a warehouse. The five
+surfaces the maps wear were **generated** with Studio's Material Generator (the
+Assistant panel, or the `generate_material` tool over MCP) from a written description
+— *cute cartoon floor tiles, big rounded squares in pastel blue-grey, flat cel
+shading, no realism* — picked from four candidates each on a preview grid, and each
+pick's four maps (colour, normal, roughness, metalness) are written into
+`MapKit.SURFACES` with its description as the comment. To change one: generate again,
+lay the candidates out, pick, paste the four ids. The generator parks its output under
+`MaterialService.AssistantMaterials`; the builders never read that folder, only the
+ids.
 
 ## Textures in the interface
 

@@ -43,19 +43,76 @@ MapKit.COLOURS = {
 
 	A variant is a material the engine tiles across every face of a part on its own,
 	whatever the part's size — one instance in MaterialService, and any number of
-	parts wearing it by name. The textures are the ones in docs/TEXTURES.md, already
-	in the place; nothing is fetched.
+	parts wearing it by name.
 
-	Flat colour was the difference between a room and a diagram. A floor that is
-	tiles, a wall that is brick and a belt that is steel read as a place somebody
-	could stand in, before a single prop is added.
+	THESE ARE DRAWN, NOT PHOTOGRAPHED. The first set came from the texture pack in
+	docs/TEXTURES.md, and every one of them was a photograph of a real material;
+	dressed in them the lobby looked like a warehouse. A game for children wants
+	cartoon tiles and candy-coloured bricks, and those do not exist in a pack of
+	scans. They were generated with Studio's Material Generator from a written
+	description — cel shading, flat colour, no dirt — chosen from four candidates
+	each on a preview grid, and the four maps of each pick are what is written here.
+	Regenerating one is a prompt away; the description is the comment on its line.
+
+	A full PBR set per surface. The normal map is what makes a cartoon brick read
+	as a brick under the room's lights rather than as a poster of one.
 ]]
 MapKit.SURFACES = {
-	{ name = "LobbyFloor", map = "rbxassetid://4621495999", studs = 8 }, -- large_floor_tiles
-	{ name = "LobbyWall", map = "rbxassetid://4621497703", studs = 6 }, -- brick_floor
-	{ name = "CourseWood", map = "rbxassetid://4621506509", studs = 6 }, -- planks_brown
-	{ name = "Steel", map = "rbxassetid://4549727994", studs = 4 }, -- metal
-	{ name = "FinishStone", map = "rbxassetid://4621489901", studs = 8 }, -- marble
+	{
+		-- "cute cartoon floor tiles, big rounded squares in pastel blue-grey"
+		name = "LobbyFloor",
+		base = Enum.Material.CeramicTiles,
+		pattern = Enum.MaterialPattern.Regular,
+		color = "rbxassetid://88843427477973",
+		normal = "rbxassetid://114226283876399",
+		roughness = "rbxassetid://109432221069667",
+		metalness = "rbxassetid://109501379050783",
+		studs = 10,
+	},
+	{
+		-- "cute cartoon brick wall, chunky rounded bricks in warm pastel terracotta"
+		name = "LobbyWall",
+		base = Enum.Material.Brick,
+		pattern = Enum.MaterialPattern.Regular,
+		color = "rbxassetid://100304258247131",
+		normal = "rbxassetid://88449965489742",
+		roughness = "rbxassetid://92284736699156",
+		metalness = "rbxassetid://137071004971128",
+		studs = 6,
+	},
+	{
+		-- "cute cartoon wooden planks, wide smooth planks in warm honey brown"
+		name = "CourseWood",
+		base = Enum.Material.WoodPlanks,
+		pattern = Enum.MaterialPattern.Regular,
+		color = "rbxassetid://76448632334460",
+		normal = "rbxassetid://102299249755879",
+		roughness = "rbxassetid://98635645333521",
+		metalness = "rbxassetid://80986940955507",
+		studs = 6,
+	},
+	{
+		-- "cute cartoon painted metal panel, light grey with rounded rivets"
+		name = "Steel",
+		base = Enum.Material.Metal,
+		pattern = Enum.MaterialPattern.Regular,
+		color = "rbxassetid://124379369153092",
+		normal = "rbxassetid://133811554993779",
+		roughness = "rbxassetid://81429989010852",
+		metalness = "rbxassetid://105961071905150",
+		studs = 4,
+	},
+	{
+		-- "cute cartoon finish-line floor, pale cream stone with pastel gold swirls"
+		name = "FinishStone",
+		base = Enum.Material.Marble,
+		pattern = Enum.MaterialPattern.Organic,
+		color = "rbxassetid://105131892564815",
+		normal = "rbxassetid://121100530495284",
+		roughness = "rbxassetid://93823211847704",
+		metalness = "rbxassetid://127270541785206",
+		studs = 8,
+	},
 }
 
 --[[ Declares every surface once. Safe to call again: existing ones are kept. ]]
@@ -64,23 +121,40 @@ function MapKit.materials()
 		if not MaterialService:FindFirstChild(surface.name) then
 			local variant = Instance.new("MaterialVariant")
 			variant.Name = surface.name
-			variant.BaseMaterial = Enum.Material.Plastic
-			variant.ColorMap = surface.map
+			variant.BaseMaterial = surface.base
+			variant.MaterialPattern = surface.pattern
+			variant.ColorMap = surface.color
+			variant.NormalMap = surface.normal
+			variant.RoughnessMap = surface.roughness
+			variant.MetalnessMap = surface.metalness
 			variant.StudsPerTile = surface.studs
 			variant.Parent = MaterialService
 		end
 	end
 end
 
+local function surfaceNamed(name: string)
+	for _, surface in MapKit.SURFACES do
+		if surface.name == name then
+			return surface
+		end
+	end
+	return nil
+end
+
 --[[
-	Dresses a part in a surface. The colour goes to near white, because a variant's
-	texture is MULTIPLIED by the part's colour: brick tinted navy is navy, and the
-	whole point was to stop painting things navy.
+	Dresses a part in a surface.
+
+	A variant only applies to a part whose Material is the variant's BASE material,
+	so that is set here rather than left to the caller to remember. The colour goes
+	near white, because the texture is MULTIPLIED by the part's colour: candy bricks
+	tinted navy are navy, and the whole point was to stop painting things navy.
 ]]
 function MapKit.surface(part: BasePart, name: string, tint: Color3?)
-	part.Material = Enum.Material.Plastic
+	local surface = surfaceNamed(name)
+	part.Material = if surface then surface.base else Enum.Material.Plastic
 	part.MaterialVariant = name
-	part.Color = tint or Color3.fromRGB(235, 232, 226)
+	part.Color = tint or Color3.fromRGB(240, 238, 234)
 end
 
 --[[ A soft light, for a room that would otherwise be lit only by the sky. ]]
@@ -341,8 +415,9 @@ function MapKit.treadmill(parent: Instance, multiplier: number, position: Vector
 	-- A console at the FAR end of the belt — the end the player runs towards, not
 	-- the end they step on from. At the near end it stood between the room and the
 	-- belt and hid the thing it was meant to dress.
+	-- Plain plastic in the tier colour, not steel: under a texture the one colour
+	-- that names the tier was barely there.
 	local console = MapKit.part(model, "Console", Vector3.new(7, 3.2, 1), position, colour)
-	MapKit.surface(console, "Steel", colour)
 	place(console, Vector3.new(0, 2, 8.2))
 
 	-- A neon bar along the top of the console and a light in its colour: the
