@@ -85,7 +85,14 @@ function MapKit.label(anchor: BasePart, text: string, maxDistance: number?): Bil
 	billboard.Name = "Label"
 	billboard.Size = UDim2.fromOffset(220, 60)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, 5, 0)
-	billboard.AlwaysOnTop = true
+	--[[
+		NOT on top. A label drawn through walls and rails is read from anywhere,
+		which is the opposite of what `maxDistance` is for — and in practice an
+		AlwaysOnTop billboard did not draw at all in this place while a plain one
+		did, tested side by side on the same belt. Plain is what a sign is anyway:
+		if the belt is behind something, so is its name.
+	]]
+	billboard.AlwaysOnTop = false
 	billboard.MaxDistance = maxDistance or math.huge
 	billboard.Parent = anchor
 
