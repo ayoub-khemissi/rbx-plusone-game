@@ -273,10 +273,12 @@ function MapKit.treadmill(parent: Instance, multiplier: number, position: Vector
 		place(rail, Vector3.new(side * 3.6, 0.9, 0))
 	end
 
-	-- A console at the head of the belt, so the thing has a front.
+	-- A console at the FAR end of the belt — the end the player runs towards, not
+	-- the end they step on from. At the near end it stood between the room and the
+	-- belt and hid the thing it was meant to dress.
 	local console = MapKit.part(model, "Console", Vector3.new(7, 3.2, 1), position, colour)
 	console.Material = Enum.Material.Metal
-	place(console, Vector3.new(0, 2, -8.2))
+	place(console, Vector3.new(0, 2, 8.2))
 
 	model.PrimaryPart = base
 	MapKit.label(base, `x{multiplier}`, 30)
